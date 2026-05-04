@@ -385,10 +385,46 @@
 </style>
 
 <script>
-document.querySelectorAll('.search-type-item').forEach(item => {
-    item.addEventListener('click', function() {
-        document.querySelectorAll('.search-type-item').forEach(i => i.classList.remove('active'));
-        this.classList.add('active');
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('main-search-form');
+    const inputQ = form.querySelector('input[name="q"]');
+    const inputTipo = document.getElementById('search-tipo');
+    const inputFiltro = document.getElementById('search-filtro');
+    const filterBtnText = document.getElementById('filter-btn-text');
+
+    // Manejar clics en los tipos (Proyectos, Personas, Productos, etc.)
+    document.querySelectorAll('.search-type-item').forEach(item => {
+        item.addEventListener('click', function() {
+            document.querySelectorAll('.search-type-item').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            inputTipo.value = this.getAttribute('data-type');
+            
+            // Opcional: auto-enviar si ya hay texto
+            // if(inputQ.value.trim() !== '') form.submit();
+        });
+    });
+
+    // Manejar clics en las opciones de Filtro
+    document.querySelectorAll('.filter-opt').forEach(opt => {
+        opt.addEventListener('click', function(e) {
+            e.preventDefault();
+            const val = this.getAttribute('data-val');
+            const text = this.textContent;
+            
+            inputFiltro.value = val;
+            filterBtnText.innerHTML = `<i class="fas fa-sliders-h"></i> ${text}`;
+            
+            // Auto-enviar el formulario al seleccionar un filtro si hay texto o si no importa
+            form.submit();
+        });
+    });
+
+    // Enviar formulario al presionar Enter en el input de texto
+    inputQ.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            form.submit();
+        }
     });
 });
 </script>
@@ -419,32 +455,35 @@ document.querySelectorAll('.search-type-item').forEach(item => {
 <!-- 2. DISCOVERY BAR REPLICA -->
 <nav class="discovery-bar-pro">
     <div class="container-fluid px-4">
-        <div class="discovery-inner">
+        <form class="discovery-inner" action="{{ url_for('public.explorar') }}" method="GET" id="main-search-form">
+            <input type="hidden" name="tipo" id="search-tipo" value="proyectos">
+            <input type="hidden" name="filtro" id="search-filtro" value="">
+            
             <div class="dropdown">
-                <div class="filter-btn-pro" data-bs-toggle="dropdown" style="cursor: pointer;">
+                <div class="filter-btn-pro" data-bs-toggle="dropdown" style="cursor: pointer;" id="filter-btn-text">
                     <i class="fas fa-sliders-h"></i>
                     Filtro
                 </div>
                 <ul class="dropdown-menu shadow border-0" style="background: var(--bg-secondary); color: var(--text-color); margin-top: 10px; min-width: 150px; font-size: 0.85rem;">
-                    <li><a class="dropdown-item" href="#" style="color: var(--text-color); padding: 4px 12px;">Paleta de color</a></li>
-                    <li><a class="dropdown-item" href="#" style="color: var(--text-color); padding: 4px 12px;">Ubicación (artista)</a></li>
-                    <li><a class="dropdown-item" href="#" style="color: var(--text-color); padding: 4px 12px;">Más recientes</a></li>
-                    <li><a class="dropdown-item" href="#" style="color: var(--text-color); padding: 4px 12px;">Más antiguos</a></li>
-                    <li><a class="dropdown-item" href="#" style="color: var(--text-color); padding: 4px 12px;">Más populares</a></li>
+                    <li><a class="dropdown-item filter-opt" href="#" data-val="paleta" style="color: var(--text-color); padding: 4px 12px;">Paleta de color</a></li>
+                    <li><a class="dropdown-item filter-opt" href="#" data-val="ubicacion" style="color: var(--text-color); padding: 4px 12px;">Ubicación (artista)</a></li>
+                    <li><a class="dropdown-item filter-opt" href="#" data-val="mas_recientes" style="color: var(--text-color); padding: 4px 12px;">Más recientes</a></li>
+                    <li><a class="dropdown-item filter-opt" href="#" data-val="mas_antiguos" style="color: var(--text-color); padding: 4px 12px;">Más antiguos</a></li>
+                    <li><a class="dropdown-item filter-opt" href="#" data-val="mas_populares" style="color: var(--text-color); padding: 4px 12px;">Más populares</a></li>
                 </ul>
             </div>
             
             <div class="search-group-pro">
                 <i class="fas fa-search"></i>
-                <input type="text" placeholder="Buscar en Ágora Art...">
+                <input type="text" name="q" placeholder="Buscar en Ágora Art...">
                 <div class="search-types-pro d-none d-md-flex">
-                    <span class="search-type-item active">Proyectos</span>
-                    <span class="search-type-item">Personas</span>
-                    <span class="search-type-item">Productos</span>
-                    <span class="search-type-item">Imágenes</span>
+                    <span class="search-type-item active" data-type="proyectos">Proyectos</span>
+                    <span class="search-type-item" data-type="personas">Personas</span>
+                    <span class="search-type-item" data-type="productos">Productos</span>
+                    <span class="search-type-item" data-type="imagenes">Imágenes</span>
                 </div>
             </div>
-        </div>
+        </form>
     </div>
 </nav>
 

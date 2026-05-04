@@ -34,20 +34,40 @@ def explorar():
     obra_service = service_factory.get_obra_service()
     categoria_service = service_factory.get_categoria_service()
     
-    # Obtener filtros
+    # Obtener filtros de búsqueda
     categoria_id = request.args.get('categoria', type=int)
     termino = request.args.get('q', '')
+    tipo = request.args.get('tipo', 'proyectos')
+    filtro = request.args.get('filtro', '')
     page = request.args.get('page', 1, type=int)
     
-    # Obtener obras con filtros
+    # Enrutamiento según el tipo de búsqueda
+    if tipo == 'personas':
+        return redirect(url_for('public.artistas', q=termino))
+    elif tipo == 'productos':
+        # Redirigir a la futura vista de marketplace
+        return redirect(url_for('public.productos', q=termino, filtro=filtro))
+    
+    # Búsqueda por defecto (Proyectos/Imágenes -> Obras)
     obras = obra_service.buscar_obras(termino, limit=12)
+    
+    # Aplicar ordenamiento según el filtro
+    if filtro == 'mas_antiguos':
+        obras.sort(key=lambda x: x.fecha_creacion)
+    elif filtro == 'mas_recientes':
+        obras.sort(key=lambda x: x.fecha_creacion, reverse=True)
+    elif filtro == 'mas_populares':
+        obras.sort(key=lambda x: (x.vistas_count or 0) + (x.favoritos_count or 0), reverse=True)
+        
     categorias = categoria_service.get_all()
     
     return render_template('public/explorar.html',
                          obras=obras,
                          categorias=categorias,
                          categoria_actual=categoria_id,
-                         termino_busqueda=termino)
+                         termino_busqueda=termino,
+                         tipo_busqueda=tipo,
+                         filtro_actual=filtro)
 
 @public_bp.route('/artistas')
 def artistas():
@@ -263,3 +283,17 @@ def api_buscar():
     return jsonify({
         'resultados': resultados
     })
+@public_bp.route('/productos')
+def productos():
+    """
+    Marketplace - Listado de productos a la venta (Etsy style)
+    """
+    termino = request.args.get('q', '')
+    filtro = request.args.get('filtro', '')
+    
+    # Próximamente: Obtener productos del ProductoService
+    # Por ahora renderizamos una plantilla básica con los filtros aplicados
+    
+    return render_template('public/productos.html',
+                           termino_busqueda=termino,
+                           filtro_actual=filtro)

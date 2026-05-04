@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Marketplace — Ágora Art{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="min-height: 60vh;">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h1>Marketplace</h1>
+            {% if termino_busqueda %}
+                <span class="badge bg-primary fs-6">Buscando: "{{ termino_busqueda }}"</span>
+            {% endif %}
+            {% if filtro_actual %}
+                <span class="badge bg-secondary fs-6">Filtro: "{{ filtro_actual }}"</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Sidebar Filtros (Estilo Etsy) -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Categorías</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-decoration-none text-muted">Arte Físico</a></li>
+                        <li><a href="#" class="text-decoration-none text-muted">Archivos Digitales</a></li>
+                        <li><a href="#" class="text-decoration-none text-muted">Mercancía</a></li>
+                    </ul>
+                    
+                    <h5 class="card-title mt-4 mb-3">Precio</h5>
+                    <div class="d-flex gap-2">
+                        <input type="number" class="form-control form-control-sm" placeholder="Min">
+                        <input type="number" class="form-control form-control-sm" placeholder="Max">
+                        <button class="btn btn-sm btn-outline-primary">></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Grid de Productos -->
+        <div class="col-md-9">
+            <div class="text-center py-5" style="background: var(--bg-secondary); border-radius: 12px;">
+                <i class="fas fa-store mb-3" style="font-size: 3rem; color: var(--text-muted);"></i>
+                <h3>El Marketplace está en construcción</h3>
+                <p class="text-muted">Aquí aparecerán los productos del CRUD de artistas muy pronto.</p>
+                {% if termino_busqueda %}
+                <p>Estás buscando productos que coincidan con: <strong>{{ termino_busqueda }}</strong></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
