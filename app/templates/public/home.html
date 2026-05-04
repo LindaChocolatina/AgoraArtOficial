@@ -391,6 +391,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputTipo = document.getElementById('search-tipo');
     const inputFiltro = document.getElementById('search-filtro');
     const filterBtnText = document.getElementById('filter-btn-text');
+    const searchIcon = form.querySelector('.search-group-pro .fa-search');
 
     // Manejar clics en los tipos (Proyectos, Personas, Productos, etc.)
     document.querySelectorAll('.search-type-item').forEach(item => {
@@ -399,8 +400,8 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
             inputTipo.value = this.getAttribute('data-type');
             
-            // Opcional: auto-enviar si ya hay texto
-            // if(inputQ.value.trim() !== '') form.submit();
+            // Auto-enviar siempre que se cambie el tipo de búsqueda
+            form.submit();
         });
     });
 
@@ -414,10 +415,18 @@ document.addEventListener('DOMContentLoaded', function() {
             inputFiltro.value = val;
             filterBtnText.innerHTML = `<i class="fas fa-sliders-h"></i> ${text}`;
             
-            // Auto-enviar el formulario al seleccionar un filtro si hay texto o si no importa
+            // Auto-enviar el formulario al seleccionar un filtro
             form.submit();
         });
     });
+
+    // Enviar formulario al hacer clic en el icono de lupa
+    if (searchIcon) {
+        searchIcon.style.cursor = 'pointer';
+        searchIcon.addEventListener('click', function() {
+            form.submit();
+        });
+    }
 
     // Enviar formulario al presionar Enter en el input de texto
     inputQ.addEventListener('keypress', function(e) {
