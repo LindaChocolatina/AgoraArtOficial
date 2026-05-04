@@ -365,25 +365,65 @@ def checkout():
 @requiere_cliente
 def procesar_checkout():
     """
-    Procesar pago de la orden
+    Procesar pago de la orden y crear el registro en la base de datos
     """
     service_factory = get_service_factory()
     carrito_service = service_factory.get_carrito_service()
+    orden_service = service_factory.get_orden_service()
+    direccion_service = service_factory.get_direccion_service()
     
-    # Validar carrito
+    # 1. Validar carrito
     items, total = carrito_service.get_items()
     if not items:
         flash('Tu carrito está vacío', 'error')
         return redirect(url_for('cliente.carrito'))
         
-    # Simular procesamiento de pago exitoso para el MVP
-    # En un sistema real aquí se llamaría al servicio de Stripe/PayPal y luego a orden_service
+    # 2. Obtener o crear dirección de envío
+    direccion_id = request.form.get('id_direccion')
     
-    # Vaciar carrito
-    carrito_service.vaciar_carrito()
+    if not direccion_id:
+        # Intentar crear nueva dirección con los datos del formulario
+        nueva_dir_data = {
+            'id_usuario': current_user.id_usuario,
+            'nombre_receptor': request.form.get('nombre_receptor'),
+            'direccion': request.form.get('direccion'),
+            'ciudad': request.form.get('ciudad'),
+            'pais': request.form.get('pais'),
+            'codigo_postal': request.form.get('codigo_postal'),
+            'telefono': request.form.get('telefono')
+        }
+        
+        # Validación mínima para nueva dirección
+        if not nueva_dir_data['direccion'] or not nueva_dir_data['ciudad']:
+            flash('Por favor selecciona una dirección o completa los datos de envío', 'error')
+            return redirect(url_for('cliente.checkout'))
+            
+        exito_dir, nueva_dir = direccion_service.agregar_direccion(nueva_dir_data)
+        if exito_dir:
+            direccion_id = nueva_dir.id_direccion
+        else:
+            flash('Error al procesar la dirección de envío', 'error')
+            return redirect(url_for('cliente.checkout'))
     
-    flash('¡Compra realizada con éxito! Tu orden está siendo procesada.', 'success')
-    return redirect(url_for('cliente.ordenes'))
+    # 3. Crear la orden real
+    # Aquí se integraría la pasarela de pagos (Stripe/PayPal)
+    # Si el pago es exitoso, procedemos a crear la orden en la DB
+    
+    exito_orden, orden = orden_service.crear_orden(
+        cliente_id=current_user.id_usuario,
+        direccion_id=direccion_id,
+        total=total,
+        items=items
+    )
+    
+    if exito_orden:
+        # 4. Vaciar carrito si la orden fue exitosa
+        carrito_service.vaciar_carrito()
+        flash('¡Compra realizada con éxito! Tu orden está siendo procesada.', 'success')
+        return redirect(url_for('cliente.ordenes'))
+    else:
+        flash('Hubo un problema al procesar tu orden. Por favor intenta de nuevo.', 'error')
+        return redirect(url_for('cliente.checkout'))
 
 @cliente_bp.route('/newsletters')
 @login_required
