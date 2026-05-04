@@ -420,9 +420,18 @@ document.querySelectorAll('.search-type-item').forEach(item => {
 <nav class="discovery-bar-pro">
     <div class="container-fluid px-4">
         <div class="discovery-inner">
-            <div class="filter-btn-pro">
-                <i class="fas fa-sliders-h"></i>
-                Filtro
+            <div class="dropdown">
+                <div class="filter-btn-pro" data-bs-toggle="dropdown" style="cursor: pointer;">
+                    <i class="fas fa-sliders-h"></i>
+                    Filtro
+                </div>
+                <ul class="dropdown-menu shadow border-0" style="background: var(--bg-secondary); color: var(--text-color); margin-top: 10px;">
+                    <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Paleta de color</a></li>
+                    <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Ubicación (del artista)</a></li>
+                    <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Más recientes</a></li>
+                    <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Más antiguos</a></li>
+                    <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Más populares</a></li>
+                </ul>
             </div>
             
             <div class="search-group-pro">
@@ -434,25 +443,6 @@ document.querySelectorAll('.search-type-item').forEach(item => {
                     <span class="search-type-item">Archivos</span>
                     <span class="search-type-item">Imágenes</span>
                 </div>
-            </div>
-
-            <div class="d-none d-lg-block">
-                <div class="dropdown">
-                    <button class="btn btn-sm fw-bold dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        Más apreciados
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="background: var(--bg-secondary); color: var(--text-color);">
-                        <li><a class="dropdown-item active" href="#" style="color: var(--text-color);">Más apreciados</a></li>
-                        <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Paleta de color</a></li>
-                        <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Ubicación</a></li>
-                        <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Más recientes</a></li>
-                        <div class="dropdown-divider" style="border-top: 1px solid var(--border-color);"></div>
-                        <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Para ti</a></li>
-                    </ul>
-</div>
-                        <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Para ti</a></li>
-                    </ul>
-</div>
             </div>
         </div>
     </div>
