@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from app.factories.service_factory import get_service_factory
+from datetime import datetime
 
 # Crear blueprint
 public_bp = Blueprint('public', __name__)
@@ -53,11 +54,12 @@ def explorar():
     
     # Aplicar ordenamiento según el filtro
     if filtro == 'mas_antiguos':
-        obras.sort(key=lambda x: x.fecha_creacion)
+        obras.sort(key=lambda x: x.fecha_publicacion or datetime.min)
     elif filtro == 'mas_recientes':
-        obras.sort(key=lambda x: x.fecha_creacion, reverse=True)
+        obras.sort(key=lambda x: x.fecha_publicacion or datetime.min, reverse=True)
     elif filtro == 'mas_populares':
-        obras.sort(key=lambda x: (x.vistas_count or 0) + (x.favoritos_count or 0), reverse=True)
+        # Ordenar por cantidad de favoritos (ya que vistas_count no existe en el modelo actual)
+        obras.sort(key=lambda x: len(x.favoritos_usuarios) if hasattr(x, 'favoritos_usuarios') else 0, reverse=True)
         
     categorias = categoria_service.get_all()
     
