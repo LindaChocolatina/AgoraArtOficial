@@ -4,105 +4,110 @@
 <style>
     /* === BEHANCE REPLICA UI === */
     :root {
-        --be-blue: #0057ff;
+        --be-blue: 8B5CF6;
         --be-bg: #ffffff;
         --be-border: #e8e8e8;
         --be-text: #191919;
     }
 
     body {
-        background-color: var(--be-bg) !important;
-        color: var(--be-text);
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color) !important; /* Indigo Profundo Cosmico */
+        color: #FFFFFF !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
 
-    /* 1. HERO SECTION */
-    .be-hero-replica {
-        padding: 100px 0;
-        text-align: center;
+    /* === COSMIC HERO SECTION (Compact 2 Col) === */
+    .hero-cosmic {
         position: relative;
-        overflow: hidden;
-        min-height: 500px;
+        width: 100%;
+        height: 65vh; /* Altura reducida */
+        min-height: 480px;
+        background-color: #0d0b21;
+        background-image: url('/static/img/hero_indie.png');
+        background-size: cover;
+        background-position: center;
         display: flex;
         align-items: center;
-        justify-content: center;
+        overflow: hidden;
+        color: #FFFFFF !important;
     }
 
-    .hero-content-pro {
-        max-width: 800px;
-        z-index: 5;
+    .hero-cosmic::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(13,11,33,0.85) 0%, rgba(13,11,33,0.3) 60%, rgba(13,11,33,0) 100%);
+        z-index: 1;
     }
 
-    .hero-content-pro h1 {
-        font-size: 64px;
+    .hero-container {
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 40px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    .hero-text-side {
+        text-align: left;
+    }
+
+    .hero-text-side h1 {
+        font-family: 'Outfit', sans-serif;
+        font-size: clamp(2rem, 4vw, 3.2rem); /* Texto más pequeño */
         font-weight: 800;
         line-height: 1.1;
-        margin-bottom: 24px;
-        color: var(--be-text);
+        margin-bottom: 20px;
+        color: #FFFFFF !important; /* Siempre blanco por la imagen oscura */
     }
 
-    .hero-content-pro h1 span {
-        color: var(--be-blue);
+    .hero-text-side h1 span { display: inline-block; background: linear-gradient(90deg, #00D2FF 0%, #A78BFA 50%, #F472B6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
-    .hero-content-pro p {
-        font-size: 18px;
-        color: #696969;
-        margin-bottom: 32px;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
+    .hero-text-side p {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.1rem; /* Texto más pequeño */
+        line-height: 1.5;
+        color: rgba(255,255,255,0.85);
+        margin-bottom: 35px;
+        max-width: 480px;
     }
 
-    /* Floating images around hero */
-    .floating-art {
-        position: absolute;
-        width: 120px;
-        height: 120px;
-        border-radius: 8px;
-        object-fit: cover;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        z-index: 1;
-        opacity: 0.85;
-    }
-
-    .art-1 { top: 10%; left: 5%; transform: rotate(-5deg); }
-    .art-2 { top: 15%; right: 10%; transform: rotate(8deg); width: 140px; height: 180px; }
-    .art-3 { bottom: 15%; left: 8%; transform: rotate(12deg); width: 160px; height: 120px; }
-    .art-4 { bottom: 20%; right: 5%; transform: rotate(-10deg); width: 100px; height: 100px; }
-    .art-5 { top: 40%; left: 15%; transform: rotate(5deg); width: 80px; height: 80px; }
-    .art-6 { bottom: 40%; right: 15%; transform: rotate(-3deg); width: 90px; height: 130px; }
-
-    .hero-btns-pro {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-    }
-
-    .btn-be-primary {
-        background: var(--be-blue);
-        color: white;
-        border: none;
+    .btn-cosmic-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: #FF2D95;
+        color: #FFFFFF !important;
+        padding: 14px 35px;
         border-radius: 100px;
-        padding: 12px 28px;
         font-weight: 700;
         font-size: 15px;
-        transition: 0.2s;
+        text-decoration: none;
+        transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 8px 20px rgba(255, 45, 149, 0.25);
     }
 
-    .btn-be-secondary {
-        background: transparent;
-        color: var(--be-blue);
-        border: 1px solid #e8e8e8;
-        border-radius: 100px;
-        padding: 12px 28px;
-        font-weight: 700;
-        font-size: 15px;
-        transition: 0.2s;
+    .btn-cosmic-cta:hover {
+        background: #e62283;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(255, 45, 149, 0.35);
+        color: #FFFFFF !important;
     }
 
     /* 2. DISCOVERY BAR */
     .discovery-bar-pro {
+        background: var(--bg-color); opacity: 0.95;
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(255, 45, 149, 0.2);
+        border-bottom: 1px solid rgba(255, 45, 149, 0.2);
+        padding: 15px 0;
         background: white;
         border-top: 1px solid var(--be-border);
         border-bottom: 1px solid var(--be-border);
@@ -124,6 +129,16 @@
         gap: 8px;
         font-weight: 700;
         font-size: 13px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        color: #FFFFFF !important;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 13px;
         border: 1px solid var(--be-border);
         padding: 8px 16px;
         border-radius: 4px;
@@ -131,6 +146,13 @@
     }
 
     .search-group-pro {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        background: var(--bg-secondary); border: 1px solid var(--border-color);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 100px;
+        padding: 0 20px;
         flex-grow: 1;
         display: flex;
         align-items: center;
@@ -142,6 +164,14 @@
 
     .search-group-pro i { color: #959595; margin-right: 12px; }
     .search-group-pro input {
+        border: none;
+        background: transparent;
+        padding: 10px 0;
+        width: 100%;
+        outline: none;
+        font-weight: 600;
+        font-size: 14px;
+        color: #FFFFFF !important;
         border: none;
         background: transparent;
         padding: 10px 0;
@@ -172,6 +202,8 @@
 
     /* 3. CATEGORY MENU */
     .category-menu-pro {
+        background: var(--bg-color);
+        padding: 40px 0;
         padding: 20px 0;
         position: relative;
     }
@@ -221,7 +253,7 @@
     .cat-name-pro {
         position: relative;
         z-index: 2;
-        color: white;
+        color: #FFFFFF !important;
         font-weight: 800;
         font-size: 12px;
         text-transform: uppercase;
@@ -229,6 +261,19 @@
     }
 
     .arrow-pro {
+        width: 32px;
+        height: 32px;
+        background: var(--card-bg);
+        color: #FFFFFF !important;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        cursor: pointer;
+        z-index: 10;
+        position: absolute;
+        border: 1px solid rgba(255, 255, 255, 0.1);
         width: 32px;
         height: 32px;
         background: white;
@@ -261,6 +306,13 @@
     .project-thumb {
         width: 100%;
         aspect-ratio: 4/3;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        background: var(--card-bg);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        width: 100%;
+        aspect-ratio: 4/3;
         border-radius: 4px;
         overflow: hidden;
         position: relative;
@@ -278,7 +330,11 @@
 
     .project-author-info { display: flex; align-items: center; gap: 8px; }
     .project-author-av { width: 24px; height: 24px; border-radius: 50%; background: #ccc; }
-    .project-title-pro { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+    .project-title-pro {
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 2px;
+        color: #FFFFFF !important; font-weight: 700; font-size: 14px; margin-bottom: 2px; }
     .project-author-name { font-size: 12px; color: #696969; font-weight: 600; }
     
     .project-actions-pro {
@@ -289,27 +345,73 @@
         color: #696969;
     }
 
+
+    .hero-text-side h1 span { display: inline-block; background: linear-gradient(90deg, #00D2FF 0%, #A78BFA 50%, #F472B6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+
+    /* Discovery Bar Theme Fix */
+    .discovery-bar-pro {
+        background: var(--bg-color);
+        border-bottom: 1px solid var(--border-color);
+        transition: 0.3s;
+    }
+    .search-group-pro {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+    }
+    .search-group-pro input {
+        background: transparent;
+        color: var(--text-color);
+    }
+    .search-type-item {
+        color: var(--text-muted);
+    }
+    .search-type-item.active {
+        color: var(--text-color);
+        border-bottom: 2px solid var(--accent-purple);
+    }
+    .filter-btn-pro {
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+    }
+    .discovery-inner .btn {
+        color: var(--text-color);
+    }
+
 </style>
+
+<script>
+document.querySelectorAll('.search-type-item').forEach(item => {
+    item.addEventListener('click', function() {
+        document.querySelectorAll('.search-type-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+</script>
+
 {% endblock %}
 
 {% block content %}
 
-<!-- 1. HERO SECTION REPLICA -->
-<section class="be-hero-replica">
-    <!-- Floating Art Decor -->
-    <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=200" class="floating-art art-1">
-    <img src="https://images.unsplash.com/photo-1460661419201-fd4ce186860d?w=200" class="floating-art art-2">
-    <img src="https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=200" class="floating-art art-3">
-    <img src="https://images.unsplash.com/photo-1541462608141-ad60397d5873?w=200" class="floating-art art-4">
-    <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=200" class="floating-art art-5">
-    <img src="https://images.unsplash.com/photo-1459908276235-d436e447a2a6?w=200" class="floating-art art-6">
-
-    <div class="hero-content-pro">
-        <h1>Los mejores <span>creadores del mundo</span> están en Ágora Art</h1>
-        <p>Una plataforma integral para ayudar a coleccionistas y creadores a navegar por el mundo creativo, desde la inspiración hasta la comunicación.</p>
-        <div class="hero-btns-pro">
-            <button class="btn-be-primary">Explorar talentos</button>
-            <button class="btn-be-secondary">Unirse a la comunidad</button>
+<!-- 1. COSMIC HERO SECTION -->
+<section class="hero-cosmic">
+    <div class="hero-container">
+        <div class="hero-text-side">
+            <h1 data-aos="fade-right">Ágora Art: Donde el Talento Encuentra su <span>Impulso Cósmico.</span></h1>
+            <p data-aos="fade-right" data-aos-delay="200">Una comunidad de artistas contemporáneos y coleccionistas visionarios, unidos en un Refugio Creativo.</p>
+            <div data-aos="fade-up" data-aos-delay="400">
+                <a href="{{ url_for('public.explorar') }}" class="btn-cosmic-cta">
+                    <i class="fas fa-rocket"></i>
+                    Impulsa tu Arte
+                </a>
+            </div>
+        </div>
+        <div class="hero-action-side">
+            <!-- Espacio visual para destacar el OVNI en la ilustración de fondo -->
         </div>
     </div>
 </section>
@@ -337,14 +439,20 @@
             <div class="d-none d-lg-block">
                 <div class="dropdown">
                     <button class="btn btn-sm fw-bold dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        Recomendado
+                        Más apreciados
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item active" href="#">Recomendado</a></li>
-                        <li><a class="dropdown-item" href="#">Más reciente</a></li>
-                        <li><a class="dropdown-item" href="#">Más valorado</a></li>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="background: var(--bg-secondary); color: var(--text-color);">
+                        <li><a class="dropdown-item active" href="#" style="color: var(--text-color);">Más apreciados</a></li>
+                        <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Paleta de color</a></li>
+                        <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Ubicación</a></li>
+                        <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Más recientes</a></li>
+                        <div class="dropdown-divider" style="border-top: 1px solid var(--border-color);"></div>
+                        <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Para ti</a></li>
                     </ul>
-                </div>
+</div>
+                        <li><a class="dropdown-item" href="#" style="color: var(--text-color);">Para ti</a></li>
+                    </ul>
+</div>
             </div>
         </div>
     </div>
@@ -402,7 +510,7 @@
                     </div>
                     <div class="project-meta">
                         <div class="project-author-info">
-                            <div class="project-author-av" style="background-image: url('https://ui-avatars.com/api/?name={{ obra.artista.nombre }}&background=0057ff&color=fff'); background-size: cover;"></div>
+                            <div class="project-author-av" style="background-image: url('https://ui-avatars.com/api/?name={{ obra.artista.nombre }}&background=8B5CF6&color=fff'); background-size: cover;"></div>
                             <div class="author-text">
                                 <div class="project-title-pro">{{ obra.titulo }}</div>
                                 <div class="project-author-name">{{ obra.artista.nombre }}</div>
@@ -421,23 +529,23 @@
 </section>
 
 <!-- ===== STATS BAR (Un solo renglón) ===== -->
-<section style="background: white; border-top: 1px solid #ECECEC; border-bottom: 1px solid #ECECEC; padding: 40px 0;">
+<section style="background: var(--bg-secondary); border-top: 1px solid rgba(255, 45, 149, 0.1); border-bottom: 1px solid rgba(255, 45, 149, 0.1); padding: 60px 0;">
     <div class="container">
         <div style="display: flex; justify-content: space-around; text-align: center; flex-wrap: nowrap; gap: 10px;">
             <div style="flex: 1;">
-                <h2 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; color: #1B8FA0; margin-bottom: 5px; font-size: clamp(1.2rem, 3vw, 2rem);">{{ obras_recientes|length if obras_recientes else '0' }}+</h2>
+                <h2 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; color: #8B5CF6; margin-bottom: 5px; font-size: clamp(1.2rem, 3vw, 2rem);">{{ obras_recientes|length if obras_recientes else '0' }}+</h2>
                 <p style="font-family: 'Josefin Sans', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #8C8C8C; font-weight: 600; white-space: nowrap;">Obras Publicadas</p>
             </div>
             <div style="flex: 1;">
-                <h2 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; color: #1B8FA0; margin-bottom: 5px; font-size: clamp(1.2rem, 3vw, 2rem);">{{ artistas_destacados|length if artistas_destacados else '0' }}+</h2>
+                <h2 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; color: #8B5CF6; margin-bottom: 5px; font-size: clamp(1.2rem, 3vw, 2rem);">{{ artistas_destacados|length if artistas_destacados else '0' }}+</h2>
                 <p style="font-family: 'Josefin Sans', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #8C8C8C; font-weight: 600; white-space: nowrap;">Artistas Activos</p>
             </div>
             <div style="flex: 1;">
-                <h2 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; color: #1B8FA0; margin-bottom: 5px; font-size: clamp(1.2rem, 3vw, 2rem);">{{ categorias|length if categorias else '0' }}</h2>
+                <h2 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; color: #8B5CF6; margin-bottom: 5px; font-size: clamp(1.2rem, 3vw, 2rem);">{{ categorias|length if categorias else '0' }}</h2>
                 <p style="font-family: 'Josefin Sans', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #8C8C8C; font-weight: 600; white-space: nowrap;">Categorías</p>
             </div>
             <div style="flex: 1;">
-                <h2 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; color: #1B8FA0; margin-bottom: 5px; font-size: clamp(1.2rem, 3vw, 2rem);">100%</h2>
+                <h2 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; color: #8B5CF6; margin-bottom: 5px; font-size: clamp(1.2rem, 3vw, 2rem);">100%</h2>
                 <p style="font-family: 'Josefin Sans', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #8C8C8C; font-weight: 600; white-space: nowrap;">Libres de Algoritmos</p>
             </div>
         </div>
@@ -445,41 +553,41 @@
 </section>
 
 <!-- ===== UN ESPACIO PARA CADA ROL (Un solo renglón) ===== -->
-<section style="padding: 80px 0; background: white;">
+<section style="padding: 80px 0; background: var(--bg-color);">
     <div class="container">
         <div style="text-align: center; margin-bottom: 60px;">
-            <h2 style="font-family: 'Josefin Sans', sans-serif; font-size: 32px; font-weight: 700; color: #191919; margin-bottom: 15px;">Un espacio para cada rol</h2>
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 700; color: #FFFFFF !important; margin-bottom: 15px;">Un espacio para cada rol</h2>
             <p style="font-family: 'Josefin Sans', sans-serif; font-size: 16px; color: #8C8C8C; font-style: italic;">Sin complejidad. Solo lo que necesitas para crear, coleccionar e inspirarte.</p>
         </div>
         
         <div style="display: flex; gap: 24px; justify-content: center; flex-wrap: nowrap;">
             <!-- Artistas -->
             <div style="flex: 1; min-width: 0;">
-                <div style="background: #fff; padding: 40px 20px; border-radius: 20px; border: 1px solid #ECECEC; transition: 0.3s; height: 100%; text-align: center;">
-                    <div style="width: 60px; height: 60px; background: #E8F6F8; color: #1B8FA0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 20px;">
+                <div style="background: var(--card-bg); padding: 40px 20px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.05); transition: 0.3s; height: 100%; text-align: center;">
+                    <div style="width: 60px; height: 60px; background: #E8F6F8; color: #8B5CF6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 20px;">
                         <i class="fas fa-palette"></i>
                     </div>
-                    <h4 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; margin-bottom: 12px; font-size: 16px;">Para artistas</h4>
+                    <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 12px; font-size: 18px; color: #FFFFFF !important;">Para artistas</h4>
                     <p style="font-family: 'Josefin Sans', sans-serif; color: #696969; line-height: 1.5; font-size: 13px;">Publica tu portafolio, escribe en tu blog, abre tu tienda.</p>
                 </div>
             </div>
             <!-- Coleccionistas -->
             <div style="flex: 1; min-width: 0;">
-                <div style="background: #fff; padding: 40px 20px; border-radius: 20px; border: 1px solid #ECECEC; transition: 0.3s; height: 100%; text-align: center;">
+                <div style="background: var(--card-bg); padding: 40px 20px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.05); transition: 0.3s; height: 100%; text-align: center;">
                     <div style="width: 60px; height: 60px; background: #F4F0F9; color: #8A6EA8; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 20px;">
                         <i class="fas fa-heart"></i>
                     </div>
-                    <h4 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; margin-bottom: 12px; font-size: 16px;">Para coleccionistas</h4>
+                    <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 12px; font-size: 18px; color: #FFFFFF !important;">Para coleccionistas</h4>
                     <p style="font-family: 'Josefin Sans', sans-serif; color: #696969; line-height: 1.5; font-size: 13px;">Sigue artistas, guarda tus favoritos, crea moodboards.</p>
                 </div>
             </div>
             <!-- Comunidad -->
             <div style="flex: 1; min-width: 0;">
-                <div style="background: #fff; padding: 40px 20px; border-radius: 20px; border: 1px solid #ECECEC; transition: 0.3s; height: 100%; text-align: center;">
-                    <div style="width: 60px; height: 60px; background: #E8F6F8; color: #1B8FA0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 20px;">
+                <div style="background: var(--card-bg); padding: 40px 20px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.05); transition: 0.3s; height: 100%; text-align: center;">
+                    <div style="width: 60px; height: 60px; background: #E8F6F8; color: #8B5CF6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 20px;">
                         <i class="fas fa-users"></i>
                     </div>
-                    <h4 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; margin-bottom: 12px; font-size: 16px;">Comunidad real</h4>
+                    <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 12px; font-size: 18px; color: #FFFFFF !important;">Comunidad real</h4>
                     <p style="font-family: 'Josefin Sans', sans-serif; color: #696969; line-height: 1.5; font-size: 13px;">Recibe newsletters de los artistas que amas.</p>
                 </div>
             </div>
@@ -488,9 +596,9 @@
 </section>
 
 <!-- ===== ARTISTAS DE LA COMUNIDAD ===== -->
-<section style="padding: 80px 0; background: #F4F0F9;">
+<section style="padding: 80px 0; background: var(--bg-secondary);">
     <div class="container text-center">
-        <h2 style="font-family: 'Josefin Sans', sans-serif; font-size: 32px; font-weight: 700; color: #191919; margin-bottom: 15px;">Artistas de la comunidad</h2>
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 700; color: #FFFFFF !important; margin-bottom: 15px;">Artistas de la comunidad</h2>
         <p style="font-family: 'Josefin Sans', sans-serif; font-size: 16px; color: #8C8C8C; font-style: italic; margin-bottom: 60px;">Creadores independientes que dan vida a este espacio</p>
         
         <div style="display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 50px;">
@@ -498,8 +606,8 @@
                 {% for artista in artistas_destacados[:4] %}
                 <div style="flex: 0 0 260px;">
                     <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario) }}" style="text-decoration: none; color: inherit;">
-                        <div style="background: #fff; padding: 40px 25px; border-radius: 25px; border: 1px solid #ECECEC; transition: 0.3s; height: 100%; display: flex; flex-direction: column; align-items: center;">
-                            <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #1B8FA0, #8A6EA8); color: white; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; font-size: 32px; font-weight: 700; box-shadow: 0 8px 20px rgba(27, 143, 160, 0.2);">
+                        <div style="background: var(--card-bg); padding: 40px 25px; border-radius: 25px; border: 1px solid rgba(255, 255, 255, 0.05); transition: 0.3s; height: 100%; display: flex; flex-direction: column; align-items: center;">
+                            <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #1A0B3B 0%, #6D28D9 50%, #BE185D 100%); color: #FFFFFF !important; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; font-size: 32px; font-weight: 700; box-shadow: 0 8px 20px rgba(27, 143, 160, 0.2);">
                                 {{ artista.nombre[0]|upper }}
                             </div>
                             <h5 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; margin-bottom: 5px; font-size: 18px;">{{ artista.nombre }}</h5>
@@ -507,11 +615,11 @@
                             <p style="font-family: 'Josefin Sans', sans-serif; font-size: 13px; color: #696969; line-height: 1.5; margin-bottom: 25px;">{{ artista.biografia[:80] + '...' if artista.biografia else 'Creador independiente en Ágora Art' }}</p>
                             <div style="display: flex; gap: 30px; border-top: 1px solid #F5F5F5; padding-top: 20px; width: 100%; justify-content: center;">
                                 <div style="text-align: center;">
-                                    <div style="font-weight: 700; color: #191919; font-size: 16px;">{{ (range(1, 20)|random) }}</div>
+                                    <div style="font-weight: 700; color: #FFFFFF !important; font-size: 16px;">{{ (range(1, 20)|random) }}</div>
                                     <div style="font-size: 10px; color: #8C8C8C; text-transform: uppercase; font-weight: 600;">obras</div>
                                 </div>
                                 <div style="text-align: center;">
-                                    <div style="font-weight: 700; color: #191919; font-size: 16px;">{{ (range(5, 100)|random) }}</div>
+                                    <div style="font-weight: 700; color: #FFFFFF !important; font-size: 16px;">{{ (range(5, 100)|random) }}</div>
                                     <div style="font-size: 10px; color: #8C8C8C; text-transform: uppercase; font-weight: 600;">seguidores</div>
                                 </div>
                             </div>
@@ -521,18 +629,18 @@
                 {% endfor %}
             {% endif %}
         </div>
-        <a href="{{ url_for('public.artistas') }}" style="display: inline-block; padding: 12px 35px; background: white; border: 1px solid #ECECEC; border-radius: 100px; color: #1B8FA0; font-family: 'Josefin Sans', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 1px; text-decoration: none; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        <a href="{{ url_for('public.artistas') }}" style="display: inline-block; padding: 12px 35px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 100px; color: var(--accent-cyan); font-family: 'Josefin Sans', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 1px; text-decoration: none; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
             VER TODOS LOS ARTISTAS
         </a>
     </div>
 </section>
 
 <!-- ===== CTA BANNER (Antes del footer) ===== -->
-<section style="padding: 60px 0; background: white;">
+<section style="padding: 60px 0; background: var(--bg-color);">
     <div class="container">
-        <div style="background: linear-gradient(135deg, #1B2B3A 0%, #1B8FA0 50%, #8A6EA8 100%); padding: 100px 40px; border-radius: 30px; text-align: center; color: white; box-shadow: 0 20px 40px rgba(0,0,0,0.15); position: relative; overflow: hidden;">
-            <h2 style="font-family: 'Josefin Sans', sans-serif; font-size: 38px; font-weight: 700; margin-bottom: 20px;">Tu arte merece un refugio propio</h2>
-            <p style="font-family: 'Josefin Sans', sans-serif; font-size: 18px; opacity: 0.9; font-style: italic; margin-bottom: 40px; max-width: 700px; margin-left: auto; margin-right: auto;">Sin algoritmos que decidan quién te ve. Sin ruido. Solo tu obra y las personas que genuinamente la valoran.</p>
+        <div style="background: linear-gradient(135deg, #1A0B3B 0%, #6D28D9 50%, #BE185D 100%); padding: 100px 40px; border-radius: 30px; text-align: center; color: #FFFFFF !important; box-shadow: 0 20px 40px rgba(0,0,0,0.15); position: relative; overflow: hidden;">
+            <h2 style="font-family: 'Josefin Sans', sans-serif; font-size: 42px; font-weight: 800; margin-bottom: 24px; text-shadow: 0 4px 15px rgba(0,0,0,0.4);">Tu arte merece un refugio propio</h2>
+            <p style="font-family: 'Josefin Sans', sans-serif; font-size: 20px; opacity: 1; font-weight: 500; letter-spacing: 0.5px; color: #FFFFFF; margin-bottom: 40px; max-width: 700px; margin-left: auto; margin-right: auto;">Sin algoritmos que decidan quién te ve. Sin ruido. Solo tu obra y las personas que genuinamente la valoran.</p>
             <a href="{{ url_for('public.explorar') }}" style="display: inline-flex; align-items: center; gap: 10px; background: white; color: #1B2B3A; padding: 15px 35px; border-radius: 100px; text-decoration: none; font-family: 'Josefin Sans', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 1px; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
                 <i class="fas fa-compass"></i>
                 EXPLORAR OBRAS
@@ -540,6 +648,16 @@
         </div>
     </div>
 </section>
+
+
+<script>
+document.querySelectorAll('.search-type-item').forEach(item => {
+    item.addEventListener('click', function() {
+        document.querySelectorAll('.search-type-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+</script>
 
 {% endblock %}
 
@@ -550,4 +668,14 @@
         el.scrollLeft += amount;
     }
 </script>
+
+<script>
+document.querySelectorAll('.search-type-item').forEach(item => {
+    item.addEventListener('click', function() {
+        document.querySelectorAll('.search-type-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+</script>
+
 {% endblock %}

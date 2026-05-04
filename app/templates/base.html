@@ -9,11 +9,98 @@
     <link href="{{ url_for('static', filename='css/agora_art.css', v=6) }}" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+    /* === THEME VARIABLES === */
+    :root {
+        --bg-color: #0D0B21;
+        --bg-secondary: #12102B;
+        --text-color: #FFFFFF;
+        --text-muted: rgba(255, 255, 255, 0.7);
+        --accent-purple: #8B5CF6;
+        --accent-pink: #FF2D95;
+        --nav-bg: #0D0B21;
+        --border-color: rgba(255, 255, 255, 0.1);
+        --card-bg: rgba(255, 255, 255, 0.03);
+    }
+
+    [data-theme="light"] {
+        --bg-color: #FFFFFF;
+        --bg-secondary: #F8F8F8;
+        --text-color: #191919;
+        --text-muted: #696969;
+        --accent-purple: #8B5CF6; /* El púrpura queda bien en ambos */
+        --accent-pink: #FF2D95;
+        --nav-bg: #191919;
+        --border-color: #ECECEC;
+        --card-bg: #FFFFFF;
+    }
+
+    body {
+        background-color: var(--bg-color) !important;
+        color: var(--text-color);
+        transition: background-color 0.3s, color 0.3s;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+    }
+
+    /* === BEHANCE NAVBAR RE-FIX === */
+    .be-header {
+        background: var(--nav-bg);
+        border-bottom: 1px solid var(--border-color);
+        height: 56px;
+        display: flex;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        transition: background-color 0.3s;
+    }
+    
+    .theme-toggle {
+        background: rgba(255,255,255,0.1);
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.2s;
+        margin-right: 12px;
+    }
+
+    .be-logo-icon {
+        background: var(--accent-purple) !important;
+    }
+    .be-logo-text span {
+        color: var(--accent-purple) !important;
+    }
+    .be-btn-primary {
+        background: var(--accent-purple) !important;
+        border: none !important;
+        color: white !important;
+    }
+
+    /* === GLOBAL TYPOGRAPHY === */
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        color: #191919;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 700;
+    }
     /* === BEHANCE NAVBAR === */
     .be-header {
-        background: #191919;
+        background: #0D0B21; /* Indigo Cosmico */
+        border-bottom: 1px solid rgba(255, 45, 149, 0.15);
         height: 56px;
         display: flex;
         align-items: center;
@@ -40,17 +127,17 @@
         flex-shrink: 0;
     }
     .be-logo-icon {
-        width: 28px; height: 28px;
-        background: #1769FF;
+        width: 34px; height: 34px;
+        background: #8B5CF6; /* Cian Cosmico */
         border-radius: 6px;
         display: flex; align-items: center; justify-content: center;
     }
-    .be-logo-icon svg { width: 14px; height: 14px; fill: white; }
+    .be-logo-icon svg { width: 34px; height: 34px; fill: white; }
     .be-logo-text {
         font-weight: 700; font-size: 15px; color: white;
         letter-spacing: -0.01em;
     }
-    .be-logo-text span { color: #1769FF; }
+    .be-logo-text span { color: #8B5CF6; }
 
     /* Nav links en la barra negra */
     .be-nav {
@@ -204,7 +291,38 @@
         .be-search { max-width: 180px; }
         .be-header-inner { gap: 12px; }
     }
-    </style>
+    
+    .be-btn-purple {
+        background: #8B5CF6 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 100px;
+        padding: 8px 20px;
+        font-weight: 700;
+        font-size: 14px;
+        text-decoration: none;
+        transition: 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .be-btn-purple:hover {
+        background: #7C3AED !important;
+        color: white !important;
+        transform: translateY(-1px);
+    }
+
+
+    .be-footer-logo span { color: #8B5CF6 !important; }
+
+
+    footer .be-logo-text span, 
+    .be-footer-logo span,
+    #footer-art {
+        color: #8B5CF6 !important;
+    }
+
+</style>
 
     {% block head %}{% endblock %}
 </head>
@@ -215,11 +333,30 @@
     <div class="be-header-inner">
         <!-- Logo -->
         <a href="{{ url_for('public.home') }}" class="be-logo">
-            <div class="be-logo-icon">
-                <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 2 L17 17 H13.5 L12 13.5 H8 L6.5 17 H3 Z M10 6.5 L9 10.5 H11 Z" fill="white"/>
-                </svg>
-            </div>
+            
+        
+        
+        <div class="be-logo-icon">
+            <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+                <!-- Haz de luz abduciendo (Forma de A, con margen) -->
+                <path d="M20 10 L8 34 L32 34 Z" fill="white" opacity="0.35" />
+                
+                <!-- Forma amorfa abducida (El travesaño de la A) -->
+                <path d="M17 24 C17 22 23 22 23 24 C23 26 19 28 17 26 Z" fill="white" opacity="0.8" />
+                
+                <!-- Nave Espacial (Centrada superior) -->
+                <ellipse cx="20" cy="10" rx="12" ry="4.5" fill="#8B5CF6" />
+                <path d="M14 10 C14 5 26 5 26 10" fill="white" opacity="0.9" />
+                
+                <!-- Luces de la nave -->
+                <circle cx="14" cy="10" r="1" fill="white" />
+                <circle cx="20" cy="12" r="1" fill="white" />
+                <circle cx="26" cy="10" r="1" fill="white" />
+            </svg>
+        </div>
+
+
+
             <span class="be-logo-text">Ágora <span>Art</span></span>
         </a>
 
@@ -240,6 +377,7 @@
 
         <!-- Actions -->
         <div class="be-actions">
+            <button class="theme-toggle" id="theme-switcher" title="Cambiar tema"><i class="fas fa-moon"></i></button>
             {% if current_user.is_authenticated %}
                 {% if current_user.is_cliente() %}
                 <a href="{{ url_for('cliente.carrito') }}" class="be-btn-ghost"><i class="fas fa-bag-shopping"></i></a>
@@ -268,7 +406,7 @@
                 </div>
             {% else %}
                 <a href="{{ url_for('auth.login') }}" class="be-btn-ghost">Entrar</a>
-                <a href="{{ url_for('auth.register') }}" class="be-btn-blue">Únete</a>
+                <a href="{{ url_for('auth.register') }}" class="be-btn-purple">Únete</a>
             {% endif %}
         </div>
     </div>
@@ -297,7 +435,7 @@
     <div class="container">
         <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px;margin-bottom:24px;">
             <div>
-                <div class="footer-brand">Ágora <span>Art</span></div>
+                <div class="footer-brand">Ágora <span style="color: #8B5CF6 !important;">Art</span></div>
                 <p class="footer-tagline">El refugio donde el arte encuentra su espacio.</p>
             </div>
             <div>
@@ -315,7 +453,7 @@
             </div>
         </div>
         <hr class="footer-divider">
-        <p class="footer-bottom">© 2025 Ágora Art. Hecho para la comunidad creativa.</p>
+        <p class="footer-bottom">© 2026 Ágora <span>Art</span>. Hecho para la comunidad creativa.</p>
     </div>
 </footer>
 
@@ -334,5 +472,25 @@ document.addEventListener('click', function(e) {
 });
 </script>
 {% block scripts %}{% endblock %}
+<script>
+const themeSwitcher = document.getElementById('theme-switcher');
+const currentTheme = localStorage.getItem('theme') || 'dark';
+if (currentTheme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    themeSwitcher.innerHTML = '<i class="fas fa-sun"></i>';
+}
+themeSwitcher.addEventListener('click', () => {
+    let theme = document.documentElement.getAttribute('data-theme');
+    if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        themeSwitcher.innerHTML = '<i class="fas fa-moon"></i>';
+    } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+        themeSwitcher.innerHTML = '<i class="fas fa-sun"></i>';
+    }
+});
+</script>
 </body>
 </html>
