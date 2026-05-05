@@ -503,24 +503,24 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="arrow-pro arrow-left" onclick="scrollCats(-200)"><i class="fas fa-chevron-left"></i></div>
             
             <div class="category-list-pro" id="cat-scroll">
-                {% set cat_placeholders = [
-                    'https://images.unsplash.com/photo-1549490349-8643362247b5?w=300',
-                    'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=300',
-                    'https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=300',
-                    'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=300',
-                    'https://images.unsplash.com/photo-1460661419201-fd4ce186860d?w=300',
-                    'https://images.unsplash.com/photo-1459908276235-d436e447a2a6?w=300'
-                ] %}
+                {% set cat_images = {
+                    'Pintura': url_for('static', filename='img/categorias/cat_pintura.png'),
+                    'Escultura': url_for('static', filename='img/categorias/cat_escultura.png'),
+                    'Fotografía': url_for('static', filename='img/categorias/cat_fotografia.png'),
+                    'Arte Digital': url_for('static', filename='img/categorias/cat_arte_digital.png'),
+                    'Arte Urbano': url_for('static', filename='img/categorias/cat_arte_urbano.png')
+                } %}
+                {% set fallback_img = url_for('static', filename='img/categorias/cat_arte_digital.png') %}
                 
                 <!-- For You Item -->
                 <a href="#" class="category-btn-pro">
-                    <div class="cat-img-bg" style="background-image: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=300')"></div>
+                    <div class="cat-img-bg" style="background-image: url('{{ fallback_img }}')"></div>
                     <span class="cat-name-pro">Para ti</span>
                 </a>
 
                 {% for cat in categorias %}
                 <a href="{{ url_for('public.obras_categoria', categoria_id=cat.id_categoria) }}" class="category-btn-pro">
-                    <div class="cat-img-bg" style="background-image: url('{{ cat_placeholders[loop.index0 % cat_placeholders|length] }}')"></div>
+                    <div class="cat-img-bg" style="background-image: url('{{ cat_images.get(cat.nombre, cat_images.values()|list|random) }}')"></div>
                     <span class="cat-name-pro">{{ cat.nombre }}</span>
                 </a>
                 {% endfor %}
