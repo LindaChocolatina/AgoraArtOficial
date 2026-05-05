@@ -19,11 +19,17 @@ def home():
     # Obtener datos para la página de inicio
     obras_recientes = obra_service.get_all(limit=24)
     categorias = categoria_service.get_all()
+    
+    # Filtrar solo 4 categorías destacadas (Artes plásticas/físicas) para el menú visual
+    nombres_destacados = ['Pintura', 'Escultura', 'Fotografía', 'Arte Urbano']
+    categorias_destacadas = [c for c in categorias if c.nombre in nombres_destacados]
+    
     artistas_destacados = usuario_service.get_artistas_activos(limit=10)
 
     return render_template('public/home.html', 
                          obras_recientes=obras_recientes,
                          categorias=categorias,
+                         categorias_destacadas=categorias_destacadas,
                          artistas_destacados=artistas_destacados)
 
 @public_bp.route('/explorar')

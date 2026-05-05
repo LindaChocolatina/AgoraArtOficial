@@ -510,20 +510,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Arte Digital': url_for('static', filename='img/categorias/cat_arte_digital.png'),
                     'Arte Urbano': url_for('static', filename='img/categorias/cat_arte_urbano.png')
                 } %}
-                {% set fallback_img = url_for('static', filename='img/categorias/cat_arte_digital.png') %}
                 
                 <!-- For You Item -->
                 <a href="#" class="category-btn-pro">
-                    <div class="cat-img-bg" style="background-image: url('{{ fallback_img }}')"></div>
+                    <div class="cat-img-bg" style="background-image: url('{{ url_for('static', filename='img/categorias/cat_arte_digital.png') }}')"></div>
                     <span class="cat-name-pro">Para ti</span>
                 </a>
 
-                {% for cat in categorias %}
+                {% for cat in categorias_destacadas %}
                 <a href="{{ url_for('public.obras_categoria', categoria_id=cat.id_categoria) }}" class="category-btn-pro">
-                    <div class="cat-img-bg" style="background-image: url('{{ cat_images.get(cat.nombre, cat_images.values()|list|random) }}')"></div>
+                    <div class="cat-img-bg" style="background-image: url('{{ cat_images.get(cat.nombre) }}')"></div>
                     <span class="cat-name-pro">{{ cat.nombre }}</span>
                 </a>
                 {% endfor %}
+                
+                <!-- View All Link -->
+                <a href="{{ url_for('public.categorias') }}" class="category-btn-pro d-flex align-items-center justify-content-center" style="background: var(--bg-secondary); border: 2px dashed #8B5CF6;">
+                    <span class="cat-name-pro text-center" style="color: #8B5CF6; font-weight: 700; font-size: 0.9rem;">Ver todas →</span>
+                </a>
             </div>
 
             <div class="arrow-pro arrow-right" onclick="scrollCats(200)"><i class="fas fa-chevron-right"></i></div>
