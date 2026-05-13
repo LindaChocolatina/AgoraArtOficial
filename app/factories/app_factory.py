@@ -33,6 +33,10 @@ def create_app(config_name='default'):
     
     # Inicializar extensiones
     db.init_app(app)
+    
+    # Import models so Alembic can detect them
+    import app.models as _models
+    
     bcrypt.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)

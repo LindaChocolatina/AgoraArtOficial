@@ -8,3 +8,9 @@ venv/
 *.sqlite3
 .DS_Store
 crear_admins.py
+.env
+scratch/
+test_conn.py
+test_query.py
+check_db.py
+check_port.py

@@ -43,9 +43,7 @@ class DevelopmentConfig(Config):
     """Configuración para desarrollo"""
     DEBUG = True
     SQLALCHEMY_ECHO = True
-    basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'art_platform_dev.db')
+    # Uses SQLALCHEMY_DATABASE_URI from base Config (DATABASE_URL)
 
 class TestingConfig(Config):
     """Configuración para pruebas"""

@@ -38,6 +38,11 @@ class DatabaseFactory:
                     'poolclass': StaticPool,
                     'connect_args': {'check_same_thread': False}
                 })
+            else:
+                engine_kwargs.update({
+                    'pool_size': 5,
+                    'max_overflow': 10,
+                })
             
             cls._engine = create_engine(database_url, **engine_kwargs)
         
