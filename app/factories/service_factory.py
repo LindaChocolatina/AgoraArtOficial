@@ -97,13 +97,7 @@ class ServiceFactory:
         """Obtener servicio de blog"""
         if 'blog' not in self._services:
             from app.services.blog_service import BlogService
-            from app.factories.db_factory import RepositoryFactory
-            
-            # Se necesitarán repositorios específicos para blog
-            from app.repositories.usuario_repository import UsuarioRepository
-            
-            user_repo = UsuarioRepository(self.session)
-            self._services['blog'] = BlogService(user_repo)
+            self._services['blog'] = BlogService()
         
         return self._services['blog']
     

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 from app.factories.app_factory import create_app
 

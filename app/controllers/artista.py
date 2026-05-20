@@ -28,6 +28,7 @@ def dashboard():
     producto_service = service_factory.get_producto_service()
     usuario_service = service_factory.get_usuario_service()
     categoria_service = service_factory.get_categoria_service()
+    blog_service = service_factory.get_blog_service()
     
     # Obtener estadísticas del artista
     stats = {
@@ -35,6 +36,7 @@ def dashboard():
         'productos_count': producto_service.get_count_by_artista(current_user.id_usuario),
         'seguidores_count': usuario_service.get_seguidores_count(current_user.id_usuario),
         'siguiendo_count': usuario_service.get_siguiendo_count(current_user.id_usuario),
+        'blog_count': blog_service.get_count_by_artista(current_user.id_usuario),
         'vistas_proyectos': 1250, # Placeholder para MVP
         'valoraciones': 84
     }
@@ -48,9 +50,8 @@ def dashboard():
     # Obtener productos (Tienda)
     productos = producto_service.get_by_artista(current_user.id_usuario, disponibles_only=False)
     
-    # Obtener entradas de blog
-    # entradas_blog = blog_service.get_by_artista(current_user.id_usuario) 
-    entradas_blog = [] # Placeholder
+    # Obtener entradas de blog reales
+    entradas_blog = blog_service.get_by_artista(current_user.id_usuario)
     
     return render_template('artista/dashboard.html',
                          stats=stats,
@@ -272,7 +273,142 @@ def blog():
     """
     Blog del artista
     """
-    return render_template('artista/blog.html')
+    service_factory = get_service_factory()
+    blog_service = service_factory.get_blog_service()
+    entradas = blog_service.get_by_artista(current_user.id_usuario)
+    return render_template('artista/blog.html', entradas=entradas)
+
+@artista_bp.route('/blog/nueva', methods=['GET', 'POST'])
+@login_required
+@requiere_artista
+def nueva_entrada():
+    """Crear nueva entrada de blog"""
+    if request.method == 'POST':
+        data = {
+            'id_artista': current_user.id_usuario,
+            'titulo': request.form.get('titulo'),
+            'contenido': request.form.get('contenido'),
+            'visible': 'publicado' in request.form
+        }
+        service_factory = get_service_factory()
+        blog_service = service_factory.get_blog_service()
+        exitoso, entrada = blog_service.crear_entrada(data)
+        if exitoso:
+            flash('Entrada de blog creada correctamente', 'success')
+            return redirect(url_for('artista.blog'))
+        else:
+            flash('Error al crear la entrada. Verifica los campos.', 'error')
+    return render_template('artista/nueva_entrada.html')
+
+@artista_bp.route('/blog/<int:entrada_id>/editar', methods=['GET', 'POST'])
+@login_required
+@requiere_artista
+def editar_entrada(entrada_id):
+    """Editar entrada de blog"""
+    service_factory = get_service_factory()
+    blog_service = service_factory.get_blog_service()
+    entrada = blog_service.get_by_id(entrada_id)
+    if not entrada or entrada.id_artista != current_user.id_usuario:
+        flash('Entrada no encontrada o no tienes permisos', 'error')
+        return redirect(url_for('artista.blog'))
+    if request.method == 'POST':
+        data = {
+            'titulo': request.form.get('titulo'),
+            'contenido': request.form.get('contenido'),
+            'visible': 'publicado' in request.form
+        }
+        exitoso, entrada_act = blog_service.actualizar_entrada(entrada_id, data)
+        if exitoso:
+            flash('Entrada actualizada correctamente', 'success')
+            return redirect(url_for('artista.blog'))
+        else:
+            flash('Error al actualizar la entrada', 'error')
+    return render_template('artista/editar_entrada.html', entrada=entrada)
+
+@artista_bp.route('/blog/<int:entrada_id>/eliminar', methods=['POST'])
+@login_required
+@requiere_artista
+def eliminar_entrada(entrada_id):
+    """Eliminar entrada de blog"""
+    service_factory = get_service_factory()
+    blog_service = service_factory.get_blog_service()
+    entrada = blog_service.get_by_id(entrada_id)
+    if not entrada or entrada.id_artista != current_user.id_usuario:
+        flash('Entrada no encontrada o no tienes permisos', 'error')
+        return redirect(url_for('artista.blog'))
+    if blog_service.eliminar_entrada(entrada_id):
+        flash('Entrada eliminada correctamente', 'success')
+    else:
+        flash('Error al eliminar la entrada', 'error')
+    return redirect(url_for('artista.blog'))
+
+@artista_bp.route('/productos/nuevo', methods=['GET', 'POST'])
+@login_required
+@requiere_artista
+def nuevo_producto():
+    """Crear nuevo producto"""
+    if request.method == 'POST':
+        data = {
+            'id_artista': current_user.id_usuario,
+            'nombre': request.form.get('nombre'),
+            'descripcion': request.form.get('descripcion', ''),
+            'precio': float(request.form.get('precio', 0)),
+            'stock': int(request.form.get('stock', 1)),
+            'imagen': request.form.get('imagen', '')
+        }
+        service_factory = get_service_factory()
+        producto_service = service_factory.get_producto_service()
+        exitoso, producto = producto_service.crear_producto(data)
+        if exitoso:
+            flash('Producto creado correctamente', 'success')
+            return redirect(url_for('artista.productos'))
+        else:
+            flash('Error al crear el producto. Verifica los campos.', 'error')
+    return render_template('artista/nuevo_producto.html')
+
+@artista_bp.route('/productos/<int:producto_id>/editar', methods=['GET', 'POST'])
+@login_required
+@requiere_artista
+def editar_producto(producto_id):
+    """Editar producto existente"""
+    service_factory = get_service_factory()
+    producto_service = service_factory.get_producto_service()
+    producto = producto_service.get_by_id(producto_id)
+    if not producto or producto.id_artista != current_user.id_usuario:
+        flash('Producto no encontrado o no tienes permisos', 'error')
+        return redirect(url_for('artista.productos'))
+    if request.method == 'POST':
+        data = {
+            'nombre': request.form.get('nombre'),
+            'descripcion': request.form.get('descripcion', ''),
+            'precio': float(request.form.get('precio', 0)),
+            'stock': int(request.form.get('stock', 0)),
+            'imagen': request.form.get('imagen', '')
+        }
+        exitoso, producto_act = producto_service.actualizar_producto(producto_id, data)
+        if exitoso:
+            flash('Producto actualizado correctamente', 'success')
+            return redirect(url_for('artista.productos'))
+        else:
+            flash('Error al actualizar el producto', 'error')
+    return render_template('artista/editar_producto.html', producto=producto)
+
+@artista_bp.route('/productos/<int:producto_id>/eliminar', methods=['POST'])
+@login_required
+@requiere_artista
+def eliminar_producto(producto_id):
+    """Eliminar producto"""
+    service_factory = get_service_factory()
+    producto_service = service_factory.get_producto_service()
+    producto = producto_service.get_by_id(producto_id)
+    if not producto or producto.id_artista != current_user.id_usuario:
+        flash('Producto no encontrado o no tienes permisos', 'error')
+        return redirect(url_for('artista.productos'))
+    if producto_service.eliminar_producto(producto_id):
+        flash('Producto eliminado correctamente', 'success')
+    else:
+        flash('Error al eliminar el producto', 'error')
+    return redirect(url_for('artista.productos'))
 
 # API endpoints
 @artista_bp.route('/api/toggle-visibilidad-obra', methods=['POST'])

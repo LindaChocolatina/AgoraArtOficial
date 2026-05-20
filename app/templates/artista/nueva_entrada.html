@@ -1,40 +1,23 @@
 {% extends "base.html" %}
-
-{% block title %}Nueva Entrada de Blog - WindMills Art{% endblock %}
-
+{% block title %}Nueva Entrada{% endblock %}
 {% block content %}
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white pt-3 pb-2 border-bottom-0">
-                    <h3 class="mb-0">Crear Nueva Entrada</h3>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('artista.nueva_entrada') }}">
-                        <div class="mb-4">
-                            <label for="titulo" class="form-label">Título *</label>
-                            <input type="text" class="form-control form-control-lg" id="titulo" name="titulo" required placeholder="Ingresa el título de tu artículo">
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="contenido" class="form-label">Contenido *</label>
-                            <textarea class="form-control" id="contenido" name="contenido" rows="15" required placeholder="Escribe aquí el contenido de tu publicación..."></textarea>
-                        </div>
-                        
-                        <div class="mb-4 form-check">
-                            <input type="checkbox" class="form-check-input" id="publicado" name="publicado" checked>
-                            <label class="form-check-label" for="publicado">Publicar inmediatamente</label>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between mt-5">
-                            <a href="{{ url_for('artista.blog') }}" class="btn btn-outline-secondary">Cancelar</a>
-                            <button type="submit" class="btn btn-primary px-5">Guardar Entrada</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+<div class="container mt-5">
+  <h2>Crear Nueva Entrada de Blog</h2>
+  <form method="post" action="{{ url_for('artista.nueva_entrada') }}">
+    <div class="mb-3">
+      <label class="form-label">Título</label>
+      <input type="text" name="titulo" class="form-control" required />
     </div>
+    <div class="mb-3">
+      <label class="form-label">Contenido</label>
+      <textarea name="contenido" class="form-control" rows="6" required></textarea>
+    </div>
+    <div class="form-check mb-3">
+      <input class="form-check-input" type="checkbox" name="publicado" id="publicado">
+      <label class="form-check-label" for="publicado">Publicar</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Crear Entrada</button>
+    <a href="{{ url_for('artista.blog') }}" class="btn btn-secondary ms-2">Cancelar</a>
+  </form>
 </div>
 {% endblock %}
