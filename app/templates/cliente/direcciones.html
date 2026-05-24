@@ -22,8 +22,8 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h5 class="card-title">{{ direccion.nombre_receptor }}</h5>
-                                {% if direccion.es_principal %}
-                                    <span class="badge bg-primary">Principal</span>
+                                {% if direccion.tiene_ordenes_asociadas() %}
+                                    <span class="badge bg-secondary" title="Usada en compras anteriores">En uso</span>
                                 {% endif %}
                             </div>
                             <p class="card-text text-muted mb-1">
@@ -40,12 +40,25 @@
                             </p>
                         </div>
                         <div class="card-footer bg-white border-top-0 pt-0">
-                            <button class="btn btn-sm btn-outline-secondary me-2">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
+                            {% if direccion.tiene_ordenes_asociadas() %}
+                                <p class="small text-muted mb-0">
+                                    <i class="fas fa-lock me-1"></i> No se puede editar ni eliminar: usada en una compra.
+                                </p>
+                            {% else %}
+                                <a href="{{ url_for('cliente.editar_direccion', direccion_id=direccion.id_direccion) }}"
+                                   class="btn btn-sm btn-outline-secondary me-2">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <form method="POST"
+                                      action="{{ url_for('cliente.eliminar_direccion', direccion_id=direccion.id_direccion) }}"
+                                      class="d-inline"
+                                      onsubmit="return confirm('¿Eliminar esta dirección?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </form>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

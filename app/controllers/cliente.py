@@ -18,6 +18,52 @@ def requiere_cliente(f):
 
 from app.factories.app_factory import db
 
+
+def _validar_campos_direccion(data):
+    """Validar campos obligatorios de una dirección de envío."""
+    errores = []
+    for campo in ('nombre_receptor', 'direccion', 'ciudad', 'pais'):
+        if not (data.get(campo) or '').strip():
+            errores.append(f'El campo {campo} es obligatorio')
+    return errores
+
+
+def _resolver_direccion_checkout(direccion_service, usuario_id, form):
+    """
+    Obtener id_direccion desde selección o crear una nueva.
+    Retorna (id_direccion, error_mensaje).
+    """
+    direccion_id = form.get('id_direccion', '').strip()
+
+    if direccion_id:
+        try:
+            direccion_id = int(direccion_id)
+        except (TypeError, ValueError):
+            return None, 'La dirección seleccionada no es válida'
+
+        direccion = direccion_service.get_by_id_for_usuario(direccion_id, usuario_id)
+        if not direccion:
+            return None, 'La dirección seleccionada no te pertenece'
+        return direccion_id, None
+
+    nueva_dir_data = {
+        'id_usuario': usuario_id,
+        'nombre_receptor': form.get('nombre_receptor'),
+        'direccion': form.get('direccion'),
+        'ciudad': form.get('ciudad'),
+        'pais': form.get('pais'),
+        'codigo_postal': form.get('codigo_postal'),
+        'telefono': form.get('telefono'),
+    }
+    errores = _validar_campos_direccion(nueva_dir_data)
+    if errores:
+        return None, errores[0]
+
+    exito_dir, nueva_dir = direccion_service.agregar_direccion(nueva_dir_data)
+    if exito_dir:
+        return nueva_dir.id_direccion, None
+    return None, 'Error al guardar la dirección de envío'
+
 @cliente_bp.route('/dashboard')
 @login_required
 @requiere_cliente
@@ -251,29 +297,90 @@ def nueva_direccion():
             'telefono': request.form.get('telefono')
         }
         
-        # Validar datos
-        errores = []
-        campos_obligatorios = ['nombre_receptor', 'direccion', 'ciudad', 'pais']
-        
-        for campo in campos_obligatorios:
-            if not data.get(campo, '').strip():
-                errores.append(f'El campo {campo} es obligatorio')
-        
+        errores = _validar_campos_direccion(data)
+
         if not errores:
             service_factory = get_service_factory()
             direccion_service = service_factory.get_direccion_service()
             exito, direccion = direccion_service.agregar_direccion(data)
-            
+
             if exito:
                 flash('Dirección agregada correctamente', 'success')
+                if request.args.get('next') == 'checkout':
+                    return redirect(url_for('cliente.checkout'))
                 return redirect(url_for('cliente.direcciones'))
-            else:
-                flash('Error al agregar la dirección', 'error')
+            flash('Error al agregar la dirección', 'error')
         else:
             for error in errores:
                 flash(error, 'error')
-    
-    return render_template('cliente/nueva_direccion.html')
+
+    return render_template('cliente/nueva_direccion.html', volver_checkout=request.args.get('next') == 'checkout')
+
+
+@cliente_bp.route('/direcciones/<int:direccion_id>/editar', methods=['GET', 'POST'])
+@login_required
+@requiere_cliente
+def editar_direccion(direccion_id):
+    """Editar una dirección de envío (no permitido si tiene órdenes)"""
+    service_factory = get_service_factory()
+    direccion_service = service_factory.get_direccion_service()
+    direccion = direccion_service.get_by_id_for_usuario(direccion_id, current_user.id_usuario)
+
+    if not direccion:
+        flash('Dirección no encontrada', 'error')
+        return redirect(url_for('cliente.direcciones'))
+
+    if direccion.tiene_ordenes_asociadas():
+        flash('No puedes editar una dirección usada en una compra anterior', 'error')
+        return redirect(url_for('cliente.direcciones'))
+
+    if request.method == 'POST':
+        data = {
+            'nombre_receptor': request.form.get('nombre_receptor'),
+            'direccion': request.form.get('direccion'),
+            'ciudad': request.form.get('ciudad'),
+            'pais': request.form.get('pais'),
+            'codigo_postal': request.form.get('codigo_postal'),
+            'telefono': request.form.get('telefono'),
+        }
+        errores = _validar_campos_direccion(data)
+        if errores:
+            for error in errores:
+                flash(error, 'error')
+        else:
+            exito, _, motivo = direccion_service.actualizar_direccion(
+                direccion_id, current_user.id_usuario, data
+            )
+            if exito:
+                flash('Dirección actualizada correctamente', 'success')
+                return redirect(url_for('cliente.direcciones'))
+            if motivo == 'tiene_ordenes':
+                flash('No puedes editar una dirección usada en una compra anterior', 'error')
+            else:
+                flash('Error al actualizar la dirección', 'error')
+
+    return render_template('cliente/editar_direccion.html', direccion=direccion)
+
+
+@cliente_bp.route('/direcciones/<int:direccion_id>/eliminar', methods=['POST'])
+@login_required
+@requiere_cliente
+def eliminar_direccion(direccion_id):
+    """Eliminar una dirección sin órdenes asociadas"""
+    service_factory = get_service_factory()
+    direccion_service = service_factory.get_direccion_service()
+    exito, motivo = direccion_service.eliminar_direccion(direccion_id, current_user.id_usuario)
+
+    if exito:
+        flash('Dirección eliminada correctamente', 'success')
+    elif motivo == 'tiene_ordenes':
+        flash('No puedes eliminar una dirección usada en una compra anterior', 'error')
+    elif motivo == 'no_encontrada':
+        flash('Dirección no encontrada', 'error')
+    else:
+        flash('Error al eliminar la dirección', 'error')
+
+    return redirect(url_for('cliente.direcciones'))
 
 @cliente_bp.route('/ordenes')
 @login_required
@@ -291,6 +398,31 @@ def ordenes():
         print(f"Error al cargar órdenes: {e}")
         flash('Error al cargar tus órdenes', 'error')
         return redirect(url_for('cliente.dashboard'))
+
+@cliente_bp.route('/carrito/agregar/<int:producto_id>', methods=['POST'])
+@login_required
+@requiere_cliente
+def agregar_al_carrito(producto_id):
+    """Agregar un producto al carrito desde el marketplace (formulario HTML)."""
+    service_factory = get_service_factory()
+    producto_service = service_factory.get_producto_service()
+    carrito_service = service_factory.get_carrito_service()
+
+    producto = producto_service.get_by_id(producto_id)
+    if not producto or not producto.is_disponible():
+        flash('Este producto no está disponible', 'error')
+        return redirect(request.referrer or url_for('public.productos'))
+
+    cantidad = request.form.get('cantidad', 1, type=int)
+    if cantidad < 1:
+        cantidad = 1
+
+    carrito_service.agregar_producto(producto_id, cantidad)
+    flash(f'"{producto.nombre}" se agregó al carrito', 'success')
+
+    destino = request.form.get('next') or request.referrer or url_for('cliente.carrito')
+    return redirect(destino)
+
 
 @cliente_bp.route('/carrito')
 @login_required
@@ -354,11 +486,17 @@ def checkout():
     if count == 0:
         flash('Tu carrito está vacío', 'error')
         return redirect(url_for('cliente.carrito'))
-        
-    # Obtener direcciones del usuario (simulado para el MVP)
-    direcciones = []
-    
-    return render_template('cliente/checkout.html', items=items, total=total, count=count, direcciones=direcciones)
+
+    direccion_service = service_factory.get_direccion_service()
+    direcciones = direccion_service.get_by_usuario(current_user.id_usuario)
+
+    return render_template(
+        'cliente/checkout.html',
+        items=items,
+        total=total,
+        count=count,
+        direcciones=direcciones,
+    )
 
 @cliente_bp.route('/checkout/procesar', methods=['POST'])
 @login_required
@@ -379,32 +517,13 @@ def procesar_checkout():
         return redirect(url_for('cliente.carrito'))
         
     # 2. Obtener o crear dirección de envío
-    direccion_id = request.form.get('id_direccion')
-    
-    if not direccion_id:
-        # Intentar crear nueva dirección con los datos del formulario
-        nueva_dir_data = {
-            'id_usuario': current_user.id_usuario,
-            'nombre_receptor': request.form.get('nombre_receptor'),
-            'direccion': request.form.get('direccion'),
-            'ciudad': request.form.get('ciudad'),
-            'pais': request.form.get('pais'),
-            'codigo_postal': request.form.get('codigo_postal'),
-            'telefono': request.form.get('telefono')
-        }
-        
-        # Validación mínima para nueva dirección
-        if not nueva_dir_data['direccion'] or not nueva_dir_data['ciudad']:
-            flash('Por favor selecciona una dirección o completa los datos de envío', 'error')
-            return redirect(url_for('cliente.checkout'))
-            
-        exito_dir, nueva_dir = direccion_service.agregar_direccion(nueva_dir_data)
-        if exito_dir:
-            direccion_id = nueva_dir.id_direccion
-        else:
-            flash('Error al procesar la dirección de envío', 'error')
-            return redirect(url_for('cliente.checkout'))
-    
+    direccion_id, error_dir = _resolver_direccion_checkout(
+        direccion_service, current_user.id_usuario, request.form
+    )
+    if error_dir:
+        flash(error_dir, 'error')
+        return redirect(url_for('cliente.checkout'))
+
     # 3. Crear la orden real
     # Aquí se integraría la pasarela de pagos (Stripe/PayPal)
     # Si el pago es exitoso, procedemos a crear la orden en la DB

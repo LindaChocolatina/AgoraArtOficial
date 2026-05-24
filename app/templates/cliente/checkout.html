@@ -11,32 +11,41 @@
         <div class="col-md-8 mb-4">
             <div class="card shadow-sm">
                 <div class="card-body p-4">
-                    <form method="POST" action="{{ url_for('cliente.procesar_checkout') }}">
-                        
+                    <form method="POST" action="{{ url_for('cliente.procesar_checkout') }}" id="checkout-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                         <h4 class="mb-3">Información de Envío</h4>
-                        
-                        <!-- Selección de dirección (simplificado para el MVP) -->
+
+                        {% if direcciones %}
                         <div class="mb-3">
-                            <label for="direccion_existente" class="form-label">Mis Direcciones</label>
+                            <label for="direccion_existente" class="form-label fw-bold">Mis direcciones guardadas</label>
                             <select class="form-select" id="direccion_existente" name="id_direccion">
-                                {% if direcciones %}
-                                    <option value="">Seleccionar una dirección...</option>
-                                    {% for dir in direcciones %}
-                                        <option value="{{ dir.id_direccion }}">{{ dir.direccion }}, {{ dir.ciudad }}</option>
-                                    {% endfor %}
-                                {% else %}
-                                    <option value="">No tienes direcciones guardadas</option>
-                                {% endif %}
+                                <option value="">— Escribir una dirección nueva abajo —</option>
+                                {% for dir in direcciones %}
+                                    <option value="{{ dir.id_direccion }}" {% if loop.first %}selected{% endif %}>
+                                        {{ dir.nombre_receptor }} — {{ dir.direccion }}, {{ dir.ciudad }}, {{ dir.pais }}
+                                    </option>
+                                {% endfor %}
                             </select>
+                            <div class="form-text">
+                                <a href="{{ url_for('cliente.direcciones') }}">Gestionar mis direcciones</a>
+                                ·
+                                <a href="{{ url_for('cliente.nueva_direccion', next='checkout') }}">Agregar otra y volver aquí</a>
+                            </div>
                         </div>
-                        
                         <hr class="my-4">
-                        
-                        <h5 class="mb-3">O registrar nueva dirección</h5>
-                        <div class="row g-3 mb-4">
+                        <h5 class="mb-3">O registrar nueva dirección en este paso</h5>
+                        {% else %}
+                        <div class="alert alert-info py-2">
+                            Aún no tienes direcciones guardadas. Completa el formulario abajo o
+                            <a href="{{ url_for('cliente.nueva_direccion', next='checkout') }}">crea una antes de pagar</a>.
+                        </div>
+                        {% endif %}
+
+                        <div class="row g-3 mb-4" id="nueva-direccion-campos">
                             <div class="col-md-6">
                                 <label for="nombre_receptor" class="form-label">Nombre del receptor</label>
-                                <input type="text" class="form-control" id="nombre_receptor" name="nombre_receptor" value="{{ current_user.nombre }}">
+                                <input type="text" class="form-control" id="nombre_receptor" name="nombre_receptor" value="{{ current_user.nombre }}" {% if not direcciones %}required{% endif %}>
                             </div>
                             <div class="col-md-6">
                                 <label for="telefono" class="form-label">Teléfono</label>
@@ -44,15 +53,15 @@
                             </div>
                             <div class="col-12">
                                 <label for="direccion" class="form-label">Dirección Completa</label>
-                                <input type="text" class="form-control" id="direccion" name="direccion">
+                                <input type="text" class="form-control" id="direccion" name="direccion" {% if not direcciones %}required{% endif %}>
                             </div>
                             <div class="col-md-5">
                                 <label for="ciudad" class="form-label">Ciudad</label>
-                                <input type="text" class="form-control" id="ciudad" name="ciudad">
+                                <input type="text" class="form-control" id="ciudad" name="ciudad" {% if not direcciones %}required{% endif %}>
                             </div>
                             <div class="col-md-4">
                                 <label for="pais" class="form-label">País</label>
-                                <input type="text" class="form-control" id="pais" name="pais" value="México">
+                                <input type="text" class="form-control" id="pais" name="pais" value="México" {% if not direcciones %}required{% endif %}>
                             </div>
                             <div class="col-md-3">
                                 <label for="codigo_postal" class="form-label">Código Postal</label>
@@ -142,4 +151,25 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const select = document.getElementById('direccion_existente');
+    const campos = document.getElementById('nueva-direccion-campos');
+    if (!select || !campos) return;
+
+    function toggleCampos() {
+        const usarGuardada = select.value !== '';
+        campos.querySelectorAll('input').forEach(function (input) {
+            input.disabled = usarGuardada;
+            if (usarGuardada) input.removeAttribute('required');
+        });
+    }
+
+    select.addEventListener('change', toggleCampos);
+    toggleCampos();
+})();
+</script>
 {% endblock %}

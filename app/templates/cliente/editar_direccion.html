@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Nueva Dirección - Ágora Art{% endblock %}
+{% block title %}Editar Dirección - Ágora Art{% endblock %}
 
 {% block content %}
 <div class="container my-5">
@@ -8,50 +8,52 @@
         <div class="col-md-8">
             <div class="card shadow-sm border-0 rounded-4">
                 <div class="card-body p-5">
-                    <h2 class="text-center mb-4">Agregar Dirección de Envío</h2>
-                    
-                    <form method="POST" action="{{ url_for('cliente.nueva_direccion') }}">
+                    <h2 class="text-center mb-4">Editar Dirección de Envío</h2>
+
+                    <form method="POST" action="{{ url_for('cliente.editar_direccion', direccion_id=direccion.id_direccion) }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        
+
                         <div class="row g-3">
                             <div class="col-md-12">
                                 <label for="nombre_receptor" class="form-label fw-bold">Nombre Completo del Receptor</label>
-                                <input type="text" class="form-control rounded-3" id="nombre_receptor" name="nombre_receptor" required>
+                                <input type="text" class="form-control rounded-3" id="nombre_receptor" name="nombre_receptor"
+                                       value="{{ direccion.nombre_receptor }}" required>
                             </div>
-                            
+
                             <div class="col-md-12">
                                 <label for="direccion" class="form-label fw-bold">Dirección</label>
-                                <input type="text" class="form-control rounded-3" id="direccion" name="direccion" placeholder="Calle, número, apto..." required>
+                                <input type="text" class="form-control rounded-3" id="direccion" name="direccion"
+                                       value="{{ direccion.direccion }}" required>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label for="ciudad" class="form-label fw-bold">Ciudad</label>
-                                <input type="text" class="form-control rounded-3" id="ciudad" name="ciudad" required>
+                                <input type="text" class="form-control rounded-3" id="ciudad" name="ciudad"
+                                       value="{{ direccion.ciudad }}" required>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label for="pais" class="form-label fw-bold">País</label>
-                                <input type="text" class="form-control rounded-3" id="pais" name="pais" required>
+                                <input type="text" class="form-control rounded-3" id="pais" name="pais"
+                                       value="{{ direccion.pais }}" required>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label for="codigo_postal" class="form-label fw-bold">Código Postal</label>
-                                <input type="text" class="form-control rounded-3" id="codigo_postal" name="codigo_postal">
+                                <input type="text" class="form-control rounded-3" id="codigo_postal" name="codigo_postal"
+                                       value="{{ direccion.codigo_postal or '' }}">
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label for="telefono" class="form-label fw-bold">Teléfono de Contacto</label>
-                                <input type="tel" class="form-control rounded-3" id="telefono" name="telefono">
+                                <input type="tel" class="form-control rounded-3" id="telefono" name="telefono"
+                                       value="{{ direccion.telefono or '' }}">
                             </div>
                         </div>
 
                         <div class="d-grid gap-2 mt-5">
-                            <button type="submit" class="btn btn-primary btn-lg rounded-pill">Guardar Dirección</button>
-                            {% if volver_checkout %}
-                                <a href="{{ url_for('cliente.checkout') }}" class="btn btn-link text-muted">Volver al checkout</a>
-                            {% else %}
-                                <a href="{{ url_for('cliente.direcciones') }}" class="btn btn-link text-muted">Cancelar</a>
-                            {% endif %}
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill">Guardar Cambios</button>
+                            <a href="{{ url_for('cliente.direcciones') }}" class="btn btn-link text-muted">Cancelar</a>
                         </div>
                     </form>
                 </div>

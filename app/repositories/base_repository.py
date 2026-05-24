@@ -1,3 +1,4 @@
+from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from app.models.auditoria import Auditoria
@@ -19,7 +20,15 @@ class BaseRepository:
         self.model_class = model_class
         self.session = session
         self.tabla_nombre = model_class.__tablename__
-    
+        self._id_field_cache = None
+
+    @property
+    def id_field(self):
+        """Nombre de la columna PK (evita errores con tablas como 'direcciones')."""
+        if self._id_field_cache is None:
+            self._id_field_cache = sa_inspect(self.model_class).primary_key[0].key
+        return self._id_field_cache
+
     def create(self, data, usuario_id=None, registrar_auditoria=True):
         """
         Crear un nuevo registro
@@ -39,8 +48,7 @@ class BaseRepository:
             
             if registrar_auditoria:
                 try:
-                    id_field = 'id_' + self.tabla_nombre.rstrip('s')
-                    id_registro = getattr(instance, id_field, None)
+                    id_registro = getattr(instance, self.id_field, None)
                     
                     # Solo registrar auditoría si tenemos ID válido
                     if id_registro is not None:
@@ -72,9 +80,8 @@ class BaseRepository:
             Model: Instancia del modelo o None
         """
         try:
-            id_field = 'id_' + self.tabla_nombre.rstrip('s')
             return self.session.query(self.model_class).filter(
-                getattr(self.model_class, id_field) == id_value
+                getattr(self.model_class, self.id_field) == id_value
             ).first()
         except SQLAlchemyError as e:
             print(f"Error al obtener {self.model_class.__name__} por ID: {e}")
@@ -132,9 +139,8 @@ class BaseRepository:
             Model: Instancia actualizada o None si hay error
         """
         try:
-            id_field = 'id_' + self.tabla_nombre.rstrip('s')
             instance = self.session.query(self.model_class).filter(
-                getattr(self.model_class, id_field) == id_value
+                getattr(self.model_class, self.id_field) == id_value
             ).first()
             
             if instance:
@@ -180,9 +186,8 @@ class BaseRepository:
             bool: True si se eliminó correctamente, False si hay error
         """
         try:
-            id_field = 'id_' + self.tabla_nombre.rstrip('s')
             instance = self.session.query(self.model_class).filter(
-                getattr(self.model_class, id_field) == id_value
+                getattr(self.model_class, self.id_field) == id_value
             ).first()
             
             if instance:
@@ -237,9 +242,8 @@ class BaseRepository:
             bool: True si existe, False si no
         """
         try:
-            id_field = 'id_' + self.tabla_nombre.rstrip('s')
             return self.session.query(self.model_class).filter(
-                getattr(self.model_class, id_field) == id_value
+                getattr(self.model_class, self.id_field) == id_value
             ).first() is not None
         except SQLAlchemyError as e:
             print(f"Error al verificar existencia de {self.model_class.__name__}: {e}")
