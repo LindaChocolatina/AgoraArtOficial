@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Editar banner — Ágora Art{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    {% include 'artista/_panel_nav.html' %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h3 class="mb-3">Banner de tu panel</h3>
+                    <p class="text-muted">Recomendado: imagen horizontal amplia (como Behance), mínimo 1200×400 px.</p>
+
+                    {% if current_user.banner_perfil %}
+                    <div class="mb-4 rounded overflow-hidden border" style="max-height:200px;">
+                        <div id="bannerPreview" style="width:100%; height:200px; background-image: url('{{ current_user.banner_perfil }}'); background-size: cover; background-position: center {{ current_user.banner_offset or 50 }}%;"></div>
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" action="{{ url_for('artista.editar_banner') }}" enctype="multipart/form-data">
+                        {% include 'artista/_csrf.html' %}
+                        <div class="mb-4">
+                            <label for="banner" class="form-label fw-bold">Nueva imagen de banner</label>
+                            <input type="file" class="form-control" id="banner" name="banner" accept="image/*">
+                        </div>
+                        <div class="mb-3">
+                            <label for="banner_offset" class="form-label">Ajustar posición vertical</label>
+                            <input type="range" class="form-range" id="banner_offset" name="banner_offset" min="0" max="100" value="{{ current_user.banner_offset or 50 }}">
+                            <div class="form-text">Mueve el slider para ubicar mejor la imagen en el banner. Se guarda al presionar "Guardar banner".</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Guardar banner</button>
+                        <a href="{{ url_for('artista.dashboard') }}" class="btn btn-outline-secondary ms-2">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('banner_offset')?.addEventListener('input', function(e){
+    const v = e.target.value;
+    const preview = document.getElementById('bannerPreview');
+    if(preview){ preview.style.backgroundPosition = `center ${v}%`; }
+});
+
+// Preview file on select
+document.getElementById('banner')?.addEventListener('change', function(e){
+    const file = e.target.files[0];
+    const preview = document.getElementById('bannerPreview');
+    if(!file || !preview) return;
+    const reader = new FileReader();
+    reader.onload = function(ev){ preview.style.backgroundImage = `url('${ev.target.result}')`; };
+    reader.readAsDataURL(file);
+});
+</script>
+{% endblock %}

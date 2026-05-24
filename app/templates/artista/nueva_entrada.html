@@ -6,7 +6,8 @@
     <div class="row justify-content-center">
         <div class="col-md-10">
             <h2 class="mb-4">Nueva entrada de blog</h2>
-            <form method="POST" action="{{ url_for('artista.nueva_entrada') }}">
+            {% include 'artista/_panel_nav.html' %}
+            <form method="POST" action="{{ url_for('artista.nueva_entrada') }}" data-blog-upload="{{ url_for('artista.subir_imagen_blog') }}">
                 {% include 'artista/_csrf.html' %}
                 <div class="mb-3">
                     <label class="form-label">Título *</label>

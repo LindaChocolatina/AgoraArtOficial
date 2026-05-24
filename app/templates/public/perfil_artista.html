@@ -3,6 +3,9 @@
 {% block title %}{{ artista.nombre }} - WindMills Art{% endblock %}
 
 {% block content %}
+{% if artista.banner_perfil %}
+<div style="height:180px;background:url('{{ artista.banner_perfil }}') center/cover no-repeat;"></div>
+{% endif %}
 <!-- Cabecera del Artista -->
 <div class="bg-light pt-5 pb-4 mb-5 border-bottom">
     <div class="container">
@@ -48,7 +51,19 @@
     </div>
 </div>
 
-<div class="container mb-5">
+        <!-- Actividad reciente visible para clientes: debajo del banner y a la derecha de la info -->
+        <div class="container mb-4">
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- espacio para la info del artista (ya está arriba) -->
+                </div>
+                <div class="col-md-4">
+                    {% include 'artista/_actividad_reciente.html' %}
+                </div>
+            </div>
+        </div>
+
+        <div class="container mb-5">
     <!-- Tabs -->
     <ul class="nav nav-tabs mb-4 justify-content-center border-bottom-0" id="artistaTabs" role="tablist">
         <li class="nav-item" role="presentation">

@@ -128,10 +128,24 @@ def perfil_artista(artista_id):
     if current_user.is_authenticated and current_user.is_cliente():
         siguiendo = usuario_service.esta_siguiendo_artista(current_user.id_usuario, artista_id)
     
+    # Obtener última obra/entrada/producto para mostrar actividad
+    blog_service = service_factory.get_blog_service()
+    producto_service = service_factory.get_producto_service()
+
+    ultima_obra = obra_service.get_by_artista(artista_id, visible_only=True, limit=1)
+    ultima_obra = ultima_obra[0] if ultima_obra else None
+    entradas = blog_service.get_by_artista(artista_id, visible_only=True)
+    ultima_entrada = entradas[0] if entradas else None
+    productos = producto_service.get_by_artista(artista_id, disponibles_only=False, limit=1)
+    ultimo_producto = productos[0] if productos else None
+
     return render_template('public/perfil_artista.html',
                          artista=artista,
                          obras=obras,
-                         siguiendo=siguiendo)
+                         siguiendo=siguiendo,
+                         ultima_obra=ultima_obra,
+                         ultima_entrada=ultima_entrada,
+                         ultimo_producto=ultimo_producto)
 
 @public_bp.route('/obra/<int:obra_id>')
 def detalle_obra(obra_id):
@@ -156,11 +170,20 @@ def detalle_obra(obra_id):
     # Obtener obras relacionadas del mismo artista
     obras_relacionadas = obra_service.get_by_artista(obra.id_artista, visible_only=True, limit=4)
     obras_relacionadas = [o for o in obras_relacionadas if o.id_obra != obra.id_obra][:3]
-    
+
+    producto_service = service_factory.get_producto_service()
+    productos_artista = producto_service.get_by_artista(obra.id_artista, disponibles_only=False, limit=20)
+
+    from app.utils.obra_galeria import asegurar_galeria_migrada, listar_imagenes_obra
+    asegurar_galeria_migrada(obra)
+    galeria_imagenes = listar_imagenes_obra(obra)
+
     return render_template('public/detalle_obra.html',
                          obra=obra,
                          es_favorito=es_favorito,
-                         obras_relacionadas=obras_relacionadas)
+                         obras_relacionadas=obras_relacionadas,
+                         productos_artista=productos_artista,
+                         galeria_imagenes=galeria_imagenes)
 
 @public_bp.route('/categorias')
 def categorias():
@@ -296,12 +319,18 @@ def productos():
     """
     Marketplace - Listado de productos a la venta (Etsy style)
     """
-    termino = request.args.get('q', '')
-    filtro = request.args.get('filtro', '')
-    
-    # Próximamente: Obtener productos del ProductoService
-    # Por ahora renderizamos una plantilla básica con los filtros aplicados
-    
-    return render_template('public/productos.html',
-                           termino_busqueda=termino,
-                           filtro_actual=filtro)
+    termino = request.args.get('q', '').strip()
+    service_factory = get_service_factory()
+    producto_service = service_factory.get_producto_service()
+
+    if termino:
+        productos_lista = producto_service.buscar_productos(termino, limit=48)
+        productos_lista = [p for p in productos_lista if p.is_disponible()]
+    else:
+        productos_lista = producto_service.get_disponibles(limit=48)
+
+    return render_template(
+        'public/productos.html',
+        productos=productos_lista,
+        termino_busqueda=termino,
+    )

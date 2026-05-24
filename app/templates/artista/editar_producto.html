@@ -4,6 +4,7 @@
 
 {% block content %}
 <div class="container my-5">
+    {% include 'artista/_panel_nav.html' %}
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-sm border-0">
@@ -26,27 +27,28 @@
                             <textarea class="form-control" id="descripcion" name="descripcion" rows="4">{{ producto.descripcion }}</textarea>
                         </div>
                         
+                        {% with moneda_actual=producto.moneda or 'USD' %}
+                        {% include 'artista/_moneda_select.html' %}
+                        {% endwith %}
                         <div class="row g-3">
                             <div class="col-md-6 mb-3">
-                                <label for="precio" class="form-label">Precio (USD) *</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <input type="number" step="0.01" class="form-control" id="precio" name="precio" required value="{{ producto.precio }}">
-                                </div>
+                                <label for="precio" class="form-label">Precio *</label>
+                                <input type="number" step="0.01" min="0.01" class="form-control" id="precio" name="precio" required value="{{ producto.precio }}">
                             </div>
-                            
                             <div class="col-md-6 mb-3">
                                 <label for="stock" class="form-label">Stock en inventario *</label>
                                 <input type="number" class="form-control" id="stock" name="stock" min="0" required value="{{ producto.stock }}">
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="imagen_archivo" class="form-label">Nueva foto</label>
-                            <input type="file" class="form-control" id="imagen_archivo" name="imagen_archivo" accept="image/*">
+                            <label for="imagenes" class="form-label">Subir nuevas fotos</label>
+                            <input type="file" class="form-control" id="imagenes" name="imagenes" accept="image/*" multiple>
+                            <div class="form-text">Puedes seleccionar varias imágenes; la primera será la nueva principal.</div>
                         </div>
                         <div class="mb-4">
-                            <label for="imagen" class="form-label">O URL de imagen</label>
-                            <input type="url" class="form-control" id="imagen" name="imagen" value="{{ producto.imagen or '' }}">
+                            <label for="imagen" class="form-label">Ruta o URL de imagen (opcional)</label>
+                            <input type="text" class="form-control" id="imagen" name="imagen" value="{{ producto.imagen or '' }}" placeholder="/static/uploads/... o https://...">
+                            <div class="form-text">Si subes una foto nueva arriba, no hace falta cambiar este campo.</div>
                         </div>
                         
                         <div class="d-flex justify-content-between mt-4 border-top pt-4">

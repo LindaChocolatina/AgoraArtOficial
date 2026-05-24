@@ -4,6 +4,7 @@
 
 {% block content %}
 <div class="container my-5">
+    {% include 'artista/_panel_nav.html' %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Mis Productos</h2>
         <!-- Botón deshabilitado para el MVP si no está implementado el backend completo -->
@@ -40,7 +41,7 @@
                                     <h6 class="mb-0">{{ producto.nombre }}</h6>
                                 </div>
                             </td>
-                            <td>${{ producto.precio }}</td>
+                            <td>{{ producto|precio_producto }}</td>
                             <td>{{ producto.stock }}</td>
                             <td>
                                 <span class="badge {{ 'bg-success' if producto.stock > 0 else 'bg-danger' }}">

@@ -37,6 +37,8 @@ class Usuario(UserMixin, db.Model):
     rol = db.Column(db.String(20), nullable=False, default='cliente')  # admin, artista, cliente
     biografia = db.Column(db.Text)
     foto_perfil = db.Column(db.String(255))
+    banner_perfil = db.Column(db.String(255))
+    banner_offset = db.Column(db.Integer, default=50)
     fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
     estado = db.Column(db.String(20), default='activo')  # activo, bloqueado
     
@@ -97,6 +99,8 @@ class Usuario(UserMixin, db.Model):
             'rol': self.rol,
             'biografia': self.biografia,
             'foto_perfil': self.foto_perfil,
+            'banner_perfil': self.banner_perfil,
+            'banner_offset': self.banner_offset,
             'fecha_registro': self.fecha_registro.isoformat() if self.fecha_registro else None,
             'estado': self.estado
         }

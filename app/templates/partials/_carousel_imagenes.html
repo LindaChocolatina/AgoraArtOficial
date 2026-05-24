@@ -1,0 +1,35 @@
+{# Carrusel Bootstrap para galería de obra. Requiere: imagenes (lista de url o dict con url), carousel_id único #}
+{% set cid = carousel_id|default('obraCarousel') %}
+{% set slides = imagenes if imagenes else [] %}
+{% if slides %}
+<div id="{{ cid }}" class="carousel slide obra-carousel" data-bs-ride="false">
+    {% if slides|length > 1 %}
+    <div class="carousel-indicators">
+        {% for img in slides %}
+        <button type="button" data-bs-target="#{{ cid }}" data-bs-slide-to="{{ loop.index0 }}" {% if loop.first %}class="active" aria-current="true"{% endif %} aria-label="Imagen {{ loop.index }}"></button>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="carousel-inner">
+        {% for img in slides %}
+        {% set src = img.url if img.url is defined else img %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+            <img src="{{ src }}" class="d-block w-100 obra-carousel-img" alt="">
+        </div>
+        {% endfor %}
+    </div>
+    {% if slides|length > 1 %}
+    <button class="carousel-control-prev" type="button" data-bs-target="#{{ cid }}" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Anterior</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#{{ cid }}" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Siguiente</span>
+    </button>
+    {% endif %}
+</div>
+{% if slides|length > 1 %}
+<p class="text-center small text-muted mt-2 mb-0">{{ slides|length }} imágenes · usa las flechas para navegar</p>
+{% endif %}
+{% endif %}

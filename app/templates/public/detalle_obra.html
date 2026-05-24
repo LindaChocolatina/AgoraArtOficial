@@ -12,12 +12,17 @@
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 360px;gap:32px;align-items:start;">
-            <!-- Imagen -->
-            <div style="background:white;border-radius:12px;overflow:hidden;border:1px solid #ECECEC;">
-                {% if obra.imagen %}
-                <img src="{{ obra.imagen }}" alt="{{ obra.titulo }}" style="width:100%;display:block;">
+            <!-- Galería / carrusel -->
+            <div style="background:white;border-radius:12px;overflow:hidden;border:1px solid #ECECEC;padding:12px;">
+                {% if galeria_imagenes %}
+                <style>.obra-carousel .obra-carousel-img { max-height: 560px; object-fit: contain; background: #fafafa; }</style>
+                {% with imagenes=galeria_imagenes, carousel_id='detalleObraCarousel' %}
+                {% include 'partials/_carousel_imagenes.html' %}
+                {% endwith %}
+                {% elif obra.imagen %}
+                <img src="{{ obra.imagen }}" alt="{{ obra.titulo }}" style="width:100%;display:block;border-radius:8px;">
                 {% else %}
-                <div style="height:500px;display:flex;align-items:center;justify-content:center;background:#F5F5F5;">
+                <div style="height:400px;display:flex;align-items:center;justify-content:center;background:#F5F5F5;">
                     <i class="fas fa-image" style="font-size:4rem;color:#DEDEDE;"></i>
                 </div>
                 {% endif %}
@@ -62,7 +67,36 @@
                             <div><i class="fas fa-heart" style="width:16px;color:#B0B0B0;"></i> {{ obra.favoritos_count or 0 }} favoritos</div>
                         </div>
                     </div>
-                    <button class="btn btn-primary" style="width:100%;padding:10px;" disabled>Comprar (Próximamente)</button>
+                    {% if productos_artista %}
+                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#8C8C8C;margin-bottom:10px;">Comprar</div>
+                    {% for producto in productos_artista %}
+                    <div style="border:1px solid #ECECEC;border-radius:8px;padding:12px;margin-bottom:10px;">
+                        <div style="font-weight:600;font-size:14px;">{{ producto.nombre }}</div>
+                        <div style="font-size:13px;color:#4A4A4A;margin:4px 0;">{{ producto|precio_producto }} · Stock: {{ producto.stock }}</div>
+                        {% if current_user.is_authenticated and current_user.is_cliente() %}
+                            {% if producto.is_disponible() %}
+                            <form method="POST" action="{{ url_for('cliente.agregar_al_carrito', producto_id=producto.id_producto) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="next" value="{{ url_for('public.detalle_obra', obra_id=obra.id_obra) }}">
+                                <button type="submit" class="btn btn-primary btn-sm w-100 mt-1">Agregar al carrito</button>
+                            </form>
+                            {% else %}
+                            <span class="badge bg-secondary mt-1">Agotado</span>
+                            {% endif %}
+                        {% elif not current_user.is_authenticated %}
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm w-100 mt-1">Iniciar sesión para comprar</a>
+                        {% else %}
+                            <p class="small text-muted mb-0 mt-1">Solo cuentas cliente pueden comprar.</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <a href="{{ url_for('public.productos') }}" style="font-size:13px;color:#1769FF;">Ver todo el marketplace →</a>
+                    {% else %}
+                    <p style="font-size:13px;color:#6E6E6E;margin-bottom:10px;">
+                        Esta página es la <strong>exhibición</strong> de la obra. Para comprar, el artista debe publicar un <strong>producto</strong> en su tienda.
+                    </p>
+                    <a href="{{ url_for('public.productos') }}" class="btn btn-outline-primary w-100">Ir al Marketplace</a>
+                    {% endif %}
                 </div>
             </div>
         </div>

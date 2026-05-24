@@ -4,6 +4,7 @@
 
 {% block content %}
 <div class="container my-5">
+    {% include 'artista/_panel_nav.html' %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Mis Obras</h2>
         <a href="{{ url_for('artista.nueva_obra') }}" class="btn btn-primary">

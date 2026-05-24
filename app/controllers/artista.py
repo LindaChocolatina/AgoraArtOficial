@@ -3,7 +3,17 @@ from flask_login import login_required, current_user
 from app.factories.service_factory import get_service_factory
 from app.factories.app_factory import db
 from app.models.obra_imagen import ObraImagen
+from app.models.producto_imagen import ProductoImagen
 from app.utils.file_upload import save_image_file, save_multiple_images
+from app.utils.moneda import normalizar_moneda
+from app.utils.obra_galeria import (
+    asegurar_galeria_migrada,
+    agregar_imagenes_galeria,
+    eliminar_imagen_galeria,
+    establecer_portada,
+    guardar_galeria_completa,
+    listar_imagenes_obra,
+)
 from functools import wraps
 
 
@@ -23,8 +33,12 @@ def _guardar_imagenes_obra(obra_id, imagen_principal=None):
     db.session.commit()
 
 
+def _moneda_from_form():
+    return normalizar_moneda(request.form.get('moneda'))
+
+
 def _imagen_producto_desde_form():
-    """Imagen de producto: archivo subido o URL."""
+    """Imagen de producto: archivo subido o ruta/URL en texto."""
     archivo = request.files.get('imagen_archivo')
     path = save_image_file(archivo, current_app.config['UPLOAD_FOLDER'], 'productos')
     if path:
@@ -81,13 +95,57 @@ def dashboard():
     
     # Obtener entradas de blog reales
     entradas_blog = blog_service.get_by_artista(current_user.id_usuario)
+
+    ultima_obra = obras[0] if obras else None
+    ultima_entrada = entradas_blog[0] if entradas_blog else None
+    ultimo_producto = productos[0] if productos else None
     
     return render_template('artista/dashboard.html',
                          stats=stats,
                          obras=obras,
                          productos=productos,
                          entradas_blog=entradas_blog,
-                         categorias=categorias)
+                         categorias=categorias,
+                         ultima_obra=ultima_obra,
+                         ultima_entrada=ultima_entrada,
+                         ultimo_producto=ultimo_producto)
+
+@artista_bp.route('/banner', methods=['GET', 'POST'])
+@login_required
+@requiere_artista
+def editar_banner():
+    """Subir o cambiar el banner del panel del artista."""
+    service_factory = get_service_factory()
+    usuario_service = service_factory.get_usuario_service()
+
+    if request.method == 'POST':
+        path = save_image_file(
+            request.files.get('banner'),
+            current_app.config['UPLOAD_FOLDER'],
+            'banners',
+        )
+        # Banner offset (0-100)
+        try:
+            offset_val = int(request.form.get('banner_offset', 50))
+            if offset_val < 0: offset_val = 0
+            if offset_val > 100: offset_val = 100
+        except (TypeError, ValueError):
+            offset_val = 50
+        if path:
+            datos = {'banner_perfil': path, 'banner_offset': offset_val}
+            exitoso, _ = usuario_service.actualizar_usuario(
+                current_user.id_usuario,
+                datos,
+            )
+            if exitoso:
+                flash('Banner actualizado. Así lo verán en tu panel.', 'success')
+                return redirect(url_for('artista.dashboard'))
+            flash('No se pudo guardar el banner.', 'error')
+        else:
+            flash('Elige una imagen válida (JPG, PNG, WebP).', 'error')
+
+    return render_template('artista/editar_banner.html')
+
 
 @artista_bp.route('/perfil')
 @login_required
@@ -156,8 +214,6 @@ def nueva_obra():
             current_app.config['UPLOAD_FOLDER'],
             'obras',
         )
-        imagen_principal = imagenes[0] if imagenes else '/static/uploads/obra1.jpg'
-
         data = {
             'id_artista': current_user.id_usuario,
             'titulo': request.form.get('titulo'),
@@ -165,12 +221,14 @@ def nueva_obra():
             'tecnica': request.form.get('tecnica', ''),
             'id_categoria': _categoria_id_from_form(),
             'visible': request.form.get('visible') == 'on',
-            'imagen': imagen_principal,
+            'imagen': imagenes[0] if imagenes else '/static/uploads/obra1.jpg',
         }
 
         errores = []
         if not data.get('titulo', '').strip():
             errores.append('El título es obligatorio')
+        if not imagenes:
+            errores.append('Al menos una imagen es obligatoria')
 
         if not errores:
             service_factory = get_service_factory()
@@ -178,12 +236,8 @@ def nueva_obra():
             exitoso, obra_creada = obra_service.crear_obra(data)
 
             if exitoso:
-                for orden, path in enumerate(imagenes[1:], start=1):
-                    db.session.add(ObraImagen(
-                        id_obra=obra_creada.id_obra, imagen=path, orden=orden
-                    ))
-                db.session.commit()
-                flash('Obra creada correctamente', 'success')
+                guardar_galeria_completa(obra_creada.id_obra, imagenes)
+                flash(f'Proyecto publicado con {len(imagenes)} imagen(es).', 'success')
                 return redirect(url_for('artista.obras'))
             flash('Error al crear la obra', 'error')
         else:
@@ -228,8 +282,6 @@ def editar_obra(obra_id):
             current_app.config['UPLOAD_FOLDER'],
             'obras',
         )
-        if nuevas:
-            data['imagen'] = nuevas[0]
 
         errores = []
         if not data.get('titulo', '').strip():
@@ -238,10 +290,8 @@ def editar_obra(obra_id):
         if not errores:
             exitoso, obra_actualizada = obra_service.actualizar_obra(obra_id, data)
             if exitoso:
-                max_orden = db.session.query(ObraImagen).filter_by(id_obra=obra_id).count()
-                for i, path in enumerate(nuevas[1:] if nuevas else [], start=max_orden + 1):
-                    db.session.add(ObraImagen(id_obra=obra_id, imagen=path, orden=i))
-                db.session.commit()
+                if nuevas:
+                    agregar_imagenes_galeria(obra_id, nuevas)
                 flash('Obra actualizada correctamente', 'success')
                 return redirect(url_for('artista.obras'))
             flash('Error al actualizar la obra', 'error')
@@ -251,9 +301,36 @@ def editar_obra(obra_id):
 
     categoria_service = service_factory.get_categoria_service()
     categorias = categoria_service.get_all()
-    galeria = list(obra.galeria_imagenes.all()) if hasattr(obra, 'galeria_imagenes') else []
+    asegurar_galeria_migrada(obra)
+    galeria = listar_imagenes_obra(obra)
 
     return render_template('artista/editar_obra.html', obra=obra, categorias=categorias, galeria=galeria)
+
+
+@artista_bp.route('/obras/<int:obra_id>/imagen/<int:id_imagen>/eliminar', methods=['POST'])
+@login_required
+@requiere_artista
+def eliminar_imagen_obra(obra_id, id_imagen):
+    obra = get_service_factory().get_obra_service().get_by_id(obra_id)
+    if not obra or obra.id_artista != current_user.id_usuario:
+        flash('Sin permisos', 'error')
+        return redirect(url_for('artista.obras'))
+    eliminar_imagen_galeria(obra_id, id_imagen)
+    flash('Imagen eliminada', 'success')
+    return redirect(url_for('artista.editar_obra', obra_id=obra_id))
+
+
+@artista_bp.route('/obras/<int:obra_id>/imagen/<int:id_imagen>/portada', methods=['POST'])
+@login_required
+@requiere_artista
+def portada_imagen_obra(obra_id, id_imagen):
+    obra = get_service_factory().get_obra_service().get_by_id(obra_id)
+    if not obra or obra.id_artista != current_user.id_usuario:
+        flash('Sin permisos', 'error')
+        return redirect(url_for('artista.obras'))
+    if establecer_portada(obra_id, id_imagen):
+        flash('Portada actualizada', 'success')
+    return redirect(url_for('artista.editar_obra', obra_id=obra_id))
 
 @artista_bp.route('/obras/<int:obra_id>/eliminar', methods=['POST'])
 @login_required
@@ -311,6 +388,21 @@ def seguidores():
     seguidores = usuario_service.get_seguidores(current_user.id_usuario)
     
     return render_template('artista/seguidores.html', seguidores=seguidores)
+
+@artista_bp.route('/blog/subir-imagen', methods=['POST'])
+@login_required
+@requiere_artista
+def subir_imagen_blog():
+    """Subir imagen para insertar en el editor del blog (Quill)."""
+    path = save_image_file(
+        request.files.get('imagen'),
+        current_app.config['UPLOAD_FOLDER'],
+        'blog',
+    )
+    if not path:
+        return jsonify({'error': 'Archivo no válido'}), 400
+    return jsonify({'url': path})
+
 
 @artista_bp.route('/blog')
 @login_required
@@ -404,18 +496,31 @@ def nuevo_producto():
             flash('Precio y stock deben ser números válidos', 'error')
             return render_template('artista/nuevo_producto.html')
 
+        # Guardar múltiples imágenes si vienen
+        imagenes_paths = save_multiple_images(
+            request.files.getlist('imagenes'),
+            current_app.config['UPLOAD_FOLDER'],
+            'productos'
+        )
+
         data = {
             'id_artista': current_user.id_usuario,
             'nombre': request.form.get('nombre'),
             'descripcion': request.form.get('descripcion', ''),
             'precio': precio,
+            'moneda': _moneda_from_form(),
             'stock': stock,
-            'imagen': _imagen_producto_desde_form() or '',
+            'imagen': imagenes_paths[0] if imagenes_paths else (_imagen_producto_desde_form() or ''),
         }
         service_factory = get_service_factory()
         producto_service = service_factory.get_producto_service()
         exitoso, producto = producto_service.crear_producto(data, current_user.id_usuario)
         if exitoso:
+            # Si hay imágenes adicionales, guardarlas en producto_imagenes
+            if imagenes_paths:
+                for i, path in enumerate(imagenes_paths):
+                    db.session.add(ProductoImagen(id_producto=producto.id_producto, imagen=path, orden=i+1))
+                db.session.commit()
             flash('Producto creado correctamente', 'success')
             return redirect(url_for('artista.productos'))
         flash('Error al crear el producto. Verifica nombre, precio y stock.', 'error')
@@ -444,18 +549,27 @@ def editar_producto(producto_id):
             'nombre': request.form.get('nombre'),
             'descripcion': request.form.get('descripcion', ''),
             'precio': precio,
+            'moneda': _moneda_from_form(),
             'stock': stock,
         }
-        nueva_imagen = _imagen_producto_desde_form()
-        if nueva_imagen:
-            data['imagen'] = nueva_imagen
-        elif request.form.get('imagen'):
-            data['imagen'] = request.form.get('imagen').strip()
+        # Guardar nuevas imágenes subidas
+        nuevas_paths = save_multiple_images(
+            request.files.getlist('imagenes'),
+            current_app.config['UPLOAD_FOLDER'],
+            'productos'
+        )
+        if nuevas_paths:
+            data['imagen'] = nuevas_paths[0]
 
         exitoso, producto_act = producto_service.actualizar_producto(
             producto_id, data, current_user.id_usuario
         )
         if exitoso:
+            # Guardar imágenes adicionales si se subieron
+            if nuevas_paths:
+                for i, path in enumerate(nuevas_paths):
+                    db.session.add(ProductoImagen(id_producto=producto_id, imagen=path, orden=i+1))
+                db.session.commit()
             flash('Producto actualizado (stock guardado en base de datos)', 'success')
             return redirect(url_for('artista.productos'))
         flash('Error al actualizar el producto', 'error')

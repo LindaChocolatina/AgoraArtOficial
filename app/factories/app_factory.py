@@ -12,6 +12,31 @@ login_manager = LoginManager()
 migrate = Migrate()
 csrf = CSRFProtect()
 
+def _ensure_dev_schema_patches():
+    """Añade columnas/tablas nuevas en BD local sin romper datos existentes."""
+    from sqlalchemy import inspect, text
+    insp = inspect(db.engine)
+    if 'productos' in insp.get_table_names():
+        cols = {c['name'] for c in insp.get_columns('productos')}
+        if 'moneda' not in cols:
+            db.session.execute(text(
+                "ALTER TABLE productos ADD COLUMN moneda VARCHAR(3) NOT NULL DEFAULT 'USD'"
+            ))
+            db.session.commit()
+    if 'usuarios' in insp.get_table_names():
+        cols = {c['name'] for c in insp.get_columns('usuarios')}
+        if 'banner_perfil' not in cols:
+            db.session.execute(text(
+                "ALTER TABLE usuarios ADD COLUMN banner_perfil VARCHAR(255)"
+            ))
+            db.session.commit()
+        if 'banner_offset' not in cols:
+            db.session.execute(text(
+                "ALTER TABLE usuarios ADD COLUMN banner_offset INTEGER DEFAULT 50"
+            ))
+            db.session.commit()
+
+
 def create_app(config_name='default'):
     """
     Fábrica de aplicaciones Flask
@@ -39,6 +64,7 @@ def create_app(config_name='default'):
     if config_name == 'development':
         with app.app_context():
             db.create_all()
+            _ensure_dev_schema_patches()
 
     bcrypt.init_app(app)
     login_manager.init_app(app)
@@ -64,6 +90,7 @@ def create_app(config_name='default'):
     
     # Registrar filtros de plantilla
     register_template_filters(app)
+    register_template_globals(app)
     
     # Cargar usuario para Flask-Login
     @login_manager.user_loader
@@ -119,6 +146,18 @@ def register_error_handlers(app):
         from flask import render_template
         return render_template('errors/403.html'), 403
 
+def register_template_globals(app):
+    @app.template_global()
+    def imagenes_obra(obra):
+        from app.utils.obra_galeria import listar_imagenes_obra
+        return listar_imagenes_obra(obra)
+
+    @app.template_global()
+    def contar_imagenes_obra(obra):
+        from app.utils.obra_galeria import contar_imagenes_obra as contar
+        return contar(obra)
+
+
 def register_template_filters(app):
     """Registrar filtros personalizados para plantillas"""
     
@@ -129,6 +168,15 @@ def register_template_filters(app):
             return f"${value:,.2f}"
         except (ValueError, TypeError):
             return "$0.00"
+
+    @app.template_filter('precio_producto')
+    def precio_producto_filter(producto):
+        """Precio con símbolo según moneda del producto (USD, EUR, COP)."""
+        from app.utils.moneda import formatear_precio
+        if producto is None:
+            return ''
+        moneda = getattr(producto, 'moneda', None) or 'USD'
+        return formatear_precio(producto.precio, moneda)
     
     @app.template_filter('date')
     def date_filter(value, format='%d/%m/%Y'):

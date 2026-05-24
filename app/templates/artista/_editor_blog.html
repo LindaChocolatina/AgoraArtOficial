@@ -1,4 +1,10 @@
 <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+<style>
+  #editor-contenido .ql-editor img { max-width: 100%; height: auto; }
+  #editor-contenido .ql-editor .ql-align-center { text-align: center; }
+  #editor-contenido .ql-editor .ql-align-right { text-align: right; }
+  #editor-contenido .ql-editor .ql-align-center img { display: inline-block; margin: 0 auto; }
+</style>
 <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
 <script>
 (function () {
@@ -6,26 +12,64 @@
   const inputEl = document.getElementById('contenido-input');
   if (!editorEl || !inputEl) return;
 
-  const quill = new Quill('#editor-contenido', {
-    theme: 'snow',
-    modules: {
-      toolbar: [
-        [{ header: [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ align: [] }],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['link'],
-        ['clean']
-      ]
-    }
-  });
+  const form = editorEl.closest('form');
+  const uploadUrl = form && form.dataset.blogUpload;
+  const csrfInput = form && form.querySelector('input[name="csrf_token"]');
+
+  function subirImagenBlog(file) {
+    const fd = new FormData();
+    fd.append('imagen', file);
+    if (csrfInput) fd.append('csrf_token', csrfInput.value);
+    return fetch(uploadUrl, { method: 'POST', body: fd, credentials: 'same-origin' })
+      .then(function (r) { return r.json(); });
+  }
+
+  const toolbar = [
+    [{ header: [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ align: [] }],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    ['link', 'image'],
+    ['clean']
+  ];
+
+  const modules = { toolbar: toolbar };
+  if (uploadUrl) {
+    modules.toolbar = {
+      container: toolbar,
+      handlers: {
+        image: function () {
+          const input = document.createElement('input');
+          input.setAttribute('type', 'file');
+          input.setAttribute('accept', 'image/*');
+          input.onchange = function () {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            subirImagenBlog(file).then(function (data) {
+              if (!data || !data.url) {
+                alert('No se pudo subir la imagen.');
+                return;
+              }
+              const range = quill.getSelection(true) || { index: quill.getLength() };
+              quill.insertEmbed(range.index, 'image', data.url);
+              quill.setSelection(range.index + 1);
+            }).catch(function () {
+              alert('Error al subir la imagen.');
+            });
+          };
+          input.click();
+        }
+      }
+    };
+  }
+
+  const quill = new Quill('#editor-contenido', { theme: 'snow', modules: modules });
 
   const initialField = document.getElementById('contenido-initial');
   if (initialField && initialField.value) {
     quill.root.innerHTML = initialField.value;
   }
 
-  const form = editorEl.closest('form');
   if (form) {
     form.addEventListener('submit', function () {
       inputEl.value = quill.root.innerHTML;

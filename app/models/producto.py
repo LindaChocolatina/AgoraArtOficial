@@ -14,6 +14,7 @@ class Producto(db.Model):
     nombre = db.Column(db.String(150), nullable=False)
     descripcion = db.Column(db.Text)
     precio = db.Column(db.Numeric(10, 2), nullable=False)
+    moneda = db.Column(db.String(3), nullable=False, default='USD')
     stock = db.Column(db.Integer, default=0)
     imagen = db.Column(db.String(255))
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
@@ -24,6 +25,8 @@ class Producto(db.Model):
     # Relaciones
     orden_items = db.relationship('OrdenItem', backref='producto', lazy='dynamic',
                                  cascade='all, delete-orphan')
+    imagenes = db.relationship('ProductoImagen', backref='producto', lazy='dynamic',
+                               cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Producto {self.nombre}>'
@@ -36,6 +39,7 @@ class Producto(db.Model):
             'nombre': self.nombre,
             'descripcion': self.descripcion,
             'precio': float(self.precio),
+            'moneda': self.moneda or 'USD',
             'stock': self.stock,
             'imagen': self.imagen,
             'estado': self.estado,

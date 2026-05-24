@@ -4,6 +4,7 @@
 
 {% block content %}
 <div class="container my-5">
+    {% include 'artista/_panel_nav.html' %}
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-sm">
@@ -44,9 +45,9 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="imagenes" class="form-label fw-bold">Fotos de la obra *</label>
-                            <input type="file" class="form-control" id="imagenes" name="imagenes" accept="image/*" multiple>
-                            <div class="form-text">Puedes elegir varias imágenes. La primera será la portada.</div>
+                            <label for="imagenes" class="form-label fw-bold">Fotos del proyecto *</label>
+                            <input type="file" class="form-control" id="imagenes" name="imagenes" accept="image/*" multiple required>
+                            <div class="form-text">Estilo Behance: sube todas las que quieras. Se mostrarán en un <strong>carrusel</strong>; la primera imagen será la portada.</div>
                         </div>
 
                         <div class="form-check form-switch mb-4">
