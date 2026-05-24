@@ -25,7 +25,7 @@ class Obra(db.Model):
                                   cascade='all, delete-orphan')
     galeria_imagenes = db.relationship(
         'ObraImagen', backref='obra', lazy='dynamic',
-        cascade='all, delete-orphan', order_by='orden'
+        cascade='all, delete-orphan', order_by='ObraImagen.orden'
     )
     
     def __repr__(self):
