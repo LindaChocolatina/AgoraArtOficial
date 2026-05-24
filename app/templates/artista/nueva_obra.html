@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Nueva Obra - WindMills Art{% endblock %}
+{% block title %}Nueva Obra - Ágora Art{% endblock %}
 
 {% block content %}
 <div class="container my-5">
@@ -14,12 +14,14 @@
                     </div>
                 </div>
                 <div class="card-body p-4">
-                    <form method="POST" action="{{ url_for('artista.nueva_obra') }}">
+                    <form method="POST" action="{{ url_for('artista.nueva_obra') }}" enctype="multipart/form-data">
+                        {% include 'artista/_csrf.html' %}
+
                         <div class="mb-3">
                             <label for="titulo" class="form-label">Título de la Obra *</label>
                             <input type="text" class="form-control" id="titulo" name="titulo" required>
                         </div>
-                        
+
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="categoria" class="form-label">Categoría</label>
@@ -32,25 +34,26 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="tecnica" class="form-label">Técnica</label>
-                                <input type="text" class="form-control" id="tecnica" name="tecnica" placeholder="Ej: Óleo sobre lienzo, Digital...">
+                                <input type="text" class="form-control" id="tecnica" name="tecnica" placeholder="Ej: Óleo sobre lienzo">
                             </div>
                         </div>
-                        
+
                         <div class="mb-4">
                             <label for="descripcion" class="form-label">Descripción</label>
-                            <textarea class="form-control" id="descripcion" name="descripcion" rows="5"></textarea>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="4"></textarea>
                         </div>
-                        
-                        <!-- TODO: Upload de imagen real en el Sprint 3 -->
-                        <div class="alert alert-warning">
-                            <i class="fas fa-info-circle me-2"></i> La subida de imágenes estará disponible próximamente. Por ahora se usará una imagen por defecto.
+
+                        <div class="mb-4">
+                            <label for="imagenes" class="form-label fw-bold">Fotos de la obra *</label>
+                            <input type="file" class="form-control" id="imagenes" name="imagenes" accept="image/*" multiple>
+                            <div class="form-text">Puedes elegir varias imágenes. La primera será la portada.</div>
                         </div>
-                        
+
                         <div class="form-check form-switch mb-4">
                             <input class="form-check-input" type="checkbox" id="visible" name="visible" checked>
-                            <label class="form-check-label" for="visible">Hacer visible públicamente</label>
+                            <label class="form-check-label" for="visible">Visible en la galería pública</label>
                         </div>
-                        
+
                         <button type="submit" class="btn btn-primary w-100 py-2">Guardar Obra</button>
                     </form>
                 </div>

@@ -11,7 +11,11 @@
                     <h3 class="mb-0">Editar Producto: {{ producto.nombre }}</h3>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('artista.editar_producto', producto_id=producto.id_producto) }}">
+                    {% if producto.imagen %}
+                    <img src="{{ producto.imagen }}" alt="" class="img-fluid rounded mb-3" style="max-height:160px;">
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('artista.editar_producto', producto_id=producto.id_producto) }}" enctype="multipart/form-data">
+                        {% include 'artista/_csrf.html' %}
                         <div class="mb-3">
                             <label for="nombre" class="form-label">Nombre del Producto *</label>
                             <input type="text" class="form-control" id="nombre" name="nombre" required value="{{ producto.nombre }}">
@@ -32,14 +36,17 @@
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label for="stock" class="form-label">Stock Disponible *</label>
+                                <label for="stock" class="form-label">Stock en inventario *</label>
                                 <input type="number" class="form-control" id="stock" name="stock" min="0" required value="{{ producto.stock }}">
                             </div>
                         </div>
-                        
+                        <div class="mb-3">
+                            <label for="imagen_archivo" class="form-label">Nueva foto</label>
+                            <input type="file" class="form-control" id="imagen_archivo" name="imagen_archivo" accept="image/*">
+                        </div>
                         <div class="mb-4">
-                            <label for="imagen" class="form-label">URL de Imagen</label>
-                            <input type="url" class="form-control" id="imagen" name="imagen" value="{{ producto.imagen }}">
+                            <label for="imagen" class="form-label">O URL de imagen</label>
+                            <input type="url" class="form-control" id="imagen" name="imagen" value="{{ producto.imagen or '' }}">
                         </div>
                         
                         <div class="d-flex justify-content-between mt-4 border-top pt-4">

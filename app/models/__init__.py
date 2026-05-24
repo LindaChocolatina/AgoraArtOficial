@@ -5,6 +5,7 @@ Importación de todos los modelos de la aplicación
 from app.models.usuario import Usuario, favoritos_obras, favoritos_artistas, bandeja_newsletter
 from app.models.categoria import Categoria
 from app.models.obra import Obra
+from app.models.obra_imagen import ObraImagen
 from app.models.producto import Producto, HistorialStock
 from app.models.blog import EntradaBlog, ComentarioBlog
 from app.models.ecommerce import Direccion, Orden, OrdenItem, Pago
@@ -16,7 +17,7 @@ from app.models.auditoria import Auditoria
 __all__ = [
     'Usuario', 'favoritos_obras', 'favoritos_artistas', 'bandeja_newsletter',
     'Categoria',
-    'Obra',
+    'Obra', 'ObraImagen',
     'Producto', 'HistorialStock',
     'EntradaBlog', 'ComentarioBlog',
     'Direccion', 'Orden', 'OrdenItem', 'Pago',

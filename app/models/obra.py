@@ -23,6 +23,10 @@ class Obra(db.Model):
                                        lazy='subquery')
     lienzo_items = db.relationship('LienzoItem', backref='obra', lazy='dynamic',
                                   cascade='all, delete-orphan')
+    galeria_imagenes = db.relationship(
+        'ObraImagen', backref='obra', lazy='dynamic',
+        cascade='all, delete-orphan', order_by='orden'
+    )
     
     def __repr__(self):
         return f'<Obra {self.titulo}>'

@@ -1,0 +1,35 @@
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script>
+(function () {
+  const editorEl = document.getElementById('editor-contenido');
+  const inputEl = document.getElementById('contenido-input');
+  if (!editorEl || !inputEl) return;
+
+  const quill = new Quill('#editor-contenido', {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        [{ header: [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ align: [] }],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['link'],
+        ['clean']
+      ]
+    }
+  });
+
+  const initialField = document.getElementById('contenido-initial');
+  if (initialField && initialField.value) {
+    quill.root.innerHTML = initialField.value;
+  }
+
+  const form = editorEl.closest('form');
+  if (form) {
+    form.addEventListener('submit', function () {
+      inputEl.value = quill.root.innerHTML;
+    });
+  }
+})();
+</script>

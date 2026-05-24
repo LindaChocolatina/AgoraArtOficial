@@ -1,23 +1,31 @@
 {% extends "base.html" %}
-{% block title %}Nueva Entrada{% endblock %}
+{% block title %}Nueva Entrada - Ágora Art{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-  <h2>Crear Nueva Entrada de Blog</h2>
-  <form method="post" action="{{ url_for('artista.nueva_entrada') }}">
-    <div class="mb-3">
-      <label class="form-label">Título</label>
-      <input type="text" name="titulo" class="form-control" required />
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <h2 class="mb-4">Nueva entrada de blog</h2>
+            <form method="POST" action="{{ url_for('artista.nueva_entrada') }}">
+                {% include 'artista/_csrf.html' %}
+                <div class="mb-3">
+                    <label class="form-label">Título *</label>
+                    <input type="text" name="titulo" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Contenido *</label>
+                    <div id="editor-contenido"></div>
+                    <input type="hidden" name="contenido" id="contenido-input">
+                </div>
+                {% include 'artista/_editor_blog.html' %}
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" name="publicado" id="publicado" checked>
+                    <label class="form-check-label" for="publicado">Publicar ahora</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Publicar</button>
+                <a href="{{ url_for('artista.blog') }}" class="btn btn-secondary ms-2">Cancelar</a>
+            </form>
+        </div>
     </div>
-    <div class="mb-3">
-      <label class="form-label">Contenido</label>
-      <textarea name="contenido" class="form-control" rows="6" required></textarea>
-    </div>
-    <div class="form-check mb-3">
-      <input class="form-check-input" type="checkbox" name="publicado" id="publicado">
-      <label class="form-check-label" for="publicado">Publicar</label>
-    </div>
-    <button type="submit" class="btn btn-primary">Crear Entrada</button>
-    <a href="{{ url_for('artista.blog') }}" class="btn btn-secondary ms-2">Cancelar</a>
-  </form>
 </div>
 {% endblock %}

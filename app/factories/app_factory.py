@@ -36,7 +36,10 @@ def create_app(config_name='default'):
     
     # Import models so Alembic can detect them
     import app.models as _models
-    
+    if config_name == 'development':
+        with app.app_context():
+            db.create_all()
+
     bcrypt.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)

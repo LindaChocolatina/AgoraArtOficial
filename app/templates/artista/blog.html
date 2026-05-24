@@ -1,12 +1,52 @@
 {% extends "base.html" %}
 
-{% block title %}Mi Blog - WindMills Art{% endblock %}
+{% block title %}Mi Blog - Ágora Art{% endblock %}
 
 {% block content %}
-<div class="container my-5 text-center py-5">
-    <i class="fas fa-newspaper fa-4x mb-4 text-muted"></i>
-    <h2>Sección de Blog</h2>
-    <p class="lead text-muted">Esta funcionalidad estará disponible en una próxima actualización.</p>
-    <a href="{{ url_for('artista.dashboard') }}" class="btn btn-primary mt-3">Volver al Dashboard</a>
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Mi Blog</h2>
+        <a href="{{ url_for('artista.nueva_entrada') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nueva entrada
+        </a>
+    </div>
+
+    {% if entradas %}
+        <div class="list-group">
+            {% for entrada in entradas %}
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="mb-1">{{ entrada.titulo }}</h5>
+                        <p class="mb-2 text-muted small">
+                            {{ entrada.fecha_publicacion.strftime('%d/%m/%Y') if entrada.fecha_publicacion else '' }}
+                            ·
+                            <span class="badge {{ 'bg-success' if entrada.visible else 'bg-secondary' }}">
+                                {{ 'Publicado' if entrada.visible else 'Borrador' }}
+                            </span>
+                        </p>
+                        <div class="small text-muted entrada-preview">{{ entrada.contenido|striptags|truncate(120) }}</div>
+                    </div>
+                    <div class="ms-3 text-nowrap">
+                        <a href="{{ url_for('artista.editar_entrada', entrada_id=entrada.id_entrada) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form action="{{ url_for('artista.eliminar_entrada', entrada_id=entrada.id_entrada) }}" method="POST" class="d-inline"
+                              onsubmit="return confirm('¿Eliminar esta entrada?');">
+                            {% include 'artista/_csrf.html' %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center py-5">
+            <i class="fas fa-feather-alt fa-3x mb-3 text-muted"></i>
+            <h5>Aún no tienes entradas de blog</h5>
+            <a href="{{ url_for('artista.nueva_entrada') }}" class="btn btn-primary mt-2">Escribir mi primera entrada</a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

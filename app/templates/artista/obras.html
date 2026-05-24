@@ -52,7 +52,8 @@
                                 <a href="{{ url_for('artista.editar_obra', obra_id=obra.id_obra) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ url_for('artista.eliminar_obra', obra_id=obra.id_obra) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta obra?');">
+                                <form action="{{ url_for('artista.eliminar_obra', obra_id=obra.id_obra) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta obra?');">
+                                    {% include 'artista/_csrf.html' %}
                                     <button type="submit" class="btn btn-sm btn-outline-danger">
                                         <i class="fas fa-trash"></i>
                                     </button>

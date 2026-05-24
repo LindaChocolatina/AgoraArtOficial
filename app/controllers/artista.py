@@ -1,7 +1,36 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from app.factories.service_factory import get_service_factory
+from app.factories.app_factory import db
+from app.models.obra_imagen import ObraImagen
+from app.utils.file_upload import save_image_file, save_multiple_images
 from functools import wraps
+
+
+def _categoria_id_from_form():
+    raw = request.form.get('categoria')
+    return int(raw) if raw else None
+
+
+def _guardar_imagenes_obra(obra_id, imagen_principal=None):
+    """Guarda imágenes extra en la galería (la principal va en obra.imagen)."""
+    extras = request.files.getlist('imagenes_extra')
+    paths = save_multiple_images(extras, current_app.config['UPLOAD_FOLDER'], 'obras')
+    for i, path in enumerate(paths):
+        if imagen_principal and path == imagen_principal:
+            continue
+        db.session.add(ObraImagen(id_obra=obra_id, imagen=path, orden=i + 1))
+    db.session.commit()
+
+
+def _imagen_producto_desde_form():
+    """Imagen de producto: archivo subido o URL."""
+    archivo = request.files.get('imagen_archivo')
+    path = save_image_file(archivo, current_app.config['UPLOAD_FOLDER'], 'productos')
+    if path:
+        return path
+    url = (request.form.get('imagen') or '').strip()
+    return url or None
 
 # Crear blueprint
 artista_bp = Blueprint('artista', __name__)
@@ -122,32 +151,41 @@ def nueva_obra():
     Crear nueva obra
     """
     if request.method == 'POST':
-        # Obtener datos del formulario
+        imagenes = save_multiple_images(
+            request.files.getlist('imagenes'),
+            current_app.config['UPLOAD_FOLDER'],
+            'obras',
+        )
+        imagen_principal = imagenes[0] if imagenes else '/static/uploads/obra1.jpg'
+
         data = {
             'id_artista': current_user.id_usuario,
             'titulo': request.form.get('titulo'),
             'descripcion': request.form.get('descripcion', ''),
             'tecnica': request.form.get('tecnica', ''),
-            'id_categoria': request.form.get('categoria') or None,
-            'visible': request.form.get('visible') == 'on'
+            'id_categoria': _categoria_id_from_form(),
+            'visible': request.form.get('visible') == 'on',
+            'imagen': imagen_principal,
         }
-        
-        # Validar datos
+
         errores = []
         if not data.get('titulo', '').strip():
             errores.append('El título es obligatorio')
-        
+
         if not errores:
             service_factory = get_service_factory()
             obra_service = service_factory.get_obra_service()
-            
             exitoso, obra_creada = obra_service.crear_obra(data)
-            
+
             if exitoso:
+                for orden, path in enumerate(imagenes[1:], start=1):
+                    db.session.add(ObraImagen(
+                        id_obra=obra_creada.id_obra, imagen=path, orden=orden
+                    ))
+                db.session.commit()
                 flash('Obra creada correctamente', 'success')
                 return redirect(url_for('artista.obras'))
-            else:
-                flash('Error al crear la obra', 'error')
+            flash('Error al crear la obra', 'error')
         else:
             for error in errores:
                 flash(error, 'error')
@@ -177,37 +215,45 @@ def editar_obra(obra_id):
         return redirect(url_for('artista.obras'))
     
     if request.method == 'POST':
-        # Obtener datos del formulario
         data = {
             'titulo': request.form.get('titulo'),
             'descripcion': request.form.get('descripcion', ''),
             'tecnica': request.form.get('tecnica', ''),
-            'id_categoria': request.form.get('categoria') or None,
-            'visible': request.form.get('visible') == 'on'
+            'id_categoria': _categoria_id_from_form(),
+            'visible': request.form.get('visible') == 'on',
         }
-        
-        # Validar datos
+
+        nuevas = save_multiple_images(
+            request.files.getlist('imagenes'),
+            current_app.config['UPLOAD_FOLDER'],
+            'obras',
+        )
+        if nuevas:
+            data['imagen'] = nuevas[0]
+
         errores = []
         if not data.get('titulo', '').strip():
             errores.append('El título es obligatorio')
-        
+
         if not errores:
             exitoso, obra_actualizada = obra_service.actualizar_obra(obra_id, data)
-            
             if exitoso:
+                max_orden = db.session.query(ObraImagen).filter_by(id_obra=obra_id).count()
+                for i, path in enumerate(nuevas[1:] if nuevas else [], start=max_orden + 1):
+                    db.session.add(ObraImagen(id_obra=obra_id, imagen=path, orden=i))
+                db.session.commit()
                 flash('Obra actualizada correctamente', 'success')
                 return redirect(url_for('artista.obras'))
-            else:
-                flash('Error al actualizar la obra', 'error')
+            flash('Error al actualizar la obra', 'error')
         else:
             for error in errores:
                 flash(error, 'error')
-    
-    # Obtener categorías para el formulario
+
     categoria_service = service_factory.get_categoria_service()
     categorias = categoria_service.get_all()
-    
-    return render_template('artista/editar_obra.html', obra=obra, categorias=categorias)
+    galeria = list(obra.galeria_imagenes.all()) if hasattr(obra, 'galeria_imagenes') else []
+
+    return render_template('artista/editar_obra.html', obra=obra, categorias=categorias, galeria=galeria)
 
 @artista_bp.route('/obras/<int:obra_id>/eliminar', methods=['POST'])
 @login_required
@@ -217,7 +263,7 @@ def eliminar_obra(obra_id):
     Eliminar obra
     """
     service_factory = get_service_factory()
-    obra_service = obra_service = service_factory.get_obra_service()
+    obra_service = service_factory.get_obra_service()
     
     # Verificar que la obra pertenezca al artista
     obra = obra_service.get_by_id(obra_id)
@@ -284,19 +330,22 @@ def blog():
 def nueva_entrada():
     """Crear nueva entrada de blog"""
     if request.method == 'POST':
+        contenido = (request.form.get('contenido') or '').strip()
         data = {
             'id_artista': current_user.id_usuario,
             'titulo': request.form.get('titulo'),
-            'contenido': request.form.get('contenido'),
-            'visible': 'publicado' in request.form
+            'contenido': contenido or '<p></p>',
+            'visible': 'publicado' in request.form,
         }
-        service_factory = get_service_factory()
-        blog_service = service_factory.get_blog_service()
-        exitoso, entrada = blog_service.crear_entrada(data)
-        if exitoso:
-            flash('Entrada de blog creada correctamente', 'success')
-            return redirect(url_for('artista.blog'))
+        if not data['titulo'] or not contenido or contenido == '<p><br></p>':
+            flash('Título y contenido son obligatorios', 'error')
         else:
+            service_factory = get_service_factory()
+            blog_service = service_factory.get_blog_service()
+            exitoso, entrada = blog_service.crear_entrada(data)
+            if exitoso:
+                flash('Entrada de blog creada correctamente', 'success')
+                return redirect(url_for('artista.blog'))
             flash('Error al crear la entrada. Verifica los campos.', 'error')
     return render_template('artista/nueva_entrada.html')
 
@@ -348,22 +397,28 @@ def eliminar_entrada(entrada_id):
 def nuevo_producto():
     """Crear nuevo producto"""
     if request.method == 'POST':
+        try:
+            precio = float(request.form.get('precio', 0))
+            stock = int(request.form.get('stock', 1))
+        except (TypeError, ValueError):
+            flash('Precio y stock deben ser números válidos', 'error')
+            return render_template('artista/nuevo_producto.html')
+
         data = {
             'id_artista': current_user.id_usuario,
             'nombre': request.form.get('nombre'),
             'descripcion': request.form.get('descripcion', ''),
-            'precio': float(request.form.get('precio', 0)),
-            'stock': int(request.form.get('stock', 1)),
-            'imagen': request.form.get('imagen', '')
+            'precio': precio,
+            'stock': stock,
+            'imagen': _imagen_producto_desde_form() or '',
         }
         service_factory = get_service_factory()
         producto_service = service_factory.get_producto_service()
-        exitoso, producto = producto_service.crear_producto(data)
+        exitoso, producto = producto_service.crear_producto(data, current_user.id_usuario)
         if exitoso:
             flash('Producto creado correctamente', 'success')
             return redirect(url_for('artista.productos'))
-        else:
-            flash('Error al crear el producto. Verifica los campos.', 'error')
+        flash('Error al crear el producto. Verifica nombre, precio y stock.', 'error')
     return render_template('artista/nuevo_producto.html')
 
 @artista_bp.route('/productos/<int:producto_id>/editar', methods=['GET', 'POST'])
@@ -378,19 +433,32 @@ def editar_producto(producto_id):
         flash('Producto no encontrado o no tienes permisos', 'error')
         return redirect(url_for('artista.productos'))
     if request.method == 'POST':
+        try:
+            precio = float(request.form.get('precio', 0))
+            stock = int(request.form.get('stock', 0))
+        except (TypeError, ValueError):
+            flash('Precio y stock deben ser números válidos', 'error')
+            return render_template('artista/editar_producto.html', producto=producto)
+
         data = {
             'nombre': request.form.get('nombre'),
             'descripcion': request.form.get('descripcion', ''),
-            'precio': float(request.form.get('precio', 0)),
-            'stock': int(request.form.get('stock', 0)),
-            'imagen': request.form.get('imagen', '')
+            'precio': precio,
+            'stock': stock,
         }
-        exitoso, producto_act = producto_service.actualizar_producto(producto_id, data)
+        nueva_imagen = _imagen_producto_desde_form()
+        if nueva_imagen:
+            data['imagen'] = nueva_imagen
+        elif request.form.get('imagen'):
+            data['imagen'] = request.form.get('imagen').strip()
+
+        exitoso, producto_act = producto_service.actualizar_producto(
+            producto_id, data, current_user.id_usuario
+        )
         if exitoso:
-            flash('Producto actualizado correctamente', 'success')
+            flash('Producto actualizado (stock guardado en base de datos)', 'success')
             return redirect(url_for('artista.productos'))
-        else:
-            flash('Error al actualizar el producto', 'error')
+        flash('Error al actualizar el producto', 'error')
     return render_template('artista/editar_producto.html', producto=producto)
 
 @artista_bp.route('/productos/<int:producto_id>/eliminar', methods=['POST'])

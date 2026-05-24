@@ -11,7 +11,8 @@
                     <h3 class="mb-0">Editar Perfil</h3>
                 </div>
                 <div class="card-body p-4">
-                    <form method="POST" action="{{ url_for('auth.editar_perfil') }}">
+                    <form method="POST" action="{% if current_user.is_artista() %}{{ url_for('artista.editar_perfil') }}{% else %}{{ url_for('auth.editar_perfil') }}{% endif %}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="mb-3">
                             <label for="nombre" class="form-label">Nombre Completo</label>
                             <input type="text" class="form-control" id="nombre" name="nombre" value="{{ current_user.nombre }}" required>
@@ -34,7 +35,7 @@
                         </div>
                         
                         <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('auth.perfil') }}" class="btn btn-outline-secondary">Cancelar</a>
+                            <a href="{% if current_user.is_artista() %}{{ url_for('artista.perfil') }}{% else %}{{ url_for('auth.perfil') }}{% endif %}" class="btn btn-outline-secondary">Cancelar</a>
                             <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                         </div>
                     </form>

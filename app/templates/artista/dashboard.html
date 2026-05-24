@@ -367,10 +367,13 @@
                 {% if entradas_blog %}
                     {% for entrada in entradas_blog %}
                         <div class="blog-card-pro">
-                            <div class="blog-date-pro">Publicado el {{ entrada.fecha|date }}</div>
+                            <div class="blog-date-pro">
+                                {% if entrada.fecha_publicacion %}{{ entrada.fecha_publicacion.strftime('%d/%m/%Y') }}{% endif %}
+                                {% if not entrada.visible %} · <span class="text-warning">Borrador</span>{% endif %}
+                            </div>
                             <h4 class="fw-bold mb-3">{{ entrada.titulo }}</h4>
-                            <p class="text-muted">{{ entrada.contenido|truncate_words(40) }}</p>
-                            <a href="#" class="fw-bold text-turq small text-decoration-none">Leer más <i class="fas fa-arrow-right ms-2"></i></a>
+                            <p class="text-muted">{{ entrada.contenido|striptags|truncate(200) }}</p>
+                            <a href="{{ url_for('artista.editar_entrada', entrada_id=entrada.id_entrada) }}" class="btn btn-sm btn-outline-primary">Editar</a>
                         </div>
                     {% endfor %}
                 {% else %}
@@ -378,7 +381,8 @@
                         <i class="fas fa-feather-alt fa-3x text-muted mb-3 opacity-25"></i>
                         <h5>Comparte tu proceso</h5>
                         <p class="text-muted">El blog es ideal para conectar con tus seguidores.</p>
-                        <button class="btn btn-secondary mt-2">Escribir Entrada</button>
+                        <a href="{{ url_for('artista.nueva_entrada') }}" class="btn btn-primary mt-2">Escribir entrada</a>
+                        <a href="{{ url_for('artista.blog') }}" class="btn btn-outline-secondary mt-2 ms-2">Gestionar blog</a>
                     </div>
                 {% endif %}
             </div>
@@ -396,7 +400,7 @@
                         <div class="text-end">
                             <div class="fw-bold fs-5 text-turq">${{ producto.precio }}</div>
                             <div class="small text-muted">Stock: {{ producto.stock }}</div>
-                            <button class="btn btn-sm btn-outline-secondary mt-2">Gestionar</button>
+                            <a href="{{ url_for('artista.editar_producto', producto_id=producto.id_producto) }}" class="btn btn-sm btn-outline-primary mt-2">Editar</a>
                         </div>
                     </div>
                     {% endfor %}
@@ -405,7 +409,8 @@
                         <i class="fas fa-shopping-bag fa-3x text-muted mb-3 opacity-25"></i>
                         <h5>Tu tienda está vacía</h5>
                         <p class="text-muted">Ofrece tus productos y obras a la comunidad.</p>
-                        <button class="btn btn-primary mt-2">Agregar Producto</button>
+                        <a href="{{ url_for('artista.nuevo_producto') }}" class="btn btn-primary mt-2">Agregar producto</a>
+                        <a href="{{ url_for('artista.productos') }}" class="btn btn-outline-secondary mt-2 ms-2">Ver tienda</a>
                     </div>
                 {% endif %}
             </div>

@@ -1,44 +1,32 @@
 {% extends "base.html" %}
 
-{% block title %}Editar Entrada - WindMills Art{% endblock %}
+{% block title %}Editar Entrada - Ágora Art{% endblock %}
 
 {% block content %}
 <div class="container my-5">
     <div class="row justify-content-center">
         <div class="col-md-10">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white pt-3 pb-2 border-bottom-0 d-flex justify-content-between align-items-center">
-                    <h3 class="mb-0">Editar Entrada</h3>
-                    {% if entrada.publicado %}
-                        <span class="badge bg-success">Publicado</span>
-                    {% else %}
-                        <span class="badge bg-secondary">Borrador</span>
-                    {% endif %}
+            <h2 class="mb-4">Editar entrada</h2>
+            <form method="POST" action="{{ url_for('artista.editar_entrada', entrada_id=entrada.id_entrada) }}">
+                {% include 'artista/_csrf.html' %}
+                <div class="mb-3">
+                    <label class="form-label">Título *</label>
+                    <input type="text" name="titulo" class="form-control" required value="{{ entrada.titulo }}">
                 </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('artista.editar_entrada', entrada_id=entrada.id_entrada) }}">
-                        <div class="mb-4">
-                            <label for="titulo" class="form-label">Título *</label>
-                            <input type="text" class="form-control form-control-lg" id="titulo" name="titulo" required value="{{ entrada.titulo }}">
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="contenido" class="form-label">Contenido *</label>
-                            <textarea class="form-control" id="contenido" name="contenido" rows="15" required>{{ entrada.contenido }}</textarea>
-                        </div>
-                        
-                        <div class="mb-4 form-check">
-                            <input type="checkbox" class="form-check-input" id="publicado" name="publicado" {% if entrada.publicado %}checked{% endif %}>
-                            <label class="form-check-label" for="publicado">Publicar esta entrada</label>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between mt-5 border-top pt-4">
-                            <a href="{{ url_for('artista.blog') }}" class="btn btn-outline-secondary">Cancelar</a>
-                            <button type="submit" class="btn btn-primary px-5">Actualizar Entrada</button>
-                        </div>
-                    </form>
+                <div class="mb-3">
+                    <label class="form-label">Contenido *</label>
+                    <textarea id="contenido-initial" class="d-none">{{ entrada.contenido }}</textarea>
+                    <div id="editor-contenido"></div>
+                    <input type="hidden" name="contenido" id="contenido-input">
                 </div>
-            </div>
+                {% include 'artista/_editor_blog.html' %}
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" name="publicado" id="publicado" {% if entrada.visible %}checked{% endif %}>
+                    <label class="form-check-label" for="publicado">Publicado</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <a href="{{ url_for('artista.blog') }}" class="btn btn-secondary ms-2">Cancelar</a>
+            </form>
         </div>
     </div>
 </div>

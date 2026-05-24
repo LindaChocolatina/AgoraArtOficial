@@ -66,6 +66,7 @@
                 <a href="{{ url_for('artista.dashboard') }}" class="btn btn-outline-primary btn-sm d-block mb-2">Mi Dashboard de Artista</a>
                 <a href="{{ url_for('artista.obras') }}" class="btn btn-outline-primary btn-sm d-block mb-2">Mis Obras</a>
                 <a href="{{ url_for('artista.productos') }}" class="btn btn-outline-primary btn-sm d-block mb-2">Mis Productos</a>
+                <a href="{{ url_for('artista.blog') }}" class="btn btn-outline-primary btn-sm d-block mb-2">Mi Blog</a>
                 {% elif current_user.is_cliente() %}
                 <a href="{{ url_for('cliente.dashboard') }}" class="btn btn-outline-info btn-sm d-block mb-2">Mi Dashboard de Cliente</a>
                 <a href="{{ url_for('cliente.obras_favoritas') }}" class="btn btn-outline-info btn-sm d-block mb-2">Mis Favoritos</a>
