@@ -1,6 +1,28 @@
 import os
 from datetime import timedelta
 
+_BASEDIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+
+
+def _normalize_database_url(url):
+    """Adapta DATABASE_URL de Coolify para SQLAlchemy con el driver psycopg v3."""
+    if not url:
+        return url
+    if url.startswith('postgres://'):
+        url = 'postgresql://' + url[len('postgres://'):]
+    if url.startswith('postgresql://') and not url.startswith('postgresql+'):
+        url = 'postgresql+psycopg://' + url[len('postgresql://'):]
+    return url
+
+
+def database_uri(sqlite_filename):
+    """PostgreSQL vía DATABASE_URL (producción) o SQLite local como fallback."""
+    url = _normalize_database_url(os.environ.get('DATABASE_URL'))
+    if url:
+        return url
+    return 'sqlite:///' + os.path.join(_BASEDIR, sqlite_filename)
+
+
 class Config:
     """Configuración base de la aplicación"""
     
@@ -8,9 +30,8 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key-change-in-production'
     
     # Configuración de base de datos
-    basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'art_platform.db')
+    basedir = _BASEDIR
+    SQLALCHEMY_DATABASE_URI = database_uri('art_platform.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = False
     
@@ -48,17 +69,17 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     """Configuración para pruebas"""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
-        'sqlite:///:memory:'
+    SQLALCHEMY_DATABASE_URI = _normalize_database_url(
+        os.environ.get('TEST_DATABASE_URL')
+    ) or 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
 
 class ProductionConfig(Config):
     """Configuración para producción"""
     DEBUG = False
     SESSION_COOKIE_SECURE = True
-    basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'art_platform_prod.db')
+    basedir = _BASEDIR
+    SQLALCHEMY_DATABASE_URI = database_uri('art_platform_prod.db')
     
     @classmethod
     def init_app(cls, app):

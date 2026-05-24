@@ -7,8 +7,10 @@ Flask-Migrate==4.0.5
 Flask-WTF==1.1.1
 WTForms==3.0.1
 
-# Base de datos SQLite (incluido en Python, pero SQLAlchemy lo necesita)
-# No se necesita driver adicional para SQLite
+# Base de datos
+# SQLite: sin driver extra (fallback local en desarrollo)
+# PostgreSQL: driver para Coolify (DATABASE_URL). Versión 3: compatible con Python 3.14
+psycopg[binary]>=3.2.6
 
 # Validación y seguridad
 email-validator==2.0.0
