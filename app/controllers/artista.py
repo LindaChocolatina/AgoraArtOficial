@@ -374,6 +374,14 @@ def portada_imagen_obra(obra_id, id_imagen):
         flash('Portada actualizada', 'success')
     return redirect(url_for('artista.editar_obra', obra_id=obra_id))
 
+def _redirect_tras_accion(fallback='artista.dashboard'):
+    """Vuelve al dashboard si la acción venía de ahí."""
+    ref = request.referrer or ''
+    if 'dashboard' in ref:
+        return redirect(url_for('artista.dashboard'))
+    return redirect(url_for(fallback))
+
+
 @artista_bp.route('/obras/<int:obra_id>/eliminar', methods=['POST'])
 @login_required
 @requiere_artista
@@ -399,7 +407,7 @@ def eliminar_obra(obra_id):
     else:
         flash('Error al eliminar la obra', 'error')
     
-    return redirect(url_for('artista.obras'))
+    return _redirect_tras_accion('artista.obras')
 
 @artista_bp.route('/productos')
 @login_required
@@ -523,7 +531,7 @@ def eliminar_entrada(entrada_id):
         flash('Entrada eliminada correctamente', 'success')
     else:
         flash('Error al eliminar la entrada', 'error')
-    return redirect(url_for('artista.blog'))
+    return _redirect_tras_accion('artista.blog')
 
 @artista_bp.route('/productos/nuevo', methods=['GET', 'POST'])
 @login_required
@@ -670,8 +678,11 @@ def eliminar_producto(producto_id):
     if producto_service.eliminar_producto(producto_id):
         flash('Producto eliminado correctamente', 'success')
     else:
-        flash('Error al eliminar el producto', 'error')
-    return redirect(url_for('artista.productos'))
+        if producto.orden_items.count() > 0:
+            flash('No se puede eliminar: este producto tiene ventas registradas.', 'error')
+        else:
+            flash('Error al eliminar el producto', 'error')
+    return _redirect_tras_accion('artista.productos')
 
 # API endpoints
 @artista_bp.route('/api/toggle-visibilidad-obra', methods=['POST'])

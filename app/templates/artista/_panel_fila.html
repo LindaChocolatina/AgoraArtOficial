@@ -1,0 +1,36 @@
+{# Fila uniforme del panel artista (estilo tienda). #}
+<div class="shop-card-pro panel-row-pro">
+    {% if thumb_url %}
+    <img src="{{ thumb_url }}" class="shop-img-pro" alt="">
+    {% else %}
+    <div class="shop-img-pro d-flex align-items-center justify-content-center bg-light text-muted flex-shrink-0">
+        <i class="fas {{ icon|default('fa-image') }}"></i>
+    </div>
+    {% endif %}
+    <div class="flex-grow-1 min-width-0">
+        <h5 class="fw-bold mb-1 text-truncate">{{ titulo }}</h5>
+        {% if subtitulo %}
+        <p class="text-muted small mb-0 text-truncate">{{ subtitulo }}</p>
+        {% endif %}
+        {% if badge %}
+        <span class="badge bg-light text-dark mt-1">{{ badge }}</span>
+        {% endif %}
+    </div>
+    <div class="text-end flex-shrink-0">
+        {% if meta_derecha %}
+        <div class="small text-muted mb-1">{{ meta_derecha }}</div>
+        {% endif %}
+        {% if precio %}
+        <div class="fw-bold text-turq">{{ precio }}</div>
+        {% endif %}
+        <div class="d-flex gap-1 justify-content-end mt-2">
+            <a href="{{ edit_url }}" class="btn btn-sm btn-outline-primary" title="Editar"><i class="fas fa-edit"></i></a>
+            {% if delete_url %}
+            <form action="{{ delete_url }}" method="POST" class="d-inline" onsubmit="return confirm('{{ confirm_msg|default('¿Eliminar?') }}');">
+                {% include 'artista/_csrf.html' %}
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar"><i class="fas fa-trash"></i></button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>

@@ -247,18 +247,25 @@ class ProductoService:
         return self.producto_repo.count(filters=filters)
     
     def eliminar_producto(self, producto_id, usuario_id=None):
-        """
-        Eliminar producto (soft delete - agotar stock)
-        
-        Args:
-            producto_id (int): ID del producto
-            usuario_id (int): ID del usuario que elimina
-            
-        Returns:
-            bool: True si se eliminó correctamente
-        """
-        # En lugar de eliminar físicamente, lo agotamos
-        return self.producto_repo.update(producto_id, {'stock': 0}, usuario_id) is not None
+        """Eliminar producto de la base de datos."""
+        producto = self.producto_repo.get_by_id(producto_id)
+        if not producto:
+            return False
+        if producto.orden_items.count() > 0:
+            return False
+        try:
+            from app.models.producto import HistorialStock
+            from app.models.producto_imagen import ProductoImagen
+            ProductoImagen.query.filter_by(id_producto=producto_id).delete()
+            HistorialStock.query.filter_by(id_producto=producto_id).delete()
+            exitoso = self.producto_repo.delete(producto_id, usuario_id)
+            if exitoso:
+                self.producto_repo.save()
+            return exitoso
+        except Exception as e:
+            self.producto_repo.session.rollback()
+            print(f"Error al eliminar producto {producto_id}: {e}")
+            return False
     
     def get_estadisticas_artista(self, artista_id):
         """

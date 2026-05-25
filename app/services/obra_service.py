@@ -193,17 +193,22 @@ class ObraService:
         return self.actualizar_obra(obra_id, {'visible': nueva_visibilidad}, usuario_id)
     
     def eliminar_obra(self, obra_id, usuario_id=None):
-        """
-        Eliminar obra (soft delete - ocultar)
-        
-        Args:
-            obra_id (int): ID de la obra
-            usuario_id (int): ID del usuario que elimina
-            
-        Returns:
-            bool: True si se eliminó correctamente
-        """
-        return self.obra_repo.update(obra_id, {'visible': False}, usuario_id) is not None
+        """Eliminar obra de la base de datos (y su galería)."""
+        obra = self.obra_repo.get_by_id(obra_id)
+        if not obra:
+            return False
+        try:
+            obra.favoritos_usuarios.clear()
+            from app.models.obra_imagen import ObraImagen
+            ObraImagen.query.filter_by(id_obra=obra_id).delete()
+            exitoso = self.obra_repo.delete(obra_id, usuario_id)
+            if exitoso:
+                self.obra_repo.save()
+            return exitoso
+        except Exception as e:
+            self.obra_repo.session.rollback()
+            print(f"Error al eliminar obra {obra_id}: {e}")
+            return False
     
     def agregar_favorito(self, usuario_id, obra_id):
         """

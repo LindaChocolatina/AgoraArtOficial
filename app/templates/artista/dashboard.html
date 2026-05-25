@@ -299,6 +299,17 @@
         height: 80px;
         border-radius: 4px;
         object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .panel-list-pro {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .panel-row-pro .min-width-0 {
+        min-width: 0;
     }
 
     /* Blog Card Pro */
@@ -402,45 +413,24 @@
 
             <!-- Tab: Portfolio -->
             <div id="tab-portfolio" class="tab-content-pro">
-                {% if obras %}
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 p-3 bg-white border rounded">
                     <a href="{{ url_for('artista.obras') }}" class="btn btn-sm btn-outline-secondary">Gestionar todas las obras</a>
                     <a href="{{ url_for('artista.nueva_obra') }}" class="btn btn-sm btn-primary"><i class="fas fa-plus me-1"></i> Nueva obra</a>
                 </div>
-                {% endif %}
-                <div class="portfolio-grid-pro">
+                <div class="panel-list-pro">
                     {% if obras %}
                         {% for obra in obras %}
-                        <div class="portfolio-card-pro">
-                            <div class="portfolio-img-wrapper">
-                                {% if obra.imagen %}
-                                    <img src="{{ obra.imagen }}" alt="{{ obra.titulo }}">
-                                {% else %}
-                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
-                                        <i class="fas fa-image fa-3x text-muted opacity-25"></i>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="portfolio-info-pro">
-                                <div class="portfolio-title-pro">{{ obra.titulo }}</div>
-                                <div class="portfolio-meta-pro">
-                                    <span class="fw-bold text-uppercase">{{ obra.categoria.nombre if obra.categoria else 'Arte' }}</span>
-                                    <span class="badge bg-info text-dark">{{ contar_imagenes_obra(obra) }} fotos</span>
-                                </div>
-                                <div class="d-flex gap-2 mt-2">
-                                    <a href="{{ url_for('artista.editar_obra', obra_id=obra.id_obra) }}" class="btn btn-sm btn-outline-primary flex-fill">
-                                        <i class="fas fa-edit"></i> Editar
-                                    </a>
-                                    <form action="{{ url_for('artista.eliminar_obra', obra_id=obra.id_obra) }}" method="POST" class="flex-fill" onsubmit="return confirm('¿Eliminar esta obra?');">
-                                        {% include 'artista/_csrf.html' %}
-                                        <button type="submit" class="btn btn-sm btn-outline-danger w-100"><i class="fas fa-trash"></i></button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+                        {% set thumb_url = obra.imagen %}
+                        {% set titulo = obra.titulo %}
+                        {% set subtitulo = obra.categoria.nombre if obra.categoria else 'Arte' %}
+                        {% set badge = contar_imagenes_obra(obra)|string ~ ' fotos' %}
+                        {% set edit_url = url_for('artista.editar_obra', obra_id=obra.id_obra) %}
+                        {% set delete_url = url_for('artista.eliminar_obra', obra_id=obra.id_obra) %}
+                        {% set confirm_msg = '¿Eliminar esta obra?' %}
+                        {% include 'artista/_panel_fila.html' %}
                         {% endfor %}
                     {% else %}
-                        <div class="col-12 text-center py-5 bg-white rounded-1 border">
+                        <div class="text-center py-5 bg-white rounded-1 border">
                             <i class="fas fa-palette fa-4x text-muted mb-4 opacity-25"></i>
                             <h5 class="fw-bold">Tu portafolio está vacío</h5>
                             <p class="text-muted">Empieza a compartir tu talento con el mundo.</p>
@@ -452,33 +442,31 @@
 
             <!-- Tab: Blog -->
             <div id="tab-blog" class="tab-content-pro d-none">
-                {% if entradas_blog %}
-                <div class="d-flex flex-wrap justify-content-end gap-2 mb-3 p-3 bg-white border rounded">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 p-3 bg-white border rounded">
                     <a href="{{ url_for('artista.blog') }}" class="btn btn-sm btn-outline-secondary">Gestionar blog</a>
                     <a href="{{ url_for('artista.nueva_entrada') }}" class="btn btn-sm btn-primary"><i class="fas fa-plus me-1"></i> Nueva entrada</a>
                 </div>
-                {% endif %}
-                {% if entradas_blog %}
-                    {% for entrada in entradas_blog %}
-                        <div class="blog-card-pro">
-                            <div class="blog-date-pro">
-                                {% if entrada.fecha_publicacion %}{{ entrada.fecha_publicacion.strftime('%d/%m/%Y') }}{% endif %}
-                                {% if not entrada.visible %} · <span class="text-warning">Borrador</span>{% endif %}
-                            </div>
-                            <h4 class="fw-bold mb-3">{{ entrada.titulo }}</h4>
-                            <p class="text-muted">{{ entrada.contenido|striptags|truncate(200) }}</p>
-                            <a href="{{ url_for('artista.editar_entrada', entrada_id=entrada.id_entrada) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+                <div class="panel-list-pro">
+                    {% if entradas_blog %}
+                        {% for entrada in entradas_blog %}
+                        {% set icon = 'fa-feather-alt' %}
+                        {% set titulo = entrada.titulo %}
+                        {% set subtitulo = entrada.contenido|striptags|truncate(80) %}
+                        {% set meta_derecha = (entrada.fecha_publicacion.strftime('%d/%m/%Y') if entrada.fecha_publicacion else '') ~ (' · Borrador' if not entrada.visible else '') %}
+                        {% set edit_url = url_for('artista.editar_entrada', entrada_id=entrada.id_entrada) %}
+                        {% set delete_url = url_for('artista.eliminar_entrada', entrada_id=entrada.id_entrada) %}
+                        {% set confirm_msg = '¿Eliminar esta entrada?' %}
+                        {% include 'artista/_panel_fila.html' %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5 bg-white border">
+                            <i class="fas fa-feather-alt fa-3x text-muted mb-3 opacity-25"></i>
+                            <h5>Comparte tu proceso</h5>
+                            <p class="text-muted">El blog es ideal para conectar con tus seguidores.</p>
+                            <a href="{{ url_for('artista.nueva_entrada') }}" class="btn btn-primary mt-2">Escribir entrada</a>
                         </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="text-center py-5 bg-white border">
-                        <i class="fas fa-feather-alt fa-3x text-muted mb-3 opacity-25"></i>
-                        <h5>Comparte tu proceso</h5>
-                        <p class="text-muted">El blog es ideal para conectar con tus seguidores.</p>
-                        <a href="{{ url_for('artista.nueva_entrada') }}" class="btn btn-primary mt-2">Escribir entrada</a>
-                        <a href="{{ url_for('artista.blog') }}" class="btn btn-outline-secondary mt-2 ms-2">Gestionar blog</a>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                </div>
             </div>
 
             <!-- Tab: Shop -->
@@ -487,30 +475,28 @@
                     <a href="{{ url_for('artista.productos') }}" class="btn btn-sm btn-outline-secondary">Ver listado completo</a>
                     <a href="{{ url_for('artista.nuevo_producto') }}" class="btn btn-sm btn-primary"><i class="fas fa-plus me-1"></i> Agregar producto</a>
                 </div>
-                {% if productos %}
-                    {% for producto in productos %}
-                    <div class="shop-card-pro">
-                        <img src="{{ producto.imagen or 'https://via.placeholder.com/150' }}" class="shop-img-pro">
-                        <div class="flex-grow-1">
-                            <h5 class="fw-bold mb-1">{{ producto.nombre }}</h5>
-                            <p class="text-muted small mb-0">{{ producto.descripcion|truncate_words(15) }}</p>
+                <div class="panel-list-pro">
+                    {% if productos %}
+                        {% for producto in productos %}
+                        {% set thumb_url = producto.imagen %}
+                        {% set titulo = producto.nombre %}
+                        {% set subtitulo = producto.descripcion|truncate_words(12) %}
+                        {% set precio = producto|precio_producto %}
+                        {% set meta_derecha = 'Stock: ' ~ producto.stock|string %}
+                        {% set edit_url = url_for('artista.editar_producto', producto_id=producto.id_producto) %}
+                        {% set delete_url = url_for('artista.eliminar_producto', producto_id=producto.id_producto) %}
+                        {% set confirm_msg = '¿Eliminar este producto?' %}
+                        {% include 'artista/_panel_fila.html' %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5 bg-white border">
+                            <i class="fas fa-shopping-bag fa-3x text-muted mb-3 opacity-25"></i>
+                            <h5>Tu tienda está vacía</h5>
+                            <p class="text-muted">Ofrece tus productos y obras a la comunidad.</p>
+                            <a href="{{ url_for('artista.nuevo_producto') }}" class="btn btn-primary mt-2">Agregar producto</a>
                         </div>
-                        <div class="text-end">
-                            <div class="fw-bold fs-5 text-turq">{{ producto|precio_producto }}</div>
-                            <div class="small text-muted">Stock: {{ producto.stock }}</div>
-                            <a href="{{ url_for('artista.editar_producto', producto_id=producto.id_producto) }}" class="btn btn-sm btn-outline-primary mt-2">Editar</a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="text-center py-5 bg-white border">
-                        <i class="fas fa-shopping-bag fa-3x text-muted mb-3 opacity-25"></i>
-                        <h5>Tu tienda está vacía</h5>
-                        <p class="text-muted">Ofrece tus productos y obras a la comunidad.</p>
-                        <a href="{{ url_for('artista.nuevo_producto') }}" class="btn btn-primary mt-2">Agregar producto</a>
-                        <a href="{{ url_for('artista.productos') }}" class="btn btn-outline-secondary mt-2 ms-2">Ver tienda</a>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                </div>
             </div>
     </div>
 </div>
