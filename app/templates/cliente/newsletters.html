@@ -1,62 +1,47 @@
-{% extends "base.html" %}
+{% extends "cliente/base_cliente.html" %}
 
-{% block title %}Mi Bandeja de Entrada - Ágora Art{% endblock %}
+{% block title %}Bandeja — Ágora Art{% endblock %}
 
-{% block content %}
-<div class="container my-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2>Bandeja de Entrada</h2>
-            <p class="text-muted">Newsletters y comunicaciones de los artistas a los que estás suscrito</p>
-        </div>
-        <a href="{{ url_for('cliente.artistas_siguiendo') }}" class="btn btn-outline-primary rounded-pill">
-            <i class="fas fa-heart"></i> Gestionar Suscripciones
-        </a>
+{% block cliente_content %}
+<div class="container-fluid py-4 px-4">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Bandeja de entrada</h2>
+        <p class="text-muted mb-0">Newsletters que te han enviado los artistas a los que estás suscrito</p>
     </div>
 
-    <div class="row">
-        <div class="col-lg-10 mx-auto">
-            {% if newsletters %}
-                {% for news in newsletters %}
-                    <div class="card mb-4 shadow-sm border-0 rounded-4 overflow-hidden">
-                        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-bottom-0">
-                            <div class="d-flex align-items-center">
-                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
-                                    <i class="fas fa-user-edit"></i>
-                                </div>
-                                <div>
-                                    <span class="fw-bold text-dark d-block">{{ news.artista.nombre }}</span>
-                                    <small class="text-muted">@{{ news.artista.username }}</small>
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <small class="text-muted d-block">{{ news.fecha_envio|date }}</small>
-                            </div>
-                        </div>
-                        <div class="card-body px-4 py-3">
-                            <h4 class="card-title h5 mb-3">{{ news.asunto }}</h4>
-                            <div class="card-text text-secondary" style="line-height: 1.7; font-size: 1.05rem;">
-                                {{ news.contenido|safe }}
-                            </div>
-                        </div>
-                        <div class="card-footer bg-white border-0 text-end pb-4 px-4">
-                            <a href="{{ url_for('public.perfil_artista', artista_id=news.id_artista) }}" class="btn btn-sm btn-link text-decoration-none">
-                                Ver Perfil del Artista <i class="fas fa-chevron-right ms-1"></i>
-                            </a>
-                        </div>
+    {% if newsletters %}
+        {% for news in newsletters %}
+        <div class="card mb-4 shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-bottom-0">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                        <i class="fas fa-envelope"></i>
                     </div>
-                {% endfor %}
-            {% else %}
-                <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-                    <div class="mb-4 text-muted opacity-25">
-                        <i class="fas fa-envelope-open-text fa-5x"></i>
+                    <div>
+                        <span class="fw-bold text-dark d-block">{{ news.artista.nombre }}</span>
+                        <small class="text-muted">@{{ news.artista.username }}</small>
                     </div>
-                    <h4>Tu bandeja está vacía</h4>
-                    <p class="text-muted px-5">Aún no has recibido ningún newsletter. Sigue a tus artistas favoritos para mantenerte al día sobre sus procesos creativos y lanzamientos.</p>
-                    <a href="{{ url_for('public.artistas') }}" class="btn btn-primary rounded-pill px-4 mt-3">Descubrir Artistas</a>
                 </div>
-            {% endif %}
+                <small class="text-muted">{{ news.fecha_envio|date }}</small>
+            </div>
+            <div class="card-body px-4 py-3">
+                <h4 class="h5 mb-3">{{ news.asunto }}</h4>
+                <div class="text-secondary" style="line-height: 1.7;">{{ news.contenido|safe }}</div>
+            </div>
+            <div class="card-footer bg-white border-0 text-end pb-4 px-4">
+                <a href="{{ url_for('public.perfil_artista', artista_id=news.id_artista) }}" class="btn btn-sm btn-link text-decoration-none">
+                    Ver perfil del artista <i class="fas fa-chevron-right ms-1"></i>
+                </a>
+            </div>
         </div>
-    </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5 bg-white rounded-4 border">
+            <i class="fas fa-inbox fa-4x text-muted opacity-25 mb-3"></i>
+            <h4 class="fw-bold">Tu bandeja está vacía</h4>
+            <p class="text-muted px-4">Cuando un artista envíe un newsletter y estés suscrito, aparecerá aquí.</p>
+            <a href="{{ url_for('cliente.suscripciones_newsletter') }}" class="btn btn-outline-primary rounded-pill mt-2">Ver mis suscripciones</a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

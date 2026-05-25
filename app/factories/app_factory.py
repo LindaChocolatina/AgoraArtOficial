@@ -20,7 +20,7 @@ def _ensure_dev_schema_patches():
         cols = {c['name'] for c in insp.get_columns('productos')}
         if 'moneda' not in cols:
             db.session.execute(text(
-                "ALTER TABLE productos ADD COLUMN moneda VARCHAR(3) NOT NULL DEFAULT 'USD'"
+                "ALTER TABLE productos ADD COLUMN moneda VARCHAR(3) NOT NULL DEFAULT 'COP'"
             ))
             db.session.commit()
     if 'usuarios' in insp.get_table_names():
@@ -177,11 +177,11 @@ def register_template_filters(app):
 
     @app.template_filter('precio_producto')
     def precio_producto_filter(producto):
-        """Precio con símbolo según moneda del producto (USD, EUR, COP)."""
-        from app.utils.moneda import formatear_precio
+        """Precio con símbolo según moneda del producto (COP, USD, EUR)."""
+        from app.utils.moneda import formatear_precio, MONEDA_DEFAULT
         if producto is None:
             return ''
-        moneda = getattr(producto, 'moneda', None) or 'USD'
+        moneda = getattr(producto, 'moneda', None) or MONEDA_DEFAULT
         return formatear_precio(producto.precio, moneda)
     
     @app.template_filter('date')

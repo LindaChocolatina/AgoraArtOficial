@@ -1,0 +1,45 @@
+{% extends "cliente/base_cliente.html" %}
+
+{% block title %}Pago demo — Ágora Art{% endblock %}
+
+{% block cliente_content %}
+<div class="container py-4" style="max-width: 720px;">
+    <div class="text-center mb-4">
+        <span class="badge bg-warning text-dark mb-2">Modo presentación</span>
+        <h2 class="mb-2">Confirmar pago simulado</h2>
+        <p class="text-muted">Orden #{{ orden.id_orden }} · Sin cobro real</p>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <ul class="list-group list-group-flush mb-4">
+                {% for item in items %}
+                <li class="list-group-item d-flex justify-content-between px-0">
+                    <span>{{ item.producto.nombre }} × {{ item.cantidad }}</span>
+                    <span>{{ item.producto|precio_producto }}</span>
+                </li>
+                {% endfor %}
+                <li class="list-group-item d-flex justify-content-between px-0 fw-bold">
+                    <span>Total</span>
+                    <span>{{ total_formateado }}</span>
+                </li>
+            </ul>
+
+            <div class="alert alert-info small">
+                En producción este paso lo reemplaza <strong>Stripe Checkout</strong>. Configura
+                <code>STRIPE_SECRET_KEY</code> y <code>STRIPE_PUBLISHABLE_KEY</code> en tu entorno.
+            </div>
+
+            <form method="POST" class="d-grid gap-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-check-circle me-2"></i>Simular pago exitoso
+                </button>
+                <a href="{{ url_for('cliente.checkout_cancelado', orden_id=orden.id_orden) }}" class="btn btn-outline-secondary">
+                    Cancelar
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

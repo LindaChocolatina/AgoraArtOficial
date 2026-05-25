@@ -1,0 +1,23 @@
+{% extends "cliente/base_cliente.html" %}
+
+{% block title %}Compra confirmada — Ágora Art{% endblock %}
+
+{% block cliente_content %}
+<div class="container py-5 text-center" style="max-width: 560px;">
+    <div class="mb-4">
+        <div class="rounded-circle bg-success bg-opacity-10 d-inline-flex align-items-center justify-content-center" style="width:88px;height:88px;">
+            <i class="fas fa-check fa-2x text-success"></i>
+        </div>
+    </div>
+    <h1 class="h3 fw-bold mb-2">¡Gracias por tu compra!</h1>
+    <p class="text-muted mb-4">
+        Tu orden <strong>#{{ orden.id_orden }}</strong> quedó registrada como
+        <span class="badge bg-success">pagada</span>.
+    </p>
+    <p class="mb-4">Total: <strong>${{ orden.total }}</strong></p>
+    <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+        <a href="{{ url_for('cliente.dashboard', tab='compras') }}" class="btn btn-primary">Ver mis compras</a>
+        <a href="{{ url_for('public.productos') }}" class="btn btn-outline-secondary">Seguir en el marketplace</a>
+    </div>
+</div>
+{% endblock %}

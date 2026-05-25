@@ -253,17 +253,18 @@ class ProductoService:
             return False
         if producto.orden_items.count() > 0:
             return False
+        session = self.producto_repo.session
         try:
             from app.models.producto import HistorialStock
-            from app.models.producto_imagen import ProductoImagen
-            ProductoImagen.query.filter_by(id_producto=producto_id).delete()
-            HistorialStock.query.filter_by(id_producto=producto_id).delete()
-            exitoso = self.producto_repo.delete(producto_id, usuario_id)
-            if exitoso:
-                self.producto_repo.save()
-            return exitoso
+            session.query(HistorialStock).filter_by(id_producto=producto_id).delete(
+                synchronize_session=False
+            )
+            if not self.producto_repo.delete(producto_id, usuario_id):
+                session.rollback()
+                return False
+            return self.producto_repo.save()
         except Exception as e:
-            self.producto_repo.session.rollback()
+            session.rollback()
             print(f"Error al eliminar producto {producto_id}: {e}")
             return False
     

@@ -1,334 +1,9 @@
 {% extends "base.html" %}
 
 {% block head %}
+{% include 'artista/_perfil_dashboard_styles.html' %}
 <style>
-    /* === ÁGORA ART x BEHANCE PROFESSIONAL === */
-    :root {
-        --behance-blue: #0057ff; /* We'll use Ágora Teal instead */
-        --agora-accent: var(--turq);
-        --agora-secondary: var(--malva);
-        --bg-gray: #f9f9f9;
-        --border-color: #e8e8e8;
-    }
-
-    body {
-        background-color: var(--bg-gray) !important;
-    }
-
-    /* Banner del artista */
-    .artist-banner {
-        height: 200px;
-        position: relative;
-        overflow: hidden;
-        margin-bottom: 0;
-        background: linear-gradient(135deg, var(--noche), var(--noche-mid));
-    }
-
-    .artist-banner-img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center 50%;
-        display: block;
-    }
-
-    .banner-overlay {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.35));
-        pointer-events: none;
-    }
-
-    .banner-edit-btn {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        z-index: 5;
-    }
-
-    .actividad-card {
-        background: white;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        overflow: hidden;
-        height: 100%;
-        transition: box-shadow 0.2s;
-    }
-    .actividad-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
-    .actividad-card-img { height: 100px; object-fit: cover; width: 100%; background: #eee; }
-    .actividad-card-body { padding: 14px; }
-
-    .actividad-panel {
-        background: white;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 20px 22px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-        min-height: 280px;
-    }
-
-    .dashboard-wrapper {
-        position: relative;
-        z-index: 10;
-        padding-bottom: 80px;
-        padding-top: 24px;
-    }
-
-    /* Perfil + actividad lado a lado (CSS Grid, no depende solo de Bootstrap) */
-    .dashboard-header-grid {
-        display: grid;
-        grid-template-columns: 300px 1fr;
-        gap: 24px;
-        align-items: start;
-        width: 100%;
-        margin-bottom: 28px;
-    }
-
-    @media (max-width: 991.98px) {
-        .dashboard-header-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .actividad-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 14px;
-    }
-
-    @media (max-width: 767.98px) {
-        .actividad-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    /* Sidebar Behance Style */
-    .sidebar-artist {
-        background: white;
-        border-radius: 4px;
-        padding: 30px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        text-align: left;
-    }
-
-    .artist-profile-img {
-        width: 110px;
-        height: 110px;
-        border-radius: 50%;
-        border: 4px solid white;
-        margin-top: 0;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        background: white;
-        object-fit: cover;
-    }
-
-    .artist-name-professional {
-        font-family: 'Josefin Sans', sans-serif;
-        font-size: 24px;
-        font-weight: 700;
-        margin-bottom: 5px;
-    }
-
-    .artist-title-pro {
-        color: var(--piedra);
-        font-size: 14px;
-        margin-bottom: 20px;
-    }
-
-    .btn-pro {
-        width: 100%;
-        padding: 12px;
-        border-radius: 25px;
-        font-weight: 700;
-        font-family: 'Josefin Sans', sans-serif;
-        margin-bottom: 10px;
-        border: none;
-        text-transform: none;
-        letter-spacing: 0;
-    }
-
-    .btn-follow-pro { background-color: var(--agora-accent); color: white; }
-    .btn-message-pro { background-color: white; border: 1px solid var(--border-color); color: var(--carbon); }
-
-    .artist-stats-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 12px;
-        margin: 25px 0;
-        padding: 20px 0;
-        border-top: 1px solid var(--border-color);
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .stat-row-pro {
-        display: flex;
-        justify-content: space-between;
-        font-size: 14px;
-    }
-
-    .stat-value-pro { font-weight: 700; }
-
-    /* Social Links */
-    .social-section h6 {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: var(--piedra);
-        margin-bottom: 15px;
-    }
-
-    .social-link-pro {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px;
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        margin-bottom: 8px;
-        color: var(--carbon);
-        font-size: 13px;
-        font-weight: 600;
-        transition: var(--transition);
-    }
-
-    .social-link-pro:hover {
-        background: var(--bg-gray);
-        border-color: var(--agora-accent);
-    }
-
-    /* Content Area Behance Style */
-    .content-artist {
-        background: transparent;
-    }
-
-    .tabs-pro {
-        background: white;
-        padding: 0 30px;
-        border-radius: 4px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        display: flex;
-        gap: 30px;
-        margin-bottom: 25px;
-    }
-
-    .tab-item-pro {
-        padding: 20px 0;
-        font-family: 'Josefin Sans', sans-serif;
-        font-weight: 700;
-        font-size: 14px;
-        color: var(--piedra);
-        cursor: pointer;
-        position: relative;
-        border-bottom: 2px solid transparent;
-    }
-
-    .tab-item-pro.active {
-        color: var(--carbon);
-        border-bottom-color: var(--carbon);
-    }
-
-    /* Portfolio Grid Behance Style */
-    .portfolio-grid-pro {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 20px;
-    }
-
-    .portfolio-card-pro {
-        background: white;
-        border-radius: 4px;
-        overflow: hidden;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        transition: var(--transition);
-    }
-
-    .portfolio-card-pro:hover {
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-
-    .portfolio-img-wrapper {
-        height: 220px;
-        background: var(--agora-gray);
-        position: relative;
-    }
-
-    .portfolio-img-wrapper img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .portfolio-info-pro {
-        padding: 15px;
-    }
-
-    .portfolio-title-pro {
-        font-weight: 700;
-        font-size: 14px;
-        margin-bottom: 5px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .portfolio-meta-pro {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 11px;
-        color: var(--piedra);
-    }
-
-    /* Shop Card Pro */
-    .shop-card-pro {
-        background: white;
-        border-radius: 4px;
-        padding: 20px;
-        display: flex;
-        gap: 20px;
-        align-items: center;
-        margin-bottom: 15px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-
-    .shop-img-pro {
-        width: 80px;
-        height: 80px;
-        border-radius: 4px;
-        object-fit: cover;
-        flex-shrink: 0;
-    }
-
-    .panel-list-pro {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-    }
-
-    .panel-row-pro .min-width-0 {
-        min-width: 0;
-    }
-
-    /* Blog Card Pro */
-    .blog-card-pro {
-        background: white;
-        border-radius: 4px;
-        padding: 25px;
-        margin-bottom: 20px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-
-    .blog-date-pro {
-        font-size: 11px;
-        color: var(--agora-accent);
-        font-weight: 700;
-        text-transform: uppercase;
-        margin-bottom: 10px;
-    }
-
+    body { background-color: var(--bg-gray) !important; }
 </style>
 {% endblock %}
 
@@ -347,13 +22,18 @@
 <div class="container dashboard-wrapper">
     <div class="dashboard-header-grid">
         <aside class="sidebar-artist">
+                <div class="profile-photo-wrap">
                 {% if current_user.foto_perfil %}
-                    <img src="{{ current_user.foto_perfil }}" class="artist-profile-img">
+                    <img src="{{ current_user.foto_perfil }}" class="artist-profile-img" alt="Foto de perfil">
                 {% else %}
-                    <div class="artist-profile-img d-flex align-items-center justify-content-center bg-malva text-white fs-1 fw-bold">
+                    <div class="artist-profile-img artist-profile-img-placeholder d-flex align-items-center justify-content-center bg-malva text-white fs-1 fw-bold">
                         {{ current_user.nombre[0]|upper }}
                     </div>
                 {% endif %}
+                <a href="{{ url_for('artista.editar_foto_perfil') }}" class="btn btn-light btn-sm profile-photo-edit" title="Cambiar foto">
+                    <i class="fas fa-camera"></i>
+                </a>
+                </div>
 
                 <h2 class="artist-name-professional">{{ current_user.nombre }}</h2>
                 <p class="artist-title-pro">Artista Visual / Creador Ágora Art</p>
@@ -449,6 +129,7 @@
                 <div class="panel-list-pro">
                     {% if entradas_blog %}
                         {% for entrada in entradas_blog %}
+                        {% set thumb_url = entrada.imagen_miniatura() %}
                         {% set icon = 'fa-feather-alt' %}
                         {% set titulo = entrada.titulo %}
                         {% set subtitulo = entrada.contenido|striptags|truncate(80) %}

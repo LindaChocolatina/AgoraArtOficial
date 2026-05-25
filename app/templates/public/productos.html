@@ -6,7 +6,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <h1>Marketplace</h1>
-            <p class="text-muted">Productos a la venta por artistas independientes</p>
+            <p class="text-muted">Productos en venta publicados en las tiendas de cada artista. El portafolio (obras) es solo exhibición.</p>
             {% if termino_busqueda %}
                 <span class="badge bg-primary fs-6">Buscando: "{{ termino_busqueda }}"</span>
             {% endif %}
@@ -26,7 +26,11 @@
                 </div>
                 {% endif %}
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">{{ producto.nombre }}</h5>
+                    <h5 class="card-title">
+                        <a href="{{ url_for('public.detalle_producto', producto_id=producto.id_producto) }}" class="text-dark text-decoration-none">
+                            {{ producto.nombre }}
+                        </a>
+                    </h5>
                     <p class="text-muted small mb-2">
                         {% if producto.artista %}{{ producto.artista.nombre }}{% endif %}
                     </p>
@@ -38,9 +42,12 @@
                     <form method="POST" action="{{ url_for('cliente.agregar_al_carrito', producto_id=producto.id_producto) }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="next" value="{{ url_for('public.productos') }}">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-bag-shopping me-1"></i> Agregar al carrito
-                        </button>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-bag-shopping me-1"></i> Agregar al carrito
+                            </button>
+                            <a href="{{ url_for('public.detalle_producto', producto_id=producto.id_producto) }}" class="btn btn-outline-secondary btn-sm w-100">Ver detalle</a>
+                        </div>
                     </form>
                     {% elif current_user.is_authenticated %}
                     <p class="small text-muted mb-0">Inicia sesión como cliente para comprar.</p>

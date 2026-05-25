@@ -1,0 +1,50 @@
+{# Fila de contenido público (mismo layout que panel artista, sin editar/eliminar). #}
+<div class="shop-card-pro panel-row-pro">
+    {% if thumb_url %}
+    <img src="{{ thumb_url }}" class="shop-img-pro" alt="">
+    {% else %}
+    <div class="shop-img-pro d-flex align-items-center justify-content-center bg-light text-muted flex-shrink-0">
+        <i class="fas {{ icon|default('fa-image') }}"></i>
+    </div>
+    {% endif %}
+    <div class="flex-grow-1 min-width-0">
+        <h5 class="fw-bold mb-1 text-truncate">{{ titulo }}</h5>
+        {% if subtitulo %}
+        <p class="text-muted small mb-0">{{ subtitulo }}</p>
+        {% endif %}
+        {% if badge %}
+        <span class="badge bg-light text-dark mt-1">{{ badge }}</span>
+        {% endif %}
+    </div>
+    <div class="text-end flex-shrink-0" style="min-width:140px;">
+        {% if meta_derecha %}
+        <div class="small text-muted mb-1">{{ meta_derecha }}</div>
+        {% endif %}
+        {% if precio %}
+        <div class="fw-bold text-turq">{{ precio }}</div>
+        {% endif %}
+        <div class="d-flex flex-column gap-1 align-items-end mt-2">
+            {% if view_url %}
+            <a href="{{ view_url }}" class="btn btn-sm btn-outline-primary">{{ view_label|default('Ver') }}</a>
+            {% endif %}
+            {% if producto %}
+                {% if current_user.is_authenticated and current_user.is_cliente() %}
+                    {% if producto.is_disponible() %}
+                    <form method="POST" action="{{ url_for('cliente.agregar_al_carrito', producto_id=producto.id_producto) }}" class="m-0">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="next" value="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='tienda') }}">
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class="fas fa-bag-shopping me-1"></i> Carrito
+                        </button>
+                    </form>
+                    {% else %}
+                    <span class="badge bg-secondary">Agotado</span>
+                    {% endif %}
+                {% elif not current_user.is_authenticated %}
+                <a href="{{ url_for('auth.login', next=url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='tienda')) }}"
+                   class="btn btn-sm btn-outline-primary">Comprar</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>

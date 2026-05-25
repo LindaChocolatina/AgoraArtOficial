@@ -40,5 +40,8 @@ python-dateutil==2.8.2
 # Email (para newsletters)
 Flask-Mail==0.9.1
 
+# Pasarela de pago
+stripe>=11.0.0
+
 # Archivos estáticos y compresión
 Flask-Compress==1.13

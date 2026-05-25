@@ -25,7 +25,8 @@
                                 </div>
                             {% endif %}
                             <div class="position-absolute top-0 end-0 p-2">
-                                <form action="{{ url_for('public.toggle_favorito', obra_id=obra.id_obra) }}" method="POST" class="d-inline">
+                                <form action="{{ url_for('public.toggle_favorito_obra', obra_id=obra.id_obra) }}" method="POST" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-light btn-sm rounded-circle shadow" title="Quitar de favoritos">
                                         <i class="fas fa-heart text-danger"></i>
                                     </button>

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Foto de perfil — Ágora Art{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    {% include 'artista/_panel_nav.html' %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 text-center">
+                    <h3 class="mb-3">Foto de perfil</h3>
+                    <p class="text-muted">Se muestra en tu panel, tu perfil público y junto a tus obras.</p>
+
+                    <div class="mb-4">
+                        {% if current_user.foto_perfil %}
+                        <img id="fotoPreview" src="{{ current_user.foto_perfil }}" alt="Foto de perfil"
+                             class="rounded-circle border shadow-sm" style="width:140px;height:140px;object-fit:cover;">
+                        {% else %}
+                        <div id="fotoPreview" class="rounded-circle border shadow-sm d-inline-flex align-items-center justify-content-center bg-malva text-white display-4 fw-bold"
+                             style="width:140px;height:140px;">{{ current_user.nombre[0]|upper }}</div>
+                        {% endif %}
+                    </div>
+
+                    <form method="POST" action="{{ url_for('artista.editar_foto_perfil') }}" enctype="multipart/form-data" class="text-start">
+                        {% include 'artista/_csrf.html' %}
+                        <div class="mb-3">
+                            <label for="foto_perfil" class="form-label fw-bold">Nueva foto (opcional)</label>
+                            <input type="file" class="form-control" id="foto_perfil" name="foto_perfil" accept="image/*">
+                            <div class="form-text">Formatos: JPG, PNG, GIF o WebP. Recomendado: cuadrada, mínimo 400×400 px.</div>
+                        </div>
+                        {% if current_user.foto_perfil %}
+                        <div class="mb-4 form-check">
+                            <input class="form-check-input" type="checkbox" name="quitar_foto" id="quitar_foto" value="1">
+                            <label class="form-check-label" for="quitar_foto">Quitar foto actual y usar inicial del nombre</label>
+                        </div>
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary">Guardar foto</button>
+                        <a href="{{ url_for('artista.dashboard') }}" class="btn btn-outline-secondary ms-2">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('foto_perfil')?.addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('fotoPreview');
+    if (!file || !preview) return;
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+        if (preview.tagName === 'IMG') {
+            preview.src = ev.target.result;
+        } else {
+            const img = document.createElement('img');
+            img.id = 'fotoPreview';
+            img.src = ev.target.result;
+            img.alt = 'Foto de perfil';
+            img.className = 'rounded-circle border shadow-sm';
+            img.style.width = '140px';
+            img.style.height = '140px';
+            img.style.objectFit = 'cover';
+            preview.replaceWith(img);
+        }
+    };
+    reader.readAsDataURL(file);
+    document.getElementById('quitar_foto')?.checked && (document.getElementById('quitar_foto').checked = false);
+});
+</script>
+{% endblock %}

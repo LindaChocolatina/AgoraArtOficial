@@ -89,7 +89,11 @@ class ServiceFactory:
         """Obtener servicio de órdenes"""
         if 'orden' not in self._services:
             from app.services.orden_service import OrdenService
-            self._services['orden'] = OrdenService(self.session)
+            session = self.session
+            if session is None:
+                from app.factories.db_factory import DatabaseFactory
+                session = DatabaseFactory.get_session()
+            self._services['orden'] = OrdenService(session)
         
         return self._services['orden']
     
@@ -105,7 +109,11 @@ class ServiceFactory:
         """Obtener servicio de newsletters"""
         if 'newsletter' not in self._services:
             from app.services.newsletter_service import NewsletterService
-            self._services['newsletter'] = NewsletterService(self.session)
+            session = self.session
+            if session is None:
+                from app.factories.db_factory import DatabaseFactory
+                session = DatabaseFactory.get_session()
+            self._services['newsletter'] = NewsletterService(session)
         
         return self._services['newsletter']
     
@@ -132,6 +140,14 @@ class ServiceFactory:
             
         return self._services['direccion']
 
+    def get_payment_service(self):
+        """Obtener servicio de pagos"""
+        if 'payment' not in self._services:
+            from app.services.payment_service import PaymentService
+            from flask import current_app
+            self._services['payment'] = PaymentService(self.session, current_app.config)
+        return self._services['payment']
+
     def get_admin_service(self):
         """Obtener servicio de administración"""
         if 'admin' not in self._services:
@@ -156,4 +172,7 @@ def get_service_factory(session=None):
     Returns:
         ServiceFactory: Instancia de la fábrica de servicios
     """
+    if session is None:
+        from app.factories.app_factory import db
+        session = db.session
     return ServiceFactory(session)

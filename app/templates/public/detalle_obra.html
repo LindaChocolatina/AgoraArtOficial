@@ -44,15 +44,24 @@
                             </div>
                         </a>
                         {% if current_user.is_authenticated %}
-                        <form action="{{ url_for('public.favorito_obra') }}" method="POST">
+                        <form action="{{ url_for('public.favorito_obra') }}" method="POST" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="obra_id" value="{{ obra.id_obra }}">
                             <input type="hidden" name="accion" value="{{ 'quitar' if es_favorito else 'agregar' }}">
-                            <button type="submit" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:{{ '#1769FF' if es_favorito else '#B0B0B0' }};transition:color 0.2s;">
+                            <button type="submit" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:{{ '#1769FF' if es_favorito else '#B0B0B0' }};transition:color 0.2s;" title="{{ 'Quitar de favoritos' if es_favorito else 'Guardar en favoritos' }}">
                                 <i class="fas fa-heart"></i>
                             </button>
                         </form>
                         {% endif %}
                     </div>
+                    {% if current_user.is_authenticated and current_user.is_cliente() %}
+                    <div style="margin-bottom:16px;">
+                        {% with obra_id=obra.id_obra, lienzos=lienzos, btn_class='btn-outline-secondary btn-sm', label='Guardar en lienzo' %}
+                        {% include 'cliente/_guardar_lienzo.html' %}
+                        {% endwith %}
+                        <a href="{{ url_for('cliente.nuevo_lienzo') }}" class="small ms-2" style="color:#1769FF;">+ Nuevo lienzo</a>
+                    </div>
+                    {% endif %}
                     <hr style="border-color:#ECECEC;margin-bottom:16px;">
                     <div style="margin-bottom:16px;">
                         <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#8C8C8C;margin-bottom:8px;">Descripción</div>
@@ -67,36 +76,24 @@
                             <div><i class="fas fa-heart" style="width:16px;color:#B0B0B0;"></i> {{ obra.favoritos_count or 0 }} favoritos</div>
                         </div>
                     </div>
-                    {% if productos_artista %}
-                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#8C8C8C;margin-bottom:10px;">Comprar</div>
-                    {% for producto in productos_artista %}
-                    <div style="border:1px solid #ECECEC;border-radius:8px;padding:12px;margin-bottom:10px;">
-                        <div style="font-weight:600;font-size:14px;">{{ producto.nombre }}</div>
-                        <div style="font-size:13px;color:#4A4A4A;margin:4px 0;">{{ producto|precio_producto }} · Stock: {{ producto.stock }}</div>
-                        {% if current_user.is_authenticated and current_user.is_cliente() %}
-                            {% if producto.is_disponible() %}
-                            <form method="POST" action="{{ url_for('cliente.agregar_al_carrito', producto_id=producto.id_producto) }}">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <input type="hidden" name="next" value="{{ url_for('public.detalle_obra', obra_id=obra.id_obra) }}">
-                                <button type="submit" class="btn btn-primary btn-sm w-100 mt-1">Agregar al carrito</button>
-                            </form>
-                            {% else %}
-                            <span class="badge bg-secondary mt-1">Agotado</span>
-                            {% endif %}
-                        {% elif not current_user.is_authenticated %}
-                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm w-100 mt-1">Iniciar sesión para comprar</a>
+                    <div style="margin-bottom:20px;padding:14px;background:#F7F9FA;border-radius:8px;border:1px solid #ECECEC;">
+                        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#8A6EA8;margin-bottom:6px;">
+                            <i class="fas fa-eye me-1"></i> Portafolio · solo exhibición
+                        </div>
+                        <p style="font-size:13px;color:#4A4A4A;line-height:1.5;margin-bottom:10px;">
+                            Esta obra se muestra como parte del trabajo del artista. No está a la venta en esta página.
+                        </p>
+                        {% if tiene_tienda %}
+                        <a href="{{ url_for('public.perfil_artista', artista_id=obra.artista.id_usuario, tab='tienda') }}"
+                           class="btn btn-outline-primary btn-sm w-100">
+                            <i class="fas fa-store me-1"></i> Ver tienda de {{ obra.artista.nombre }}
+                        </a>
                         {% else %}
-                            <p class="small text-muted mb-0 mt-1">Solo cuentas cliente pueden comprar.</p>
+                        <a href="{{ url_for('public.productos') }}" class="btn btn-outline-secondary btn-sm w-100">
+                            Explorar marketplace
+                        </a>
                         {% endif %}
                     </div>
-                    {% endfor %}
-                    <a href="{{ url_for('public.productos') }}" style="font-size:13px;color:#1769FF;">Ver todo el marketplace →</a>
-                    {% else %}
-                    <p style="font-size:13px;color:#6E6E6E;margin-bottom:10px;">
-                        Esta página es la <strong>exhibición</strong> de la obra. Para comprar, el artista debe publicar un <strong>producto</strong> en su tienda.
-                    </p>
-                    <a href="{{ url_for('public.productos') }}" class="btn btn-outline-primary w-100">Ir al Marketplace</a>
-                    {% endif %}
                 </div>
             </div>
         </div>

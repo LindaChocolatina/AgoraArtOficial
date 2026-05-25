@@ -21,6 +21,13 @@ class NewsletterService:
             
         return query.all()
         
+    def esta_suscrito(self, usuario_id, artista_id):
+        """Indica si el cliente está suscrito al newsletter del artista."""
+        return self.session.query(Suscripcion).filter_by(
+            id_cliente=usuario_id,
+            id_artista=artista_id,
+        ).first() is not None
+
     def suscribir(self, usuario_id, artista_id):
         """Suscribir un usuario a un artista"""
         # Verificar si ya existe
@@ -39,6 +46,19 @@ class NewsletterService:
         except Exception:
             self.session.rollback()
             return False
+        
+    def get_artistas_suscritos(self, usuario_id):
+        """Artistas a cuyo newsletter está suscrito el cliente."""
+        from app.models.usuario import Usuario
+        rows = self.session.query(Usuario).join(
+            Suscripcion, Usuario.id_usuario == Suscripcion.id_artista
+        ).filter(
+            Suscripcion.id_cliente == usuario_id
+        ).order_by(Usuario.nombre).all()
+        return rows
+
+    def count_suscripciones(self, usuario_id):
+        return self.session.query(Suscripcion).filter_by(id_cliente=usuario_id).count()
         
     def desuscribir(self, usuario_id, artista_id):
         """Desuscribir un usuario de un artista"""

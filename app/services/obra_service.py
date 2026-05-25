@@ -193,20 +193,22 @@ class ObraService:
         return self.actualizar_obra(obra_id, {'visible': nueva_visibilidad}, usuario_id)
     
     def eliminar_obra(self, obra_id, usuario_id=None):
-        """Eliminar obra de la base de datos (y su galería)."""
+        """Eliminar obra de la base de datos (y dependencias)."""
         obra = self.obra_repo.get_by_id(obra_id)
         if not obra:
             return False
+        session = self.obra_repo.session
         try:
-            obra.favoritos_usuarios.clear()
-            from app.models.obra_imagen import ObraImagen
-            ObraImagen.query.filter_by(id_obra=obra_id).delete()
-            exitoso = self.obra_repo.delete(obra_id, usuario_id)
-            if exitoso:
-                self.obra_repo.save()
-            return exitoso
+            from app.models.usuario import favoritos_obras
+            session.execute(
+                favoritos_obras.delete().where(favoritos_obras.c.id_obra == obra_id)
+            )
+            if not self.obra_repo.delete(obra_id, usuario_id):
+                session.rollback()
+                return False
+            return self.obra_repo.save()
         except Exception as e:
-            self.obra_repo.session.rollback()
+            session.rollback()
             print(f"Error al eliminar obra {obra_id}: {e}")
             return False
     

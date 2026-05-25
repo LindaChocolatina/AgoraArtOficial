@@ -142,7 +142,13 @@ class UsuarioService:
         Returns:
             bool: True si se siguió correctamente
         """
-        return self.usuario_repo.seguir_artista(usuario_id, artista_id)
+        if self.usuario_repo.esta_siguiendo_artista(usuario_id, artista_id):
+            return True
+        ok = self.usuario_repo.seguir_artista(usuario_id, artista_id)
+        if ok:
+            from app.factories.app_factory import db
+            db.session.commit()
+        return ok
     
     def dejar_de_seguir_artista(self, usuario_id, artista_id):
         """
@@ -155,7 +161,11 @@ class UsuarioService:
         Returns:
             bool: True si se dejó de seguir correctamente
         """
-        return self.usuario_repo.dejar_de_seguir_artista(usuario_id, artista_id)
+        ok = self.usuario_repo.dejar_de_seguir_artista(usuario_id, artista_id)
+        if ok:
+            from app.factories.app_factory import db
+            db.session.commit()
+        return ok
     
     def esta_siguiendo_artista(self, usuario_id, artista_id):
         """

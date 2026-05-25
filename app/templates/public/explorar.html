@@ -41,6 +41,18 @@
     outline: none;
 }
 .be-filter-select:focus { border-color: #1769FF; }
+.project-card { position: relative; cursor: pointer; }
+.obra-acciones-cliente {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+    z-index: 3;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.project-card:hover .obra-acciones-cliente { opacity: 1; }
 </style>
 {% endblock %}
 
@@ -79,10 +91,11 @@
         {% if obras %}
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
             {% for obra in obras %}
-            <div class="project-card" onclick="window.location.href='{{ url_for('public.detalle_obra', obra_id=obra.id_obra) }}'">
+            <div class="project-card">
+                <a href="{{ url_for('public.detalle_obra', obra_id=obra.id_obra) }}" class="text-decoration-none text-reset d-block">
                 <div class="project-image" style="height:210px;overflow:hidden;border-radius:8px;">
                     {% if obra.imagen %}
-                    <img src="{{ url_for('static', filename='uploads/obras/' + obra.imagen) }}" alt="{{ obra.titulo }}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s;">
+                    <img src="{{ obra.imagen }}" alt="{{ obra.titulo }}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s;">
                     {% else %}
                     <div style="width:100%;height:100%;background:linear-gradient(135deg,#F0F0F0,#E0E0E0);display:flex;align-items:center;justify-content:center;">
                         <i class="fas fa-image" style="font-size:2rem;color:#CECECE;"></i>
@@ -102,6 +115,10 @@
                         </div>
                     </div>
                 </div>
+                </a>
+                {% if current_user.is_authenticated and current_user.is_cliente() %}
+                {% include 'cliente/_obra_acciones_explorar.html' %}
+                {% endif %}
             </div>
             {% endfor %}
         </div>
@@ -119,13 +136,3 @@
 </section>
 {% endblock %}
 
-{% block scripts %}
-{% if current_user.is_authenticated %}
-<script>
-function toggleFavorito(obraId) {
-    fetch('/api/favorito-obra',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({obra_id:obraId,accion:'agregar'})})
-    .then(r=>r.json()).then(d=>{if(d.exitoso){location.reload();}}).catch(()=>{});
-}
-</script>
-{% endif %}
-{% endblock %}

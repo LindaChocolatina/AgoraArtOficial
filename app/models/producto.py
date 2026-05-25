@@ -14,7 +14,7 @@ class Producto(db.Model):
     nombre = db.Column(db.String(150), nullable=False)
     descripcion = db.Column(db.Text)
     precio = db.Column(db.Numeric(10, 2), nullable=False)
-    moneda = db.Column(db.String(3), nullable=False, default='USD')
+    moneda = db.Column(db.String(3), nullable=False, default='COP')
     stock = db.Column(db.Integer, default=0)
     imagen = db.Column(db.String(255))
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
@@ -39,7 +39,7 @@ class Producto(db.Model):
             'nombre': self.nombre,
             'descripcion': self.descripcion,
             'precio': float(self.precio),
-            'moneda': self.moneda or 'USD',
+            'moneda': self.moneda or 'COP',
             'stock': self.stock,
             'imagen': self.imagen,
             'estado': self.estado,

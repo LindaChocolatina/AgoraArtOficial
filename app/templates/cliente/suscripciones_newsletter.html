@@ -1,0 +1,52 @@
+{% extends "cliente/base_cliente.html" %}
+
+{% block title %}Suscripciones — Ágora Art{% endblock %}
+
+{% block cliente_content %}
+<div class="container-fluid py-4 px-4">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Mis suscripciones</h2>
+        <p class="text-muted mb-0">Artistas cuyo newsletter recibes. Los mensajes llegan a tu <a href="{{ url_for('cliente.newsletters') }}">bandeja</a>.</p>
+    </div>
+
+    {% if artistas %}
+    <div class="row g-3">
+        {% for artista in artistas %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border shadow-sm">
+                <div class="card-body d-flex gap-3 align-items-center">
+                    {% if artista.foto_perfil %}
+                    <img src="{{ artista.foto_perfil }}" alt="" class="rounded-circle flex-shrink-0" style="width:56px;height:56px;object-fit:cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width:56px;height:56px;">
+                        {{ artista.nombre[0]|upper }}
+                    </div>
+                    {% endif %}
+                    <div class="flex-grow-1 min-width-0">
+                        <h6 class="fw-bold mb-0 text-truncate">{{ artista.nombre }}</h6>
+                        <small class="text-muted">@{{ artista.username }}</small>
+                        <span class="badge bg-success-subtle text-success mt-1"><i class="fas fa-check me-1"></i>Suscrita</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-white d-flex gap-2">
+                    <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario) }}" class="btn btn-sm btn-outline-primary flex-grow-1">Ver perfil</a>
+                    <form action="{{ url_for('public.toggle_newsletter_artista', artista_id=artista.id_usuario) }}" method="POST" class="flex-grow-1">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="accion" value="desuscribir">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary w-100">Cancelar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 bg-white rounded-4 border">
+        <i class="fas fa-envelope fa-4x text-muted opacity-25 mb-3"></i>
+        <h4 class="fw-bold">Sin suscripciones activas</h4>
+        <p class="text-muted px-4">En el perfil de un artista pulsa <strong>Newsletter</strong> para recibir sus novedades aquí.</p>
+        <a href="{{ url_for('public.artistas') }}" class="btn btn-primary rounded-pill mt-2">Descubrir artistas</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

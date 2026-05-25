@@ -1,12 +1,12 @@
-{% extends "base.html" %}
+{% extends "cliente/base_cliente.html" %}
 
 {% block title %}Mi Carrito — Ágora Art{% endblock %}
 
-{% block head %}
+{% block cliente_head %}
 <style>
 .carrito-wrap {
     max-width: 960px;
-    margin: 4rem auto;
+    margin: 1.5rem auto 4rem;
     padding: 0 2rem;
 }
 
@@ -54,11 +54,11 @@
     align-items: center;
     gap: 1.5rem;
     padding: 1.75rem 0;
-    border-bottom: 1px solid var(--borde-suave);
+    border-bottom: 1px solid var(--border, #ECECEC);
     transition: var(--transition);
 }
-.carrito-item:first-child { border-top: 1px solid var(--borde-suave); }
-.carrito-item:hover { background: var(--salvia-light); margin: 0 -1.5rem; padding: 1.75rem 1.5rem; border-radius: var(--radius-md); border-color: transparent; }
+.carrito-item:first-child { border-top: 1px solid var(--border, #ECECEC); }
+.carrito-item:hover { background: var(--blue-light, #E8F0FE); margin: 0 -1.5rem; padding: 1.75rem 1.5rem; border-radius: var(--radius-md); border-color: transparent; }
 
 /* Imagen */
 .item-img {
@@ -66,7 +66,7 @@
     height: 80px;
     border-radius: var(--radius-md);
     object-fit: cover;
-    background: var(--borde-suave);
+    background: var(--gray-100, #F5F5F5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -74,7 +74,7 @@
     overflow: hidden;
 }
 .item-img img { width: 100%; height: 100%; object-fit: cover; }
-.item-img i { color: var(--borde); font-size: 1.5rem; }
+.item-img i { color: var(--gray-400, #B0B0B0); font-size: 1.5rem; }
 
 /* Info */
 .item-info { min-width: 0; }
@@ -99,26 +99,45 @@
 .item-qty {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    border: 1.5px solid var(--borde);
+    gap: 0;
+    border: 1.5px solid var(--border, #ECECEC);
     border-radius: var(--radius-pill);
-    padding: 0.3rem 0.6rem;
-    background: var(--blanco);
+    overflow: hidden;
+    background: var(--blanco, #fff);
 }
-.item-qty input {
-    width: 36px;
-    text-align: center;
+.qty-btn {
+    width: 32px;
+    height: 32px;
     border: none;
-    outline: none;
+    background: var(--gray-50, #FAFAFA);
+    color: var(--text-primary, #191919);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    padding: 0;
+}
+.qty-btn:hover:not(:disabled) {
+    background: var(--blue-light, #E8F0FE);
+    color: var(--primary, #1769FF);
+}
+.qty-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+.item-qty-value {
+    min-width: 36px;
+    text-align: center;
     font-family: 'Josefin Sans', sans-serif;
     font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    background: transparent;
-    -moz-appearance: textfield;
+    font-weight: 700;
+    color: var(--text-primary, #191919);
+    padding: 0 0.25rem;
 }
-.item-qty input::-webkit-outer-spin-button,
-.item-qty input::-webkit-inner-spin-button { -webkit-appearance: none; }
 
 /* Precio */
 .item-price {
@@ -132,22 +151,30 @@
 
 /* Eliminar */
 .item-remove {
-    background: none;
-    border: none;
-    color: var(--borde);
+    background: var(--gray-50, #FAFAFA);
+    border: 1.5px solid var(--border, #ECECEC);
+    color: var(--text-secondary, #6E6E6E);
     cursor: pointer;
-    padding: 0.4rem;
-    border-radius: 50%;
+    padding: 0.45rem 0.65rem;
+    border-radius: var(--radius-sm, 8px);
     transition: var(--transition);
     line-height: 1;
-    font-size: 1rem;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
 }
-.item-remove:hover { color: #C0453A; background: #FCF0EE; }
+.item-remove:hover {
+    color: #C0453A;
+    background: #FCF0EE;
+    border-color: #E8B4AE;
+}
 
 /* ===== RESUMEN ===== */
 .carrito-resumen {
-    background: var(--blanco);
-    border: 1.5px solid var(--borde-suave);
+    background: var(--blanco, #fff);
+    border: 1.5px solid var(--border, #ECECEC);
     border-radius: var(--radius-lg);
     padding: 2rem;
     position: sticky;
@@ -178,7 +205,7 @@
     font-size: 1.15rem;
     font-weight: 700;
     color: var(--text-primary);
-    border-top: 1.5px solid var(--borde-suave);
+    border-top: 1.5px solid var(--border, #ECECEC);
     padding-top: 1rem;
     margin-top: 0.5rem;
     margin-bottom: 1.5rem;
@@ -188,9 +215,9 @@
     display: block;
     width: 100%;
     text-align: center;
-    padding: 1rem;
-    background: var(--salvia);
-    color: white;
+    padding: 1rem 1.25rem;
+    background: var(--primary, #1769FF);
+    color: #fff !important;
     border-radius: var(--radius-pill);
     font-family: 'Josefin Sans', sans-serif;
     font-weight: 700;
@@ -203,10 +230,10 @@
     cursor: pointer;
 }
 .btn-checkout:hover {
-    background: var(--salvia-dark);
-    color: white;
+    background: var(--primary-dark, #0D5BDB);
+    color: #fff !important;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(123,140,122,0.35);
+    box-shadow: 0 6px 20px rgba(23, 105, 255, 0.35);
     text-decoration: none;
 }
 
@@ -219,7 +246,7 @@
     letter-spacing: 0.04em;
     color: var(--text-secondary);
 }
-.seguir-comprando:hover { color: var(--salvia-dark); }
+.seguir-comprando:hover { color: var(--primary-dark, #0D5BDB); }
 
 /* CARRITO VACÍO */
 .carrito-vacio {
@@ -231,14 +258,14 @@
 .carrito-vacio-icon {
     width: 88px;
     height: 88px;
-    background: var(--salvia-light);
+    background: var(--blue-light, #E8F0FE);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 2rem;
     font-size: 2rem;
-    color: var(--salvia-dark);
+    color: var(--primary, #1769FF);
 }
 .carrito-vacio h2 {
     font-family: 'Josefin Sans', sans-serif;
@@ -266,12 +293,12 @@
     .item-price{ grid-column: 3; grid-row: 2; }
     .item-remove { grid-column: 3; grid-row: 1; }
     .carrito-resumen { position: static; }
-    .carrito-item:hover { margin: 0; padding: 1.75rem 0; border-radius: 0; border-color: var(--borde-suave); background: transparent; }
+    .carrito-item:hover { margin: 0; padding: 1.75rem 0; border-radius: 0; border-color: var(--border, #ECECEC); background: transparent; }
 }
 </style>
 {% endblock %}
 
-{% block content %}
+{% block cliente_content %}
 {% if items %}
 <div class="carrito-wrap fade-up">
     <div class="carrito-header">
@@ -302,25 +329,26 @@
 
                 <!-- Cantidad -->
                 <form action="{{ url_for('cliente.actualizar_carrito', producto_id=item.producto.id_producto) }}"
-                      method="POST" id="form-qty-{{ item.producto.id_producto }}">
-                    <div class="item-qty">
-                        <span style="color:var(--text-secondary);font-size:0.75rem;">×</span>
-                        <input type="number"
-                               name="cantidad"
-                               value="{{ item.cantidad }}"
-                               min="1"
-                               max="{{ item.producto.stock }}"
-                               onchange="document.getElementById('form-qty-{{ item.producto.id_producto }}').submit()">
-                    </div>
+                      method="POST" class="item-qty">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" name="cantidad" value="{{ item.cantidad - 1 }}"
+                            class="qty-btn" title="{% if item.cantidad <= 1 %}Quitar del carrito{% else %}Quitar una unidad{% endif %}"
+                            aria-label="Menos">−</button>
+                    <span class="item-qty-value">{{ item.cantidad }}</span>
+                    <button type="submit" name="cantidad" value="{{ item.cantidad + 1 }}"
+                            class="qty-btn" title="Agregar una unidad"
+                            {% if item.cantidad >= item.producto.stock %}disabled{% endif %} aria-label="Más">+</button>
                 </form>
 
                 <!-- Precio -->
-                <div class="item-price">${{ item.subtotal }}</div>
+                <div class="item-price">${{ '%.2f'|format(item.subtotal) }}</div>
 
                 <!-- Eliminar -->
                 <form action="{{ url_for('cliente.remover_carrito', producto_id=item.producto.id_producto) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="item-remove" title="Quitar del carrito">
-                        <i class="fas fa-xmark"></i>
+                        <i class="fas fa-trash-can"></i>
+                        <span>Quitar</span>
                     </button>
                 </form>
             </div>
@@ -333,7 +361,7 @@
 
             <div class="resumen-linea">
                 <span>Subtotal</span>
-                <span>${{ total }}</span>
+                <span>${{ '%.2f'|format(total) }}</span>
             </div>
             <div class="resumen-linea">
                 <span>Envío</span>
@@ -341,7 +369,7 @@
             </div>
             <div class="resumen-linea total">
                 <span>Total estimado</span>
-                <span>${{ total }}</span>
+                <span>${{ '%.2f'|format(total) }}</span>
             </div>
 
             <a href="{{ url_for('cliente.checkout') }}" class="btn-checkout">
@@ -351,7 +379,7 @@
                 ← Seguir explorando
             </a>
 
-            <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--borde-suave);">
+            <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border, #ECECEC);">
                 <p style="font-size:0.78rem;color:var(--text-secondary);text-align:center;line-height:1.6;font-family:'Lora',serif;font-style:italic;">
                     Cada compra apoya directamente a un artista independiente.
                 </p>
@@ -368,8 +396,8 @@
         <i class="fas fa-bag-shopping"></i>
     </div>
     <h2>Tu carrito está vacío</h2>
-    <p>Explora las obras y productos de nuestros artistas. Hay piezas únicas esperándote.</p>
-    <a href="{{ url_for('public.explorar') }}" class="btn btn-primary">Explorar obras</a>
+    <p>Visita el marketplace o la tienda de un artista para encontrar productos en venta.</p>
+    <a href="{{ url_for('public.productos') }}" class="btn btn-primary">Ir al marketplace</a>
 </div>
 {% endif %}
 

@@ -1,0 +1,31 @@
+{# Dropdown para guardar obra en un lienzo (cliente). #}
+{% if current_user.is_authenticated and current_user.is_cliente() %}
+<div class="dropdown d-inline-block" onclick="event.stopPropagation();">
+    <button class="btn btn-sm {{ btn_class|default('btn-light') }} dropdown-toggle" type="button"
+            data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Guardar en lienzo"
+            onclick="event.stopPropagation();">
+        <i class="fas fa-th-large"></i>{% if label %} <span>{{ label }}</span>{% endif %}
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end shadow-sm" onclick="event.stopPropagation();">
+        {% if lienzos %}
+            {% for lienzo in lienzos %}
+            <li>
+                <form method="POST" action="{{ url_for('cliente.agregar_obra_lienzo', lienzo_id=lienzo.id_lienzo, obra_id=obra_id) }}"
+                      onclick="event.stopPropagation();">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="dropdown-item" onclick="event.stopPropagation();">{{ lienzo.nombre }}</button>
+                </form>
+            </li>
+            {% endfor %}
+            <li><hr class="dropdown-divider"></li>
+        {% else %}
+            <li><span class="dropdown-item-text small text-muted">Aún no tienes lienzos</span></li>
+        {% endif %}
+        <li>
+            <a class="dropdown-item" href="{{ url_for('cliente.nuevo_lienzo') }}">
+                <i class="fas fa-plus me-1"></i> Crear lienzo
+            </a>
+        </li>
+    </ul>
+</div>
+{% endif %}

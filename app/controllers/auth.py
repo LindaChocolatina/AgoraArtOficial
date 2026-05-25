@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from app.factories.service_factory import get_service_factory
+from app.utils.perfil_usuario import foto_perfil_desde_form
 
 # Crear blueprint
 auth_bp = Blueprint('auth', __name__)
@@ -109,6 +110,7 @@ def editar_perfil():
             'email': request.form.get('email'),
             'biografia': request.form.get('biografia', '')
         }
+        data.update(foto_perfil_desde_form(request, current_app.config['UPLOAD_FOLDER']))
         
         # Validar datos
         service_factory = get_service_factory()

@@ -1,5 +1,8 @@
 from datetime import datetime
+import re
 from app.factories.app_factory import db
+
+_IMG_SRC_RE = re.compile(r'<img[^>]+src=["\']([^"\']+)["\']', re.I)
 
 class EntradaBlog(db.Model):
     """
@@ -42,6 +45,13 @@ class EntradaBlog(db.Model):
     def is_visible(self):
         """Verificar si la entrada es visible"""
         return self.visible
+
+    def imagen_miniatura(self):
+        """Primera imagen embebida en el contenido HTML del editor."""
+        if not self.contenido:
+            return None
+        match = _IMG_SRC_RE.search(self.contenido)
+        return match.group(1) if match else None
     
     @staticmethod
     def get_publicas(limit=None, offset=None):

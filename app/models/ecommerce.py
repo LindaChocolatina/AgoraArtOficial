@@ -43,6 +43,12 @@ class Direccion(db.Model):
         """Verificar si la dirección tiene órdenes asociadas"""
         return self.ordenes.count() > 0
 
+    def direccion_completa(self):
+        partes = [self.direccion, self.ciudad, self.pais]
+        if self.codigo_postal:
+            partes.append(f'CP {self.codigo_postal}')
+        return ', '.join(p for p in partes if p)
+
 class Orden(db.Model):
     """
     Modelo de Orden basado en el script de base de datos

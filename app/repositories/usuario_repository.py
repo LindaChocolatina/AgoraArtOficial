@@ -267,7 +267,7 @@ class UsuarioRepository(BaseRepository):
             ).first()
             
             if existe:
-                return False
+                return True
             
             # Agregar relación
             self.session.execute(

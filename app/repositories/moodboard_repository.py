@@ -19,6 +19,18 @@ class MoodboardRepository(BaseRepository):
             print(f"Error al obtener lienzos del usuario: {e}")
             return []
     
+    def get_items(self, id_lienzo):
+        """Obtener obras guardadas en un lienzo (lista materializada)."""
+        try:
+            return (
+                self.session.query(LienzoItem)
+                .filter_by(id_lienzo=id_lienzo)
+                .all()
+            )
+        except SQLAlchemyError as e:
+            print(f"Error al obtener items del lienzo: {e}")
+            return []
+
     def get_item(self, id_lienzo, id_obra):
         """Obtener un item específico de un lienzo"""
         try:

@@ -11,10 +11,9 @@
             {% if ultima_obra %}
             <h6 class="fw-bold mb-1 text-truncate">{{ ultima_obra.titulo }}</h6>
             <p class="small text-muted mb-2">{{ contar_imagenes_obra(ultima_obra) }} foto(s)</p>
-            <a href="{{ url_for('artista.editar_obra', obra_id=ultima_obra.id_obra) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <a href="{{ url_for('public.detalle_obra', obra_id=ultima_obra.id_obra) }}" class="btn btn-sm btn-outline-primary">Ver obra</a>
             {% else %}
-            <p class="small text-muted mb-2">Aún no hay obras</p>
-            <a href="{{ url_for('artista.nueva_obra') }}" class="btn btn-sm btn-primary">Publicar</a>
+            <p class="small text-muted mb-0">Aún no hay obras publicadas</p>
             {% endif %}
         </div>
     </div>
@@ -22,8 +21,8 @@
         {% if ultima_entrada and ultima_entrada.imagen_miniatura() %}
         <img src="{{ ultima_entrada.imagen_miniatura() }}" class="actividad-card-img" alt="">
         {% else %}
-        <div class="actividad-card-img d-flex align-items-center justify-content-center bg-malva bg-opacity-10 text-malva">
-            <i class="fas fa-feather-alt fa-2x"></i>
+        <div class="actividad-card-img d-flex align-items-center justify-content-center bg-light text-muted">
+            <i class="fas fa-feather-alt fa-2x opacity-25"></i>
         </div>
         {% endif %}
         <div class="actividad-card-body">
@@ -31,10 +30,9 @@
             {% if ultima_entrada %}
             <h6 class="fw-bold mb-1 text-truncate">{{ ultima_entrada.titulo }}</h6>
             <p class="small text-muted mb-2">{{ ultima_entrada.fecha_publicacion.strftime('%d/%m/%Y') if ultima_entrada.fecha_publicacion else '' }}</p>
-            <a href="{{ url_for('artista.editar_entrada', entrada_id=ultima_entrada.id_entrada) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='blog') }}" class="btn btn-sm btn-outline-primary">Ver blog</a>
             {% else %}
-            <p class="small text-muted mb-2">Sin entradas de blog</p>
-            <a href="{{ url_for('artista.nueva_entrada') }}" class="btn btn-sm btn-primary">Escribir</a>
+            <p class="small text-muted mb-0">Sin entradas de blog</p>
             {% endif %}
         </div>
     </div>
@@ -49,10 +47,9 @@
             {% if ultimo_producto %}
             <h6 class="fw-bold mb-1 text-truncate">{{ ultimo_producto.nombre }}</h6>
             <p class="small text-muted mb-2">{{ ultimo_producto|precio_producto }}</p>
-            <a href="{{ url_for('artista.editar_producto', producto_id=ultimo_producto.id_producto) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='tienda') }}" class="btn btn-sm btn-outline-primary">Ver tienda</a>
             {% else %}
-            <p class="small text-muted mb-2">Tienda vacía</p>
-            <a href="{{ url_for('artista.nuevo_producto') }}" class="btn btn-sm btn-primary">Agregar</a>
+            <p class="small text-muted mb-0">Tienda vacía</p>
             {% endif %}
         </div>
     </div>

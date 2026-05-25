@@ -23,6 +23,14 @@ def database_uri(sqlite_filename):
     return 'sqlite:///' + os.path.join(_BASEDIR, sqlite_filename)
 
 
+def sqlalchemy_engine_options(uri=None):
+    """Opciones del motor: timeout en SQLite para evitar 'database is locked'."""
+    uri = uri or database_uri('art_platform.db')
+    if uri.startswith('sqlite'):
+        return {'connect_args': {'timeout': 30}}
+    return {}
+
+
 class Config:
     """Configuración base de la aplicación"""
     
@@ -32,6 +40,7 @@ class Config:
     # Configuración de base de datos
     basedir = _BASEDIR
     SQLALCHEMY_DATABASE_URI = database_uri('art_platform.db')
+    SQLALCHEMY_ENGINE_OPTIONS = sqlalchemy_engine_options(SQLALCHEMY_DATABASE_URI)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = False
     
@@ -47,6 +56,11 @@ class Config:
     
     # Configuración de paginación
     ITEMS_PER_PAGE = 12
+
+    # Pasarela de pago (Stripe). Sin claves → modo demo en checkout.
+    STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
+    STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
+    STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
     
     # Configuración de correo (para newsletters)
     MAIL_SERVER = os.environ.get('MAIL_SERVER')

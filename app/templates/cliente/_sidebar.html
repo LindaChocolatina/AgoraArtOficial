@@ -1,0 +1,78 @@
+<aside class="cliente-sidebar" aria-label="Menú del cliente">
+    <div class="cliente-sidebar-brand">Mi espacio</div>
+
+    <div class="cliente-nav-section">Contenido</div>
+    <a href="{{ url_for('cliente.dashboard', tab='lienzos') }}"
+       class="cliente-nav-link {% if active_nav == 'lienzos' %}active{% endif %}">
+        <i class="fas fa-th-large"></i>
+        <span class="label-text">Lienzos</span>
+        {% if nav_counts.lienzos_count is defined %}
+        <span class="cliente-nav-badge">{{ nav_counts.lienzos_count }}</span>
+        {% endif %}
+    </a>
+    <a href="{{ url_for('cliente.dashboard', tab='favoritos') }}"
+       class="cliente-nav-link {% if active_nav == 'favoritos' %}active{% endif %}">
+        <i class="fas fa-heart"></i>
+        <span class="label-text">Favoritos</span>
+        {% if nav_counts.favoritos_count is defined %}
+        <span class="cliente-nav-badge">{{ nav_counts.favoritos_count }}</span>
+        {% endif %}
+    </a>
+    <a href="{{ url_for('cliente.dashboard', tab='siguiendo') }}"
+       class="cliente-nav-link {% if active_nav == 'siguiendo' %}active{% endif %}">
+        <i class="fas fa-user-check"></i>
+        <span class="label-text">Artistas</span>
+        {% if nav_counts.siguiendo_count is defined %}
+        <span class="cliente-nav-badge">{{ nav_counts.siguiendo_count }}</span>
+        {% endif %}
+    </a>
+
+    <div class="cliente-nav-section">Comunicación</div>
+    <a href="{{ url_for('cliente.newsletters') }}"
+       class="cliente-nav-link {% if active_nav == 'inbox' %}active{% endif %}">
+        <i class="fas fa-inbox"></i>
+        <span class="label-text">Bandeja</span>
+        {% if nav_counts.newsletters_count is defined and nav_counts.newsletters_count > 0 %}
+        <span class="cliente-nav-badge">{{ nav_counts.newsletters_count }}</span>
+        {% endif %}
+    </a>
+    <a href="{{ url_for('cliente.suscripciones_newsletter') }}"
+       class="cliente-nav-link {% if active_nav == 'suscripciones' %}active{% endif %}">
+        <i class="fas fa-envelope"></i>
+        <span class="label-text">Suscripciones</span>
+        {% if nav_counts.suscripciones_count is defined %}
+        <span class="cliente-nav-badge">{{ nav_counts.suscripciones_count }}</span>
+        {% endif %}
+    </a>
+
+    <div class="cliente-nav-section">Compras</div>
+    <a href="{{ url_for('cliente.carrito') }}"
+       class="cliente-nav-link {% if active_nav == 'carrito' %}active{% endif %}">
+        <i class="fas fa-bag-shopping"></i>
+        <span class="label-text">Carrito</span>
+    </a>
+    <a href="{{ url_for('cliente.dashboard', tab='compras') }}"
+       class="cliente-nav-link {% if active_nav == 'compras' %}active{% endif %}">
+        <i class="fas fa-receipt"></i>
+        <span class="label-text">Mis compras</span>
+        {% if nav_counts.ordenes_count is defined %}
+        <span class="cliente-nav-badge">{{ nav_counts.ordenes_count }}</span>
+        {% endif %}
+    </a>
+
+    <div class="cliente-nav-section">Cuenta</div>
+    <a href="{{ url_for('public.explorar') }}" class="cliente-nav-link">
+        <i class="fas fa-compass"></i>
+        <span class="label-text">Explorar</span>
+    </a>
+    <a href="{{ url_for('cliente.editar_foto_perfil') }}"
+       class="cliente-nav-link {% if active_nav == 'foto' %}active{% endif %}">
+        <i class="fas fa-camera"></i>
+        <span class="label-text">Foto de perfil</span>
+    </a>
+    <a href="{{ url_for('cliente.editar_perfil') }}"
+       class="cliente-nav-link {% if active_nav == 'perfil' %}active{% endif %}">
+        <i class="fas fa-user-pen"></i>
+        <span class="label-text">Editar perfil</span>
+    </a>
+</aside>

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<style>
+.cliente-shell {
+    display: flex;
+    min-height: calc(100vh - 56px);
+    background: #fff;
+}
+
+.cliente-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    border-right: 1px solid #ebebeb;
+    padding: 20px 12px;
+    position: sticky;
+    top: 56px;
+    height: calc(100vh - 56px);
+    overflow-y: auto;
+    background: #fff;
+}
+
+.cliente-sidebar-brand {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 8px 12px 20px;
+    color: #111;
+}
+
+.cliente-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    color: #111;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 4px;
+    transition: background 0.15s;
+}
+
+.cliente-nav-link i {
+    width: 22px;
+    text-align: center;
+    color: #767676;
+    font-size: 18px;
+}
+
+.cliente-nav-link:hover {
+    background: #f0f0f0;
+    color: #111;
+    text-decoration: none;
+}
+
+.cliente-nav-link.active {
+    background: #111;
+    color: #fff;
+}
+
+.cliente-nav-link.active i { color: #fff; }
+
+.cliente-nav-badge {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 700;
+    background: #efefef;
+    color: #555;
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+.cliente-nav-link.active .cliente-nav-badge {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+.cliente-nav-section {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #aaa;
+    padding: 16px 14px 8px;
+}
+
+.cliente-main {
+    flex: 1;
+    min-width: 0;
+}
+
+@media (max-width: 991.98px) {
+    .cliente-shell { flex-direction: column; }
+    .cliente-sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid #ebebeb;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 12px;
+    }
+    .cliente-sidebar-brand { width: 100%; padding-bottom: 8px; }
+    .cliente-nav-section { display: none; }
+    .cliente-nav-link {
+        flex: 1 1 auto;
+        justify-content: center;
+        font-size: 13px;
+        padding: 10px 12px;
+    }
+    .cliente-nav-link span.label-text { display: none; }
+    .cliente-nav-badge { display: none; }
+}
+</style>
+{% block cliente_head %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="cliente-shell">
+    {% include 'cliente/_sidebar.html' %}
+    <main class="cliente-main">
+        {% block cliente_content %}{% endblock %}
+    </main>
+</div>
+{% endblock %}

@@ -1,405 +1,511 @@
-{% extends "base.html" %}
+{% extends "cliente/base_cliente.html" %}
 
-{% block head %}
+{% block title %}Mi Espacio — Ágora Art{% endblock %}
+
+{% block cliente_head %}
 <style>
-    /* === ÁGORA ART x PINTEREST EXPERIENCE === */
     :root {
-        --pin-bg: #ffffff;
-        --pin-radius: 20px;
+        --pin-radius: 16px;
         --agora-teal: #1B8FA0;
         --agora-malva: #8A6EA8;
-        --agora-gray: #f0f0f0;
+        --agora-gray: #efefef;
         --agora-teal-dark: #136E7C;
     }
 
-    body {
-        background-color: #ffffff !important;
-        font-family: 'Roboto', sans-serif !important;
-    }
+    body { background: #fff !important; }
 
-    /* Header Estilo Pinterest */
-    .profile-section {
+    .dash-profile {
         text-align: center;
-        padding: 40px 0;
+        padding: 32px 16px 8px;
     }
 
-    .profile-avatar {
-        width: 120px;
-        height: 120px;
+    .dash-avatar {
+        width: 108px;
+        height: 108px;
         border-radius: 50%;
         background: linear-gradient(135deg, var(--agora-teal), var(--agora-malva));
-        margin: 0 auto 15px;
+        margin: 0 auto 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-family: 'Josefin Sans', sans-serif;
-        font-size: 48px;
+        font-size: 42px;
         font-weight: 700;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-
-    .profile-name {
-        font-family: 'Josefin Sans', sans-serif;
-        font-size: 32px;
-        font-weight: 700;
-        margin-bottom: 5px;
-        color: #111;
-    }
-
-    .profile-username {
-        color: #767676;
-        font-size: 16px;
-        margin-bottom: 15px;
-    }
-
-    .profile-stats {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        margin-bottom: 25px;
-    }
-
-    .stat-link {
-        font-weight: 600;
-        color: #111;
-        text-decoration: none;
-        font-size: 14px;
-    }
-
-    .stat-link:hover { text-decoration: underline; }
-
-    /* Botones Estilo Pinterest con Colores Ágora */
-    .btn-pin {
-        padding: 12px 20px;
-        border-radius: 25px;
-        font-weight: 600;
-        border: none;
-        font-family: 'Josefin Sans', sans-serif;
-        cursor: pointer;
-        transition: transform 0.2s;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .btn-pin:active { transform: scale(0.95); }
-    .btn-pin-gray { background-color: var(--agora-gray); color: #111; }
-    .btn-pin-teal { background-color: var(--agora-teal); color: white; }
-
-    /* Masonry Grid */
-    .masonry-wrapper {
-        width: 96%;
-        max-width: 1600px;
-        margin: 0 auto;
-        padding: 20px 0;
-    }
-
-    .masonry-columns {
-        column-count: 5;
-        column-gap: 16px;
-    }
-
-    @media (max-width: 1400px) { .masonry-columns { column-count: 4; } }
-    @media (max-width: 1100px) { .masonry-columns { column-count: 3; } }
-    @media (max-width: 800px) { .masonry-columns { column-count: 2; } }
-    @media (max-width: 500px) { .masonry-columns { column-count: 1; } }
-
-    /* Pin Card */
-    .pin-item {
-        break-inside: avoid;
-        margin-bottom: 16px;
-        position: relative;
-    }
-
-    .pin-image-box {
-        position: relative;
-        border-radius: var(--pin-radius);
-        overflow: hidden;
-        background-color: var(--agora-gray);
-        cursor: zoom-in;
-    }
-
-    .pin-image-box img {
-        width: 100%;
-        display: block;
-        transition: filter 0.3s;
-    }
-
-    .pin-item:hover .pin-image-box img {
-        filter: brightness(0.8);
-    }
-
-    /* Acciones en Hover */
-    .pin-hover-ui {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        padding: 15px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        opacity: 0;
-        transition: opacity 0.3s;
-        pointer-events: none;
-        z-index: 2;
-    }
-
-    .pin-item:hover .pin-hover-ui {
-        opacity: 1;
-        pointer-events: auto;
-    }
-
-    .save-button {
-        align-self: flex-end;
-        background-color: var(--agora-teal);
-        color: white;
-        border: none;
-        padding: 10px 18px;
-        border-radius: 20px;
-        font-weight: 700;
-        font-family: 'Josefin Sans', sans-serif;
-    }
-
-    .save-button:hover { background-color: var(--agora-teal-dark); }
-
-    .pin-bottom-tools {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-
-    .tool-icon {
-        width: 32px;
-        height: 32px;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #111;
-        font-size: 14px;
-    }
-
-    /* Texto debajo del Pin */
-    .pin-meta {
-        padding: 8px 5px;
-    }
-
-    .pin-title {
-        font-family: 'Josefin Sans', sans-serif;
-        font-size: 14px;
-        font-weight: 700;
-        margin-bottom: 5px;
-        color: #111;
-    }
-
-    .pin-author {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .author-circle {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
         object-fit: cover;
     }
 
-    /* Utility Cards en el Grid */
-    .util-card {
-        break-inside: avoid;
-        margin-bottom: 16px;
-        background-color: var(--agora-gray);
-        border-radius: var(--pin-radius);
-        padding: 24px;
+    .dash-avatar-wrap {
+        position: relative;
+        display: inline-block;
+        margin: 0 auto 12px;
     }
 
-    .util-card h4 {
+    .dash-avatar-wrap .dash-avatar { margin-bottom: 0; }
+
+    .dash-avatar-edit {
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .dash-name {
         font-family: 'Josefin Sans', sans-serif;
+        font-size: 28px;
         font-weight: 700;
-        margin-bottom: 15px;
-        font-size: 18px;
+        margin: 0 0 4px;
         color: #111;
     }
 
-    .nav-item-pin {
-        display: block;
-        padding: 10px 0;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-        color: #111;
-        text-decoration: none;
+    .dash-user { color: #767676; font-size: 15px; margin-bottom: 12px; }
+
+    .dash-actions {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+    }
+
+    .btn-dash {
+        padding: 11px 18px;
+        border-radius: 24px;
         font-weight: 600;
+        border: none;
+        font-family: 'Josefin Sans', sans-serif;
+        text-decoration: none;
+        display: inline-block;
         font-size: 14px;
     }
 
-    .nav-item-pin:hover { color: var(--agora-teal); }
+    .btn-dash-gray { background: var(--agora-gray); color: #111; }
+    .btn-dash-teal { background: var(--agora-teal); color: #fff; }
 
-    /* Floating Action */
+    /* Tabs estilo Pinterest */
+    .dash-tabs-wrap {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid #ebebeb;
+        margin-bottom: 24px;
+    }
+
+    .dash-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 4px;
+        max-width: 520px;
+        margin: 0 auto;
+        padding: 0 16px;
+    }
+
+    .dash-tab {
+        flex: 1;
+        text-align: center;
+        padding: 14px 8px;
+        font-weight: 700;
+        font-size: 14px;
+        color: #767676;
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        transition: color 0.2s, border-color 0.2s;
+    }
+
+    .dash-tab:hover { color: #111; }
+    .dash-tab.active {
+        color: #111;
+        border-bottom-color: #111;
+    }
+
+    .dash-tab-count {
+        display: block;
+        font-size: 11px;
+        font-weight: 500;
+        color: #aaa;
+        margin-top: 2px;
+    }
+
+    .dash-tab.active .dash-tab-count { color: #767676; }
+
+    /* Masonry */
+    .dash-masonry {
+        column-count: 5;
+        column-gap: 16px;
+        width: 96%;
+        max-width: 1600px;
+        margin: 0 auto 48px;
+        padding: 0 8px;
+    }
+
+    @media (max-width: 1400px) { .dash-masonry { column-count: 4; } }
+    @media (max-width: 1100px) { .dash-masonry { column-count: 3; } }
+    @media (max-width: 800px)  { .dash-masonry { column-count: 2; } }
+    @media (max-width: 500px)  { .dash-masonry { column-count: 1; } }
+
+    .dash-pin {
+        break-inside: avoid;
+        margin-bottom: 16px;
+    }
+
+    .dash-pin-img {
+        border-radius: var(--pin-radius);
+        overflow: hidden;
+        background: var(--agora-gray);
+        display: block;
+    }
+
+    .dash-pin-img img {
+        width: 100%;
+        display: block;
+        transition: filter 0.25s;
+    }
+
+    .dash-pin:hover .dash-pin-img img { filter: brightness(0.92); }
+
+    .dash-pin-meta { padding: 8px 4px; }
+    .dash-pin-title {
+        font-family: 'Josefin Sans', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: #111;
+        margin-bottom: 4px;
+    }
+
+    .dash-pin-sub { font-size: 12px; color: #767676; }
+
+    /* Lienzo board card */
+    .board-card {
+        break-inside: avoid;
+        margin-bottom: 16px;
+        border-radius: var(--pin-radius);
+        overflow: hidden;
+        background: var(--agora-gray);
+        cursor: pointer;
+        transition: transform 0.2s;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .board-card:hover { transform: translateY(-3px); }
+
+    .board-preview {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 2px;
+        height: 180px;
+        background: #e8e8e8;
+    }
+
+    .board-preview-main { grid-row: span 2; }
+    .board-preview-cell {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        background: #ddd;
+    }
+
+    .board-preview-empty {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #bbb;
+    }
+
+    .board-footer { padding: 14px 16px; background: #fff; }
+
+    .board-new {
+        break-inside: avoid;
+        margin-bottom: 16px;
+        border-radius: var(--pin-radius);
+        border: 2px dashed #ccc;
+        min-height: 220px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #767676;
+        transition: border-color 0.2s, color 0.2s;
+    }
+
+    .board-new:hover {
+        border-color: var(--agora-malva);
+        color: var(--agora-malva);
+    }
+
+    /* Compras */
+    .compras-list {
+        max-width: 720px;
+        margin: 0 auto 48px;
+        padding: 0 16px;
+    }
+
+    .compra-card {
+        border: 1px solid #ebebeb;
+        border-radius: var(--pin-radius);
+        padding: 20px;
+        margin-bottom: 12px;
+        background: #fff;
+    }
+
+    .compra-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+
+    .compra-empty {
+        text-align: center;
+        padding: 64px 24px;
+        color: #767676;
+    }
+
+    .dash-empty {
+        text-align: center;
+        padding: 64px 24px;
+        color: #767676;
+        column-span: all;
+    }
+
     .fab-add {
         position: fixed;
-        bottom: 30px;
-        right: 30px;
+        bottom: 28px;
+        right: 28px;
         width: 56px;
         height: 56px;
         border-radius: 50%;
-        background: white;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        background: var(--agora-teal);
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(27,143,160,0.35);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 20px;
-        color: #111;
         z-index: 100;
         text-decoration: none;
     }
+
+    .fab-add:hover { color: #fff; background: var(--agora-teal-dark); }
 </style>
 {% endblock %}
 
-{% block content %}
-<div class="profile-section">
-    <div class="profile-avatar">
-        {{ current_user.nombre[0]|upper }}
+{% block cliente_content %}
+<div class="dash-profile">
+    <div class="dash-avatar-wrap">
+        {% if current_user.foto_perfil %}
+        <img src="{{ current_user.foto_perfil }}" alt="{{ current_user.nombre }}" class="dash-avatar">
+        {% else %}
+        <div class="dash-avatar">{{ current_user.nombre[0]|upper }}</div>
+        {% endif %}
+        <a href="{{ url_for('cliente.editar_foto_perfil') }}" class="btn btn-light btn-sm dash-avatar-edit" title="Cambiar foto de perfil">
+            <i class="fas fa-camera"></i>
+        </a>
     </div>
-    <h1 class="profile-name">{{ current_user.nombre }}</h1>
-    <p class="profile-username">@{{ current_user.username }}</p>
-    
-    <div class="profile-stats">
-        <a href="#" class="stat-link">{{ stats.siguiendo_count }} siguiendo</a>
-        <a href="#" class="stat-link">{{ stats.favoritos_count }} favoritos</a>
-    </div>
-
-    <div class="d-flex justify-content-center gap-2">
-        <button class="btn-pin btn-pin-gray">Compartir</button>
-        <button class="btn-pin btn-pin-gray">Editar perfil</button>
+    <h1 class="dash-name">{{ current_user.nombre }}</h1>
+    <p class="dash-user">@{{ current_user.username }}</p>
+    <div class="dash-actions">
+        <a href="{{ url_for('public.explorar') }}" class="btn-dash btn-dash-teal">Explorar obras</a>
     </div>
 </div>
 
-<div class="masonry-wrapper">
-    <div class="masonry-columns">
-        
-        <!-- Tarjeta de Estadísticas -->
-        <div class="util-card">
-            <h4>Mi Actividad</h4>
-            <div class="d-flex justify-content-between mb-2">
-                <span class="small">Favoritos</span>
-                <span class="fw-bold">{{ stats.favoritos_count }}</span>
-            </div>
-            <div class="d-flex justify-content-between mb-2">
-                <span class="small">Artistas</span>
-                <span class="fw-bold">{{ stats.siguiendo_count }}</span>
-            </div>
-            <div class="d-flex justify-content-between mb-2">
-                <span class="small">Lienzos</span>
-                <span class="fw-bold">{{ stats.lienzos_count }}</span>
-            </div>
-        </div>
-
-        <!-- Tarjeta de Accesos Rápidos -->
-        <div class="util-card">
-            <h4>Herramientas</h4>
-            <a href="{{ url_for('cliente.lienzos') }}" class="nav-item-pin">Mis Lienzos</a>
-            <a href="{{ url_for('cliente.direcciones') }}" class="nav-item-pin">Direcciones</a>
-            <a href="{{ url_for('cliente.ordenes') }}" class="nav-item-pin">Compras</a>
-            <a href="{{ url_for('cliente.nuevo_lienzo') }}" class="nav-item-pin" style="color: var(--agora-malva);">+ Nuevo Lienzo</a>
-        </div>
-
-        <!-- Newsletters -->
-        {% if newsletters %}
-        <div class="util-card">
-            <h4>Correspondencia</h4>
-            {% for news in newsletters %}
-            <div class="mb-3">
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--agora-teal); color: white; font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: 700;">
-                        {{ news.artista.nombre[0]|upper }}
-                    </div>
-                    <span class="small fw-bold">{{ news.artista.nombre }}</span>
-                </div>
-                <div class="small fw-bold mb-1">{{ news.asunto }}</div>
-                <div class="text-muted" style="font-size: 11px;">{{ news.contenido|truncate_words(6) }}</div>
-            </div>
-            {% endfor %}
-            <a href="{{ url_for('cliente.newsletters') }}" class="small fw-bold" style="color: var(--agora-teal); text-decoration: none;">Ver más</a>
-        </div>
-        {% endif %}
-
-        <!-- LOS LIENZOS (Moodboards) -->
-        {% if lienzos %}
-            {% for lienzo in lienzos %}
-            <div class="util-card p-0 overflow-hidden" style="cursor: pointer;" onclick="window.location.href='{{ url_for('cliente.ver_lienzo', lienzo_id=lienzo.id_lienzo) }}'">
-                <div style="display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; height: 160px; background: #eee;">
-                    {% set items = lienzo.items[:3] %}
-                    <div style="grid-row: span 2;">
-                        {% if items|length > 0 %}
-                            <img src="{{ items[0].obra.imagen }}" style="width: 100%; height: 100%; object-fit: cover;">
-                        {% else %}
-                            <div style="width: 100%; height: 100%; background: #ddd; display: flex; align-items: center; justify-content: center;"><i class="fas fa-palette opacity-25"></i></div>
-                        {% endif %}
-                    </div>
-                    <div>
-                        {% if items|length > 1 %}
-                            <img src="{{ items[1].obra.imagen }}" style="width: 100%; height: 100%; object-fit: cover;">
-                        {% else %}
-                            <div style="width: 100%; height: 100%; background: #e5e5e5;"></div>
-                        {% endif %}
-                    </div>
-                    <div>
-                        {% if items|length > 2 %}
-                            <img src="{{ items[2].obra.imagen }}" style="width: 100%; height: 100%; object-fit: cover;">
-                        {% else %}
-                            <div style="width: 100%; height: 100%; background: #ececec;"></div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="p-3">
-                    <div class="pin-title mb-0">{{ lienzo.nombre }}</div>
-                    <small class="text-muted">{{ lienzo.items|length }} obras</small>
-                </div>
-            </div>
-            {% endfor %}
-        {% endif %}
-
-        <!-- LOS PINS (Obras Favoritas) -->
-        {% if obras_favoritas %}
-            {% for obra in obras_favoritas %}
-            <div class="pin-item">
-                <div class="pin-image-box">
-                    <a href="{{ url_for('public.obra', obra_id=obra.id_obra) }}">
-                        {% if obra.imagen %}
-                            <img src="{{ obra.imagen }}" alt="{{ obra.titulo }}">
-                        {% else %}
-                            <div class="p-5 text-center"><i class="fas fa-image fa-2x opacity-25"></i></div>
-                        {% endif %}
-                    </a>
-                    <div class="pin-hover-ui">
-                        <button class="save-button">Guardado</button>
-                        <div class="pin-bottom-tools">
-                            <div class="tool-icon"><i class="fas fa-external-link-alt"></i></div>
-                            <div class="tool-icon"><i class="fas fa-ellipsis-h"></i></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="pin-meta">
-                    <div class="pin-title">{{ obra.titulo }}</div>
-                    <div class="pin-author">
-                        {% if obra.artista.foto_perfil %}
-                            <img src="{{ obra.artista.foto_perfil }}" class="author-circle">
-                        {% else %}
-                            <div class="author-circle" style="background: var(--agora-malva); color: white; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700;">
-                                {{ obra.artista.nombre[0]|upper }}
-                            </div>
-                        {% endif %}
-                        <span class="small text-muted">{{ obra.artista.nombre }}</span>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        {% endif %}
-
-    </div>
+<div class="dash-tabs-wrap">
+    <nav class="dash-tabs" aria-label="Secciones del espacio cliente">
+        <a href="{{ url_for('cliente.dashboard', tab='lienzos') }}"
+           class="dash-tab {% if tab == 'lienzos' %}active{% endif %}">
+            Lienzos
+            <span class="dash-tab-count">{{ stats.lienzos_count }}</span>
+        </a>
+        <a href="{{ url_for('cliente.dashboard', tab='favoritos') }}"
+           class="dash-tab {% if tab == 'favoritos' %}active{% endif %}">
+            Favoritos
+            <span class="dash-tab-count">{{ stats.favoritos_count }}</span>
+        </a>
+        <a href="{{ url_for('cliente.dashboard', tab='compras') }}"
+           class="dash-tab {% if tab == 'compras' %}active{% endif %}">
+            Compras
+            <span class="dash-tab-count">{{ stats.ordenes_count }}</span>
+        </a>
+        <a href="{{ url_for('cliente.dashboard', tab='siguiendo') }}"
+           class="dash-tab {% if tab == 'siguiendo' %}active{% endif %}">
+            Artistas
+            <span class="dash-tab-count">{{ stats.siguiendo_count }}</span>
+        </a>
+    </nav>
 </div>
 
-<a href="{{ url_for('cliente.nuevo_lienzo') }}" class="fab-add" title="Crear">
-    <i class="fas fa-plus"></i>
-</a>
+{% if tab == 'lienzos' %}
+<div class="dash-masonry">
+    <a href="{{ url_for('cliente.nuevo_lienzo') }}" class="board-new">
+        <i class="fas fa-plus fa-2x mb-2"></i>
+        <span class="fw-bold">Crear lienzo</span>
+    </a>
+    {% for lienzo in lienzos %}
+    <a href="{{ url_for('cliente.ver_lienzo', lienzo_id=lienzo.id_lienzo) }}" class="board-card">
+        <div class="board-preview">
+            {% set preview = lienzo.items[:3] %}
+            <div class="board-preview-main">
+                {% if preview|length > 0 %}
+                <img src="{{ preview[0].obra.imagen }}" class="board-preview-cell" alt="">
+                {% else %}
+                <div class="board-preview-empty"><i class="fas fa-palette fa-2x opacity-25"></i></div>
+                {% endif %}
+            </div>
+            <div>
+                {% if preview|length > 1 %}
+                <img src="{{ preview[1].obra.imagen }}" class="board-preview-cell" alt="">
+                {% else %}
+                <div class="board-preview-empty"></div>
+                {% endif %}
+            </div>
+            <div>
+                {% if preview|length > 2 %}
+                <img src="{{ preview[2].obra.imagen }}" class="board-preview-cell" alt="">
+                {% else %}
+                <div class="board-preview-empty"></div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="board-footer">
+            <div class="dash-pin-title mb-0">{{ lienzo.nombre }}</div>
+            <div class="dash-pin-sub">{{ lienzo.get_obras_count() }} obras</div>
+        </div>
+    </a>
+    {% endfor %}
+    {% if not lienzos %}
+    <div class="dash-empty">
+        <i class="fas fa-th-large fa-3x mb-3 opacity-25"></i>
+        <h4 class="fw-bold text-dark">Organiza tu inspiración</h4>
+        <p class="mb-0">Crea lienzos para agrupar obras por tema o proyecto.</p>
+    </div>
+    {% endif %}
+</div>
+<a href="{{ url_for('cliente.nuevo_lienzo') }}" class="fab-add" title="Nuevo lienzo"><i class="fas fa-plus"></i></a>
+
+{% elif tab == 'favoritos' %}
+<div class="dash-masonry">
+    {% if obras_favoritas %}
+        {% for obra in obras_favoritas %}
+        <div class="dash-pin">
+            <a href="{{ url_for('public.detalle_obra', obra_id=obra.id_obra) }}" class="dash-pin-img">
+                {% if obra.imagen %}
+                <img src="{{ obra.imagen }}" alt="{{ obra.titulo }}">
+                {% else %}
+                <div class="p-5 text-center"><i class="fas fa-image fa-2x opacity-25"></i></div>
+                {% endif %}
+            </a>
+            <div class="dash-pin-meta">
+                <div class="dash-pin-title">{{ obra.titulo }}</div>
+                <div class="dash-pin-sub">{{ obra.artista.nombre if obra.artista else 'Artista' }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="dash-empty" style="column-span: all;">
+            <i class="fas fa-heart fa-3x mb-3 opacity-25"></i>
+            <h4 class="fw-bold text-dark">Aún no tienes favoritos</h4>
+            <p class="mb-3">Guarda obras que te inspiren mientras exploras.</p>
+            <a href="{{ url_for('public.explorar') }}" class="btn-dash btn-dash-teal">Explorar obras</a>
+        </div>
+    {% endif %}
+</div>
+
+{% elif tab == 'compras' %}
+<div class="compras-list">
+    {% if ordenes %}
+        {% for orden in ordenes %}
+        <div class="compra-card">
+            <div class="compra-card-header">
+                <div>
+                    <div class="dash-pin-title mb-1">Orden #{{ orden.id_orden }}</div>
+                    <div class="dash-pin-sub">{{ orden.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</div>
+                </div>
+                <div>
+                    {% if orden.estado == 'pagada' %}
+                    <span class="badge bg-success">Completada</span>
+                    {% elif orden.estado == 'pendiente' %}
+                    <span class="badge bg-warning text-dark">Pendiente</span>
+                    {% elif orden.estado == 'cancelada' %}
+                    <span class="badge bg-danger">Cancelada</span>
+                    {% else %}
+                    <span class="badge bg-secondary">{{ orden.estado|title }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold fs-5">${{ orden.total }}</span>
+                <small class="text-muted text-truncate ms-3" style="max-width: 220px;">
+                    {% if orden.direccion_envio %}
+                    {{ orden.direccion_envio.ciudad }}, {{ orden.direccion_envio.pais }}
+                    {% else %}
+                    Sin dirección
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="compra-empty">
+            <i class="fas fa-receipt fa-3x mb-3 opacity-25"></i>
+            <h4 class="fw-bold text-dark">Aún no tienes compras</h4>
+            <p class="mb-3">Cuando compres en el marketplace, aparecerán aquí.</p>
+            <a href="{{ url_for('public.productos') }}" class="btn-dash btn-dash-teal">Ir al marketplace</a>
+        </div>
+    {% endif %}
+</div>
+{% elif tab == 'siguiendo' %}
+<div class="px-3 pb-5">
+    {% if artistas_siguiendo %}
+    <div class="row g-3">
+        {% for artista in artistas_siguiendo %}
+        <div class="col-md-4 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    {% if artista.foto_perfil %}
+                    <img src="{{ artista.foto_perfil }}" alt="{{ artista.nombre }}" class="rounded-circle mb-3" style="width:88px;height:88px;object-fit:cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width:88px;height:88px;">
+                        <span class="fs-3 fw-bold">{{ artista.nombre[0]|upper }}</span>
+                    </div>
+                    {% endif %}
+                    <h5 class="fw-bold mb-1">{{ artista.nombre }}</h5>
+                    <p class="text-muted small mb-3">@{{ artista.username }}</p>
+                    <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario) }}" class="btn btn-sm btn-outline-primary w-100 mb-2">Ver perfil</a>
+                    <form action="{{ url_for('public.seguir_artista') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="artista_id" value="{{ artista.id_usuario }}">
+                        <input type="hidden" name="accion" value="dejar_seguir">
+                        <input type="hidden" name="next" value="{{ url_for('cliente.dashboard', tab='siguiendo') }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">Dejar de seguir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="dash-empty">
+        <i class="fas fa-user-plus fa-3x mb-3 opacity-25"></i>
+        <h4 class="fw-bold text-dark">Aún no sigues a ningún artista</h4>
+        <p class="mb-3">Descubre talento y mantente al día con sus obras y tienda.</p>
+        <a href="{{ url_for('public.artistas') }}" class="btn-dash btn-dash-teal">Explorar artistas</a>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
 {% endblock %}

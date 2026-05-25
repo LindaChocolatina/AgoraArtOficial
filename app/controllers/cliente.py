@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
+from app.factories.app_factory import db
 from app.factories.service_factory import get_service_factory
+from app.utils.perfil_usuario import foto_perfil_desde_form
 from functools import wraps
 
 # Crear blueprint
@@ -16,10 +18,6 @@ def requiere_cliente(f):
         return f(*args, **kwargs)
     return decorated_function
 
-from app.factories.app_factory import db
-
-
-def _validar_campos_direccion(data):
     """Validar campos obligatorios de una dirección de envío."""
     errores = []
     for campo in ('nombre_receptor', 'direccion', 'ciudad', 'pais'):
@@ -64,6 +62,30 @@ def _resolver_direccion_checkout(direccion_service, usuario_id, form):
         return nueva_dir.id_direccion, None
     return None, 'Error al guardar la dirección de envío'
 
+
+def _cliente_nav(user_id, active_nav=''):
+    """Contadores y estado activo para el menú lateral del cliente."""
+    service_factory = get_service_factory(db.session)
+    usuario_service = service_factory.get_usuario_service()
+    obra_service = service_factory.get_obra_service()
+    moodboard_service = service_factory.get_moodboard_service()
+    orden_service = service_factory.get_orden_service()
+    newsletter_service = service_factory.get_newsletter_service()
+
+    newsletters = newsletter_service.get_by_usuario(user_id)
+    return {
+        'active_nav': active_nav,
+        'nav_counts': {
+            'favoritos_count': obra_service.get_favoritos_count(user_id),
+            'lienzos_count': moodboard_service.get_count_usuario(user_id),
+            'siguiendo_count': usuario_service.get_siguiendo_count(user_id),
+            'ordenes_count': orden_service.get_count_by_usuario(user_id),
+            'newsletters_count': len(newsletters),
+            'suscripciones_count': newsletter_service.count_suscripciones(user_id),
+        },
+    }
+
+
 @cliente_bp.route('/dashboard')
 @login_required
 @requiere_cliente
@@ -78,14 +100,16 @@ def dashboard():
             return redirect(url_for('auth.login'))
             
         user_id = int(user_id)
+        tab = request.args.get('tab', 'lienzos')
+        if tab not in ('favoritos', 'lienzos', 'compras', 'siguiendo'):
+            tab = 'lienzos'
+
         service_factory = get_service_factory(db.session)
         usuario_service = service_factory.get_usuario_service()
         obra_service = service_factory.get_obra_service()
         moodboard_service = service_factory.get_moodboard_service()
         orden_service = service_factory.get_orden_service()
-        newsletter_service = service_factory.get_newsletter_service()
         
-        # Obtener datos del dashboard
         stats = {
             'siguiendo_count': usuario_service.get_siguiendo_count(user_id),
             'favoritos_count': obra_service.get_favoritos_count(user_id),
@@ -93,39 +117,27 @@ def dashboard():
             'ordenes_count': orden_service.get_count_by_usuario(user_id)
         }
         
-        # Obtener artistas que sigue
-        artistas_siguiendo = usuario_service.get_siguiendo(user_id, limit=6)
-        
-        # Obtener obras favoritas
-        obras_favoritas = obra_service.get_favoritos_usuario(user_id, limit=6)
-        
-        # Obtener lienzos (moodboards) para visualización
+        obras_favoritas = obra_service.get_favoritos_usuario(user_id)
         lienzos = moodboard_service.get_by_usuario(user_id)
+        ordenes = orden_service.get_by_usuario(user_id)
+        artistas_siguiendo = usuario_service.get_siguiendo(user_id) if tab == 'siguiendo' else []
         
-        # Obtener newsletters recientes
-        newsletters_recientes = []
-        try:
-            newsletters_recientes = newsletter_service.get_by_usuario(user_id, limit=3)
-        except Exception as ns_err:
-            print(f"Error al obtener newsletters: {ns_err}")
+        ctx = _cliente_nav(user_id, active_nav=tab if tab in ('favoritos', 'lienzos', 'compras', 'siguiendo') else 'lienzos')
         
         return render_template('cliente/dashboard.html',
+                             tab=tab,
                              stats=stats,
-                             artistas_siguiendo=artistas_siguiendo,
                              obras_favoritas=obras_favoritas,
                              lienzos=lienzos,
-                             newsletters=newsletters_recientes)
+                             ordenes=ordenes,
+                             artistas_siguiendo=artistas_siguiendo,
+                             **ctx)
     except Exception as e:
         import traceback
         error_details = traceback.format_exc()
         print(f"ERROR CRÍTICO en dashboard de cliente:\n{error_details}")
         flash('Error al cargar el dashboard. Por favor, intenta de nuevo más tarde.', 'error')
         return redirect(url_for('public.home'))
-    finally:
-        try:
-            db.session.remove()
-        except:
-            pass
 
 @cliente_bp.route('/perfil')
 @login_required
@@ -151,67 +163,67 @@ def editar_perfil():
             'email': request.form.get('email'),
             'biografia': request.form.get('biografia', '')
         }
+        data.update(foto_perfil_desde_form(request, current_app.config['UPLOAD_FOLDER']))
         
         # Validar y actualizar
-        service_factory = get_service_factory()
+        service_factory = get_service_factory(db.session)
         usuario_service = service_factory.get_usuario_service()
         
         exitoso, usuario_actualizado = usuario_service.actualizar_usuario(current_user.id_usuario, data)
         
         if exitoso:
             flash('Perfil actualizado correctamente', 'success')
-            return redirect(url_for('cliente.perfil'))
+            return redirect(url_for('cliente.dashboard'))
         else:
             flash('Error al actualizar el perfil', 'error')
     
-    return render_template('cliente/editar_perfil.html')
+    return render_template('cliente/editar_perfil.html', **_cliente_nav(current_user.id_usuario, active_nav='perfil'))
+
+
+@cliente_bp.route('/foto-perfil', methods=['GET', 'POST'])
+@login_required
+@requiere_cliente
+def editar_foto_perfil():
+    """Subir, cambiar o quitar la foto de perfil del cliente."""
+    service_factory = get_service_factory(db.session)
+    usuario_service = service_factory.get_usuario_service()
+
+    if request.method == 'POST':
+        datos = foto_perfil_desde_form(request, current_app.config['UPLOAD_FOLDER'])
+        if not datos:
+            flash('Selecciona una imagen o marca quitar la foto actual.', 'error')
+        else:
+            exitoso, _ = usuario_service.actualizar_usuario(current_user.id_usuario, datos)
+            if exitoso:
+                flash('Foto de perfil actualizada.', 'success')
+                return redirect(url_for('cliente.dashboard'))
+            flash('No se pudo guardar la foto.', 'error')
+
+    return render_template(
+        'cliente/editar_foto_perfil.html',
+        **_cliente_nav(current_user.id_usuario, active_nav='foto'),
+    )
 
 @cliente_bp.route('/artistas-siguiendo')
 @login_required
 @requiere_cliente
 def artistas_siguiendo():
-    """
-    Listado de artistas que sigue el cliente
-    """
-    service_factory = get_service_factory()
-    usuario_service = service_factory.get_usuario_service()
-    
-    # Obtener artistas que sigue
-    artistas = usuario_service.get_siguiendo(current_user.id_usuario)
-    
-    return render_template('cliente/artistas_siguiendo.html', artistas=artistas)
+    """Redirige al tab Artistas del dashboard."""
+    return redirect(url_for('cliente.dashboard', tab='siguiendo'))
 
 @cliente_bp.route('/obras-favoritas')
 @login_required
 @requiere_cliente
 def obras_favoritas():
-    """
-    Listado de obras favoritas del cliente
-    """
-    service_factory = get_service_factory()
-    obra_service = service_factory.get_obra_service()
-    
-    # Obtener obras favoritas
-    obras = obra_service.get_favoritos_usuario(current_user.id_usuario)
-    
-    return render_template('cliente/obras_favoritas.html', obras=obras)
+    """Redirige a la pestaña Favoritos del dashboard."""
+    return redirect(url_for('cliente.dashboard', tab='favoritos'))
 
 @cliente_bp.route('/lienzos')
 @login_required
 @requiere_cliente
 def lienzos():
-    """
-    Moodboards del cliente
-    """
-    try:
-        service_factory = get_service_factory()
-        moodboard_service = service_factory.get_moodboard_service()
-        lienzos = moodboard_service.get_by_usuario(current_user.id_usuario)
-        return render_template('cliente/lienzos.html', lienzos=lienzos)
-    except Exception as e:
-        print(f"Error al cargar lienzos: {e}")
-        flash('Error al cargar tus lienzos', 'error')
-        return redirect(url_for('cliente.dashboard'))
+    """Redirige a la pestaña Lienzos del dashboard."""
+    return redirect(url_for('cliente.dashboard', tab='lienzos'))
 
 @cliente_bp.route('/lienzos/nuevo', methods=['GET', 'POST'])
 @login_required
@@ -233,7 +245,7 @@ def nuevo_lienzo():
         
         if exito:
             flash('Lienzo creado correctamente', 'success')
-            return redirect(url_for('cliente.lienzos'))
+            return redirect(url_for('cliente.dashboard', tab='lienzos'))
         else:
             flash('Error al crear el lienzo', 'error')
             
@@ -247,19 +259,49 @@ def ver_lienzo(lienzo_id):
     Ver detalles de un lienzo (moodboard)
     """
     try:
-        service_factory = get_service_factory()
+        service_factory = get_service_factory(db.session)
         moodboard_service = service_factory.get_moodboard_service()
         lienzo = moodboard_service.get_by_id(lienzo_id)
         
         if not lienzo or lienzo.id_usuario != current_user.id_usuario:
             flash('Lienzo no encontrado', 'error')
-            return redirect(url_for('cliente.lienzos'))
-            
-        return render_template('cliente/ver_lienzo.html', lienzo=lienzo)
+            return redirect(url_for('cliente.dashboard', tab='lienzos'))
+
+        items = moodboard_service.get_items(lienzo_id)
+        return render_template('cliente/ver_lienzo.html', lienzo=lienzo, items=items)
     except Exception as e:
         print(f"Error al ver lienzo: {e}")
         flash('Error al cargar el lienzo', 'error')
-        return redirect(url_for('cliente.lienzos'))
+        return redirect(url_for('cliente.dashboard', tab='lienzos'))
+
+
+@cliente_bp.route('/lienzos/<int:lienzo_id>/obras/<int:obra_id>/agregar', methods=['POST'])
+@login_required
+@requiere_cliente
+def agregar_obra_lienzo(lienzo_id, obra_id):
+    """Guardar una obra en un lienzo del cliente."""
+    service_factory = get_service_factory(db.session)
+    moodboard_service = service_factory.get_moodboard_service()
+    lienzo = moodboard_service.get_by_id(lienzo_id)
+
+    if not lienzo or lienzo.id_usuario != current_user.id_usuario:
+        flash('Lienzo no encontrado', 'error')
+        return _redirect_back_cliente()
+
+    if moodboard_service.agregar_obra(lienzo_id, obra_id):
+        flash(f'Obra guardada en «{lienzo.nombre}»', 'success')
+        return redirect(url_for('cliente.ver_lienzo', lienzo_id=lienzo_id))
+
+    flash('No se pudo guardar la obra en el lienzo', 'error')
+    return _redirect_back_cliente()
+
+
+def _redirect_back_cliente():
+    ref = request.referrer or ''
+    if ref:
+        return redirect(ref)
+    return redirect(url_for('cliente.dashboard'))
+
 
 @cliente_bp.route('/direcciones')
 @login_required
@@ -386,18 +428,8 @@ def eliminar_direccion(direccion_id):
 @login_required
 @requiere_cliente
 def ordenes():
-    """
-    Historial de órdenes del cliente
-    """
-    try:
-        service_factory = get_service_factory()
-        orden_service = service_factory.get_orden_service()
-        ordenes = orden_service.get_by_usuario(current_user.id_usuario)
-        return render_template('cliente/ordenes.html', ordenes=ordenes)
-    except Exception as e:
-        print(f"Error al cargar órdenes: {e}")
-        flash('Error al cargar tus órdenes', 'error')
-        return redirect(url_for('cliente.dashboard'))
+    """Historial de compras (pestaña del dashboard)."""
+    return redirect(url_for('cliente.dashboard', tab='compras'))
 
 @cliente_bp.route('/carrito/agregar/<int:producto_id>', methods=['POST'])
 @login_required
@@ -437,7 +469,13 @@ def carrito():
     items, total = carrito_service.get_items()
     count = carrito_service.get_count()
     
-    return render_template('cliente/carrito.html', items=items, total=total, count=count)
+    return render_template(
+        'cliente/carrito.html',
+        items=items,
+        total=total,
+        count=count,
+        **_cliente_nav(current_user.id_usuario, active_nav='carrito'),
+    )
 
 @cliente_bp.route('/carrito/actualizar/<int:producto_id>', methods=['POST'])
 @login_required
@@ -451,8 +489,18 @@ def actualizar_carrito(producto_id):
     if cantidad is not None:
         service_factory = get_service_factory()
         carrito_service = service_factory.get_carrito_service()
-        carrito_service.actualizar_cantidad(producto_id, cantidad)
-        flash('Carrito actualizado', 'success')
+        producto_service = service_factory.get_producto_service()
+
+        if cantidad <= 0:
+            carrito_service.remover_producto(producto_id)
+            flash('Producto eliminado del carrito', 'success')
+        else:
+            producto = producto_service.get_by_id(producto_id)
+            if producto and cantidad > producto.stock:
+                flash(f'Solo hay {producto.stock} unidades disponibles', 'error')
+            else:
+                carrito_service.actualizar_cantidad(producto_id, cantidad)
+                flash('Carrito actualizado', 'success')
         
     return redirect(url_for('cliente.carrito'))
 
@@ -477,46 +525,63 @@ def checkout():
     """
     Proceso de pago
     """
-    service_factory = get_service_factory()
+    service_factory = get_service_factory(db.session)
     carrito_service = service_factory.get_carrito_service()
-    
+    payment_service = service_factory.get_payment_service()
+
     items, total = carrito_service.get_items()
     count = carrito_service.get_count()
-    
+
     if count == 0:
         flash('Tu carrito está vacío', 'error')
+        return redirect(url_for('cliente.carrito'))
+
+    ok_moneda, moneda, error_moneda = payment_service.validar_moneda_unica(items)
+    if not ok_moneda:
+        flash(error_moneda, 'error')
         return redirect(url_for('cliente.carrito'))
 
     direccion_service = service_factory.get_direccion_service()
     direcciones = direccion_service.get_by_usuario(current_user.id_usuario)
 
+    from app.utils.moneda import formatear_precio
+
     return render_template(
         'cliente/checkout.html',
         items=items,
         total=total,
+        total_formateado=formatear_precio(total, moneda),
+        moneda=moneda,
         count=count,
         direcciones=direcciones,
+        payment_mode=payment_service.modo_pago(),
+        stripe_publishable_key=current_app.config.get('STRIPE_PUBLISHABLE_KEY'),
     )
+
 
 @cliente_bp.route('/checkout/procesar', methods=['POST'])
 @login_required
 @requiere_cliente
 def procesar_checkout():
     """
-    Procesar pago de la orden y crear el registro en la base de datos
+    Crea orden pendiente e inicia el pago (Stripe o modo demo).
     """
-    service_factory = get_service_factory()
+    service_factory = get_service_factory(db.session)
     carrito_service = service_factory.get_carrito_service()
     orden_service = service_factory.get_orden_service()
     direccion_service = service_factory.get_direccion_service()
-    
-    # 1. Validar carrito
+    payment_service = service_factory.get_payment_service()
+
     items, total = carrito_service.get_items()
     if not items:
         flash('Tu carrito está vacío', 'error')
         return redirect(url_for('cliente.carrito'))
-        
-    # 2. Obtener o crear dirección de envío
+
+    ok_moneda, moneda, error_moneda = payment_service.validar_moneda_unica(items)
+    if not ok_moneda:
+        flash(error_moneda, 'error')
+        return redirect(url_for('cliente.carrito'))
+
     direccion_id, error_dir = _resolver_direccion_checkout(
         direccion_service, current_user.id_usuario, request.form
     )
@@ -524,25 +589,194 @@ def procesar_checkout():
         flash(error_dir, 'error')
         return redirect(url_for('cliente.checkout'))
 
-    # 3. Crear la orden real
-    # Aquí se integraría la pasarela de pagos (Stripe/PayPal)
-    # Si el pago es exitoso, procedemos a crear la orden en la DB
-    
-    exito_orden, orden = orden_service.crear_orden(
+    exito_orden, orden = orden_service.crear_orden_pendiente(
         cliente_id=current_user.id_usuario,
         direccion_id=direccion_id,
         total=total,
-        items=items
+        items=items,
     )
-    
-    if exito_orden:
-        # 4. Vaciar carrito si la orden fue exitosa
-        carrito_service.vaciar_carrito()
-        flash('¡Compra realizada con éxito! Tu orden está siendo procesada.', 'success')
-        return redirect(url_for('cliente.ordenes'))
-    else:
-        flash('Hubo un problema al procesar tu orden. Por favor intenta de nuevo.', 'error')
+    if not exito_orden or not orden:
+        flash('No se pudo preparar tu orden. Revisa stock e intenta de nuevo.', 'error')
         return redirect(url_for('cliente.checkout'))
+
+    if payment_service.modo_pago() == 'stripe':
+        success_url = url_for('cliente.checkout_exito', _external=True) + '?session_id={CHECKOUT_SESSION_ID}'
+        cancel_url = url_for('cliente.checkout_cancelado', orden_id=orden.id_orden, _external=True)
+        session_stripe, error_pago = payment_service.crear_sesion_stripe(
+            orden, items, success_url, cancel_url
+        )
+        if error_pago or not session_stripe:
+            orden_service.cancelar_orden(orden.id_orden, current_user.id_usuario)
+            flash(error_pago or 'No se pudo iniciar el pago con Stripe.', 'error')
+            return redirect(url_for('cliente.checkout'))
+        return redirect(session_stripe.url, code=303)
+
+    return redirect(url_for('cliente.checkout_pago_demo', orden_id=orden.id_orden))
+
+
+@cliente_bp.route('/checkout/pagar/<int:orden_id>', methods=['GET', 'POST'])
+@login_required
+@requiere_cliente
+def checkout_pago_demo(orden_id):
+    """Simulación de pasarela para desarrollo y presentaciones sin claves Stripe."""
+    service_factory = get_service_factory(db.session)
+    orden_service = service_factory.get_orden_service()
+    payment_service = service_factory.get_payment_service()
+    carrito_service = service_factory.get_carrito_service()
+
+    if payment_service.modo_pago() == 'stripe':
+        flash('El pago se procesa con Stripe.', 'info')
+        return redirect(url_for('cliente.checkout'))
+
+    orden = orden_service.get_by_id_for_cliente(orden_id, current_user.id_usuario)
+    if not orden or orden.estado != 'pendiente':
+        flash('Esta orden ya no está disponible para pago.', 'warning')
+        return redirect(url_for('cliente.dashboard', tab='compras'))
+
+    if request.method == 'POST':
+        referencia = payment_service.referencia_demo(orden.id_orden)
+        ok, result = orden_service.confirmar_pago(
+            orden.id_orden,
+            proveedor='Demo',
+            referencia=referencia,
+            monto=orden.total,
+        )
+        if ok:
+            carrito_service.vaciar_carrito()
+            flash('¡Pago simulado correctamente! Tu compra quedó registrada.', 'success')
+            return redirect(url_for('cliente.checkout_exito', orden_id=orden.id_orden))
+        flash(result if isinstance(result, str) else 'No se pudo confirmar el pago.', 'error')
+        return redirect(url_for('cliente.checkout_pago_demo', orden_id=orden.id_orden))
+
+    items_orden = []
+    for item in orden.items.all():
+        items_orden.append({
+            'producto': item.producto,
+            'cantidad': item.cantidad,
+            'subtotal': float(item.subtotal),
+        })
+
+    from app.utils.moneda import formatear_precio
+    moneda = 'COP'
+    if items_orden:
+        moneda = getattr(items_orden[0]['producto'], 'moneda', None) or 'COP'
+
+    return render_template(
+        'cliente/checkout_pago_demo.html',
+        orden=orden,
+        items=items_orden,
+        total_formateado=formatear_precio(orden.total, moneda),
+        **_cliente_nav(current_user.id_usuario, active_nav='carrito'),
+    )
+
+
+@cliente_bp.route('/checkout/exito')
+@login_required
+@requiere_cliente
+def checkout_exito():
+    """Retorno tras pago exitoso (Stripe o demo)."""
+    service_factory = get_service_factory(db.session)
+    orden_service = service_factory.get_orden_service()
+    payment_service = service_factory.get_payment_service()
+    carrito_service = service_factory.get_carrito_service()
+
+    session_id = request.args.get('session_id')
+    orden_id = request.args.get('orden_id', type=int)
+    orden = None
+
+    if session_id and payment_service.modo_pago() == 'stripe':
+        ok, datos, error = payment_service.verificar_sesion_stripe(session_id)
+        if not ok:
+            flash(error or 'No se pudo verificar el pago.', 'error')
+            return redirect(url_for('cliente.dashboard', tab='compras'))
+        if datos.get('cliente_id') and datos['cliente_id'] != current_user.id_usuario:
+            flash('Esta orden no te pertenece.', 'error')
+            return redirect(url_for('cliente.dashboard', tab='compras'))
+        orden = orden_service.get_by_id_for_cliente(datos['orden_id'], current_user.id_usuario)
+        if not orden:
+            flash('Orden no encontrada.', 'error')
+            return redirect(url_for('cliente.dashboard', tab='compras'))
+        if orden.estado == 'pendiente':
+            ok_pago, result = orden_service.confirmar_pago(
+                orden.id_orden,
+                proveedor=datos['proveedor'],
+                referencia=datos['referencia'],
+                monto=datos['monto'],
+            )
+            if not ok_pago:
+                flash(result if isinstance(result, str) else 'Error al confirmar el pago.', 'error')
+                return redirect(url_for('cliente.dashboard', tab='compras'))
+        carrito_service.vaciar_carrito()
+        flash('¡Pago recibido! Gracias por tu compra.', 'success')
+        return render_template(
+            'cliente/checkout_exito.html',
+            orden=orden,
+            **_cliente_nav(current_user.id_usuario, active_nav='compras'),
+        )
+
+    if orden_id:
+        orden = orden_service.get_by_id_for_cliente(orden_id, current_user.id_usuario)
+        if orden and orden.estado == 'pagada':
+            return render_template(
+                'cliente/checkout_exito.html',
+                orden=orden,
+                **_cliente_nav(current_user.id_usuario, active_nav='compras'),
+            )
+
+    flash('No encontramos el comprobante de tu pago.', 'warning')
+    return redirect(url_for('cliente.dashboard', tab='compras'))
+
+
+@cliente_bp.route('/checkout/cancelado/<int:orden_id>')
+@login_required
+@requiere_cliente
+def checkout_cancelado(orden_id):
+    """Usuario canceló el pago en Stripe."""
+    service_factory = get_service_factory(db.session)
+    orden_service = service_factory.get_orden_service()
+    orden_service.cancelar_orden(orden_id, current_user.id_usuario)
+    flash('Pago cancelado. Tu carrito sigue disponible.', 'info')
+    return redirect(url_for('cliente.carrito'))
+
+
+@cliente_bp.route('/webhooks/stripe', methods=['POST'])
+def stripe_webhook():
+    """Webhook opcional de Stripe para confirmar pagos en producción."""
+    from app.factories.app_factory import csrf
+    payload = request.get_data(as_text=True)
+    sig_header = request.headers.get('Stripe-Signature')
+    webhook_secret = current_app.config.get('STRIPE_WEBHOOK_SECRET')
+
+    if not webhook_secret or not current_app.config.get('STRIPE_SECRET_KEY'):
+        return jsonify({'error': 'Webhook no configurado'}), 400
+
+    import stripe
+    stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+    except ValueError:
+        return jsonify({'error': 'Payload inválido'}), 400
+    except stripe.error.SignatureVerificationError:
+        return jsonify({'error': 'Firma inválida'}), 400
+
+    if event['type'] == 'checkout.session.completed':
+        session_obj = event['data']['object']
+        if session_obj.get('payment_status') == 'paid':
+            orden_id = session_obj.get('metadata', {}).get('orden_id') or session_obj.get('client_reference_id')
+            if orden_id:
+                service_factory = get_service_factory(db.session)
+                orden_service = service_factory.get_orden_service()
+                referencia = session_obj.get('payment_intent') or session_obj.get('id')
+                monto = float(session_obj.get('amount_total') or 0) / 100.0
+                orden_service.confirmar_pago(int(orden_id), 'Stripe', str(referencia), monto)
+
+    return jsonify({'status': 'ok'})
+
+
+# Exentar webhook de CSRF (se registra al importar el módulo)
+from app.factories.app_factory import csrf
+csrf.exempt(stripe_webhook)
 
 @cliente_bp.route('/newsletters')
 @login_required
@@ -552,17 +786,27 @@ def newsletters():
     Newsletters recibidos (bandeja de entrada)
     """
     try:
-        service_factory = get_service_factory()
+        service_factory = get_service_factory(db.session)
         newsletter_service = service_factory.get_newsletter_service()
-        
-        # Obtener newsletters del usuario
-        newsletters = newsletter_service.get_by_usuario(current_user.id_usuario)
-        
-        return render_template('cliente/newsletters.html', newsletters=newsletters)
+        newsletters_list = newsletter_service.get_by_usuario(current_user.id_usuario)
+        ctx = _cliente_nav(current_user.id_usuario, active_nav='inbox')
+        return render_template('cliente/newsletters.html', newsletters=newsletters_list, **ctx)
     except Exception as e:
         print(f"Error al cargar newsletters: {e}")
         flash('Error al cargar tus newsletters', 'error')
         return redirect(url_for('cliente.dashboard'))
+
+
+@cliente_bp.route('/suscripciones-newsletter')
+@login_required
+@requiere_cliente
+def suscripciones_newsletter():
+    """Artistas a cuyo newsletter está suscrito el cliente."""
+    service_factory = get_service_factory(db.session)
+    newsletter_service = service_factory.get_newsletter_service()
+    artistas = newsletter_service.get_artistas_suscritos(current_user.id_usuario)
+    ctx = _cliente_nav(current_user.id_usuario, active_nav='suscripciones')
+    return render_template('cliente/suscripciones_newsletter.html', artistas=artistas, **ctx)
 
 # API endpoints
 @cliente_bp.route('/api/seguir-artista', methods=['POST'])

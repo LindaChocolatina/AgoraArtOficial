@@ -24,7 +24,7 @@
         <p class="small text-muted mb-2">o haz clic para elegir · puedes repetir y acumular más lotes</p>
         <button type="button" class="btn btn-sm btn-outline-primary galeria-pick-btn">Elegir archivos</button>
     </div>
-    <input type="file" class="galeria-file-input d-none" name="{{ input_name|default('imagenes') }}" accept="image/*" multiple {% if required %}required{% endif %}>
+    <input type="file" class="galeria-file-input d-none" name="{{ input_name|default('imagenes') }}" accept="image/*" multiple {% if required %}data-required="1"{% endif %}>
     <div class="galeria-preview row g-2 mb-2"></div>
     <p class="small text-muted galeria-count mb-2">0 fotos listas para subir</p>
     {% if ajax_upload_url %}
@@ -51,8 +51,17 @@
     const uploadStatus = widget.querySelector('.galeria-upload-status');
     const ajaxUrl = widget.dataset.ajaxUrl;
     let files = [];
+    let previewUrls = [];
+
+    function isImageFile(f) {
+      if (f.type && f.type.startsWith('image/')) return true;
+      return /\.(jpe?g|png|gif|webp|bmp|svg|heic|heif)$/i.test(f.name || '');
+    }
 
     function syncInput() {
+      previewUrls.forEach(function (u) { URL.revokeObjectURL(u); });
+      previewUrls = [];
+
       const dt = new DataTransfer();
       files.forEach(function (f) { dt.items.add(f); });
       input.files = dt.files;
@@ -70,7 +79,9 @@
         const img = document.createElement('img');
         img.className = 'galeria-preview-thumb';
         img.alt = file.name;
-        img.src = URL.createObjectURL(file);
+        const url = URL.createObjectURL(file);
+        previewUrls.push(url);
+        img.src = url;
         const rm = document.createElement('button');
         rm.type = 'button';
         rm.className = 'btn btn-danger btn-sm position-absolute top-0 end-0 p-0 px-1';
@@ -90,13 +101,20 @@
 
     function addFiles(list) {
       Array.from(list || []).forEach(function (f) {
-        if (f.type && f.type.startsWith('image/')) files.push(f);
+        if (isImageFile(f)) files.push(f);
       });
       syncInput();
     }
 
-    pickBtn.addEventListener('click', function (e) { e.preventDefault(); input.click(); });
-    drop.addEventListener('click', function () { input.click(); });
+    pickBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      input.click();
+    });
+    drop.addEventListener('click', function (e) {
+      if (e.target.closest('.galeria-pick-btn')) return;
+      input.click();
+    });
     input.addEventListener('change', function () { addFiles(input.files); input.value = ''; });
     drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('dragover'); });
     drop.addEventListener('dragleave', function () { drop.classList.remove('dragover'); });
@@ -105,6 +123,18 @@
       drop.classList.remove('dragover');
       addFiles(e.dataTransfer.files);
     });
+
+    const form = widget.closest('form');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        syncInput();
+        if (input.dataset.required && files.length === 0) {
+          e.preventDefault();
+          alert('Añade al menos una foto del proyecto antes de guardar.');
+          drop.focus();
+        }
+      });
+    }
 
     if (uploadBtn && ajaxUrl) {
       uploadBtn.addEventListener('click', function () {

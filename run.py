@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from app.factories.app_factory import create_app
 
 # Determinar el entorno de configuración

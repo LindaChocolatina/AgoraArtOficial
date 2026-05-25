@@ -68,14 +68,21 @@ def explorar():
         obras.sort(key=lambda x: len(x.favoritos_usuarios) if hasattr(x, 'favoritos_usuarios') else 0, reverse=True)
         
     categorias = categoria_service.get_all()
-    
+
+    lienzos = []
+    if current_user.is_authenticated and current_user.is_cliente():
+        lienzos = service_factory.get_moodboard_service().get_by_usuario(
+            current_user.id_usuario
+        )
+
     return render_template('public/explorar.html',
                          obras=obras,
                          categorias=categorias,
                          categoria_actual=categoria_id,
                          termino_busqueda=termino,
                          tipo_busqueda=tipo,
-                         filtro_actual=filtro)
+                         filtro_actual=filtro,
+                         lienzos=lienzos)
 
 @public_bp.route('/artistas')
 def artistas():
@@ -107,45 +114,62 @@ def artistas():
 @public_bp.route('/artista/<int:artista_id>')
 def perfil_artista(artista_id):
     """
-    Perfil público de artista
+    Perfil público de artista (mismo layout que el panel del artista, solo lectura)
     """
     service_factory = get_service_factory()
     usuario_service = service_factory.get_usuario_service()
     obra_service = service_factory.get_obra_service()
+    blog_service = service_factory.get_blog_service()
+    producto_service = service_factory.get_producto_service()
     
-    # Obtener datos del artista
     artista = usuario_service.get_by_id(artista_id)
     
     if not artista or not artista.is_artista() or not artista.is_active():
         flash('Artista no encontrado', 'error')
         return redirect(url_for('public.artistas'))
     
-    # Obtener obras del artista
-    obras = obra_service.get_by_artista(artista_id, visible_only=True, limit=12)
+    obras = obra_service.get_by_artista(artista_id, visible_only=True)
+    entradas_blog = blog_service.get_by_artista(artista_id, visible_only=True)
+    productos_tienda = producto_service.get_by_artista(artista_id, disponibles_only=False)
+
+    ultima_obra = obras[0] if obras else None
+    ultima_entrada = entradas_blog[0] if entradas_blog else None
+    ultimo_producto = productos_tienda[0] if productos_tienda else None
+
+    stats = {
+        'obras_count': obra_service.get_count_by_artista(artista_id, visible_only=True),
+        'productos_count': producto_service.get_count_by_artista(artista_id, disponibles_only=False),
+        'seguidores_count': usuario_service.get_seguidores_count(artista_id),
+        'blog_count': blog_service.get_count_by_artista(artista_id, visible_only=True),
+    }
     
-    # Verificar si el usuario actual sigue a este artista
     siguiendo = False
+    suscrito_newsletter = False
     if current_user.is_authenticated and current_user.is_cliente():
         siguiendo = usuario_service.esta_siguiendo_artista(current_user.id_usuario, artista_id)
-    
-    # Obtener última obra/entrada/producto para mostrar actividad
-    blog_service = service_factory.get_blog_service()
-    producto_service = service_factory.get_producto_service()
+        newsletter_service = service_factory.get_newsletter_service()
+        suscrito_newsletter = newsletter_service.esta_suscrito(
+            current_user.id_usuario, artista_id
+        )
 
-    ultima_obra = obra_service.get_by_artista(artista_id, visible_only=True, limit=1)
-    ultima_obra = ultima_obra[0] if ultima_obra else None
-    entradas = blog_service.get_by_artista(artista_id, visible_only=True)
-    ultima_entrada = entradas[0] if entradas else None
-    productos = producto_service.get_by_artista(artista_id, disponibles_only=False, limit=1)
-    ultimo_producto = productos[0] if productos else None
+    tab = request.args.get('tab', 'trabajo')
+    if tab == 'portafolio':
+        tab = 'trabajo'
+    if tab not in ('trabajo', 'blog', 'tienda'):
+        tab = 'trabajo'
 
     return render_template('public/perfil_artista.html',
                          artista=artista,
                          obras=obras,
+                         entradas_blog=entradas_blog,
+                         productos_tienda=productos_tienda,
+                         stats=stats,
                          siguiendo=siguiendo,
+                         suscrito_newsletter=suscrito_newsletter,
                          ultima_obra=ultima_obra,
                          ultima_entrada=ultima_entrada,
-                         ultimo_producto=ultimo_producto)
+                         ultimo_producto=ultimo_producto,
+                         tab=tab)
 
 @public_bp.route('/obra/<int:obra_id>')
 def detalle_obra(obra_id):
@@ -171,19 +195,26 @@ def detalle_obra(obra_id):
     obras_relacionadas = obra_service.get_by_artista(obra.id_artista, visible_only=True, limit=4)
     obras_relacionadas = [o for o in obras_relacionadas if o.id_obra != obra.id_obra][:3]
 
-    producto_service = service_factory.get_producto_service()
-    productos_artista = producto_service.get_by_artista(obra.id_artista, disponibles_only=False, limit=20)
-
     from app.utils.obra_galeria import asegurar_galeria_migrada, listar_imagenes_obra
     asegurar_galeria_migrada(obra)
     galeria_imagenes = listar_imagenes_obra(obra)
+
+    lienzos = []
+    if current_user.is_authenticated and current_user.is_cliente():
+        lienzos = service_factory.get_moodboard_service().get_by_usuario(
+            current_user.id_usuario
+        )
+
+    producto_service = service_factory.get_producto_service()
+    tiene_tienda = producto_service.get_count_by_artista(obra.id_artista, disponibles_only=False) > 0
 
     return render_template('public/detalle_obra.html',
                          obra=obra,
                          es_favorito=es_favorito,
                          obras_relacionadas=obras_relacionadas,
-                         productos_artista=productos_artista,
-                         galeria_imagenes=galeria_imagenes)
+                         galeria_imagenes=galeria_imagenes,
+                         lienzos=lienzos,
+                         tiene_tienda=tiene_tienda)
 
 @public_bp.route('/categorias')
 def categorias():
@@ -233,57 +264,116 @@ def contacto():
     """
     return render_template('public/contacto.html')
 
-# API endpoints para AJAX
+def _redirect_back(fallback='public.explorar'):
+    return redirect(request.referrer or url_for(fallback))
+
+
+def _parse_seguir_request():
+    if request.is_json:
+        data = request.json or {}
+        return data.get('artista_id'), data.get('accion')
+    return request.form.get('artista_id', type=int), request.form.get('accion')
+
+
+def _parse_favorito_request():
+    if request.is_json:
+        data = request.json or {}
+        return data.get('obra_id'), data.get('accion')
+    return request.form.get('obra_id', type=int), request.form.get('accion')
+
+
+# API endpoints para AJAX y formularios HTML
 @public_bp.route('/api/seguir-artista', methods=['POST'])
 @login_required
 def seguir_artista():
-    """
-    API para seguir/dejar de seguir a un artista
-    """
+    """Seguir o dejar de seguir a un artista (JSON o formulario)."""
     if not current_user.is_cliente():
-        return jsonify({'error': 'Solo los clientes pueden seguir artistas'}), 403
-    
-    artista_id = request.json.get('artista_id')
-    accion = request.json.get('accion')  # 'seguir' o 'dejar_seguir'
-    
+        if request.is_json:
+            return jsonify({'error': 'Solo los clientes pueden seguir artistas'}), 403
+        flash('Solo los clientes pueden seguir artistas', 'error')
+        return _redirect_back('public.artistas')
+
+    artista_id, accion = _parse_seguir_request()
     service_factory = get_service_factory()
     usuario_service = service_factory.get_usuario_service()
-    
+
     if accion == 'seguir':
         exitoso = usuario_service.seguir_artista(current_user.id_usuario, artista_id)
         mensaje = 'Ahora sigues a este artista' if exitoso else 'Error al seguir artista'
     else:
         exitoso = usuario_service.dejar_de_seguir_artista(current_user.id_usuario, artista_id)
         mensaje = 'Has dejado de seguir a este artista' if exitoso else 'Error al dejar de seguir artista'
-    
-    return jsonify({
-        'exitoso': exitoso,
-        'mensaje': mensaje
-    })
+
+    if request.is_json:
+        return jsonify({'exitoso': exitoso, 'mensaje': mensaje})
+
+    flash(mensaje, 'success' if exitoso else 'error')
+    next_url = request.form.get('next') or request.referrer
+    if next_url:
+        return redirect(next_url)
+    if artista_id:
+        return redirect(url_for('public.perfil_artista', artista_id=artista_id))
+    return _redirect_back('public.artistas')
+
 
 @public_bp.route('/api/favorito-obra', methods=['POST'])
 @login_required
 def favorito_obra():
-    """
-    API para agregar/quitar obra de favoritos
-    """
-    obra_id = request.json.get('obra_id')
-    accion = request.json.get('accion')  # 'agregar' o 'quitar'
-    
+    """Agregar o quitar obra de favoritos (JSON o formulario)."""
+    obra_id, accion = _parse_favorito_request()
     service_factory = get_service_factory()
     obra_service = service_factory.get_obra_service()
-    
+
     if accion == 'agregar':
         exitoso = obra_service.agregar_favorito(current_user.id_usuario, obra_id)
         mensaje = 'Obra agregada a favoritos' if exitoso else 'Error al agregar a favoritos'
     else:
         exitoso = obra_service.quitar_favorito(current_user.id_usuario, obra_id)
         mensaje = 'Obra quitada de favoritos' if exitoso else 'Error al quitar de favoritos'
-    
-    return jsonify({
-        'exitoso': exitoso,
-        'mensaje': mensaje
-    })
+
+    if request.is_json:
+        return jsonify({'exitoso': exitoso, 'mensaje': mensaje})
+
+    flash(mensaje, 'success' if exitoso else 'error')
+    if obra_id:
+        return redirect(url_for('public.detalle_obra', obra_id=obra_id))
+    return _redirect_back('cliente.obras_favoritas')
+
+
+@public_bp.route('/obra/<int:obra_id>/favorito/toggle', methods=['POST'])
+@login_required
+def toggle_favorito_obra(obra_id):
+    """Quitar obra de favoritos desde el listado del cliente."""
+    service_factory = get_service_factory()
+    obra_service = service_factory.get_obra_service()
+    exitoso = obra_service.quitar_favorito(current_user.id_usuario, obra_id)
+    if exitoso:
+        flash('Obra quitada de favoritos', 'success')
+    else:
+        flash('No se pudo quitar de favoritos', 'error')
+    return redirect(url_for('cliente.obras_favoritas'))
+
+
+@public_bp.route('/artista/<int:artista_id>/newsletter', methods=['POST'])
+@login_required
+def toggle_newsletter_artista(artista_id):
+    """Suscribir o cancelar newsletter de un artista."""
+    if not current_user.is_cliente():
+        flash('Solo los clientes pueden suscribirse al newsletter', 'error')
+        return redirect(url_for('public.perfil_artista', artista_id=artista_id))
+
+    accion = request.form.get('accion')
+    newsletter_service = get_service_factory().get_newsletter_service()
+
+    if accion == 'desuscribir':
+        exitoso = newsletter_service.desuscribir(current_user.id_usuario, artista_id)
+        mensaje = 'Te has dado de baja del newsletter' if exitoso else 'Error al cancelar'
+    else:
+        exitoso = newsletter_service.suscribir(current_user.id_usuario, artista_id)
+        mensaje = 'Te suscribiste al newsletter del artista' if exitoso else 'Error al suscribirte'
+
+    flash(mensaje, 'success' if exitoso else 'error')
+    return redirect(url_for('public.perfil_artista', artista_id=artista_id))
 
 @public_bp.route('/api/buscar')
 def api_buscar():
@@ -333,4 +423,27 @@ def productos():
         'public/productos.html',
         productos=productos_lista,
         termino_busqueda=termino,
+    )
+
+
+@public_bp.route('/productos/<int:producto_id>')
+def detalle_producto(producto_id):
+    """Ficha pública de un producto del marketplace."""
+    service_factory = get_service_factory()
+    producto_service = service_factory.get_producto_service()
+    producto = producto_service.get_by_id(producto_id)
+
+    if not producto or not producto.is_disponible():
+        flash('Producto no disponible', 'error')
+        return redirect(url_for('public.productos'))
+
+    relacionados = []
+    if producto.id_artista:
+        todos = producto_service.get_by_artista(producto.id_artista, disponibles_only=True)
+        relacionados = [p for p in todos if p.id_producto != producto.id_producto][:4]
+
+    return render_template(
+        'public/detalle_producto.html',
+        producto=producto,
+        relacionados=relacionados,
     )

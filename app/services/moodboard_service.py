@@ -18,6 +18,10 @@ class MoodboardService:
     def get_by_id(self, id_lienzo):
         """Obtener lienzo por ID"""
         return self.moodboard_repo.get_by_id(id_lienzo)
+
+    def get_items(self, id_lienzo):
+        """Obtener obras de un lienzo como lista"""
+        return self.moodboard_repo.get_items(id_lienzo)
         
     def crear_lienzo(self, usuario_id, nombre):
         """Crear un nuevo lienzo"""

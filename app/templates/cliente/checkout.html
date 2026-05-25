@@ -1,48 +1,51 @@
-{% extends "base.html" %}
+{% extends "cliente/base_cliente.html" %}
 
-{% block title %}Checkout - WindMills Art{% endblock %}
+{% block title %}Checkout — Ágora Art{% endblock %}
 
-{% block content %}
-<div class="container my-5">
-    <h2 class="mb-4">Finalizar Compra</h2>
-    
-    <div class="row">
-        <!-- Formulario de Checkout -->
-        <div class="col-md-8 mb-4">
-            <div class="card shadow-sm">
+{% block cliente_content %}
+<div class="container py-4" style="max-width: 1100px;">
+    <h2 class="mb-1">Finalizar compra</h2>
+    <p class="text-muted mb-4">Revisa envío y continúa al pago seguro.</p>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
                     <form method="POST" action="{{ url_for('cliente.procesar_checkout') }}" id="checkout-form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-                        <h4 class="mb-3">Información de Envío</h4>
+                        <h5 class="mb-3">Dirección de envío</h5>
 
                         {% if direcciones %}
-                        <div class="mb-3">
-                            <label for="direccion_existente" class="form-label fw-bold">Mis direcciones guardadas</label>
-                            <select class="form-select" id="direccion_existente" name="id_direccion">
-                                <option value="">— Escribir una dirección nueva abajo —</option>
-                                {% for dir in direcciones %}
-                                    <option value="{{ dir.id_direccion }}" {% if loop.first %}selected{% endif %}>
-                                        {{ dir.nombre_receptor }} — {{ dir.direccion }}, {{ dir.ciudad }}, {{ dir.pais }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                            <div class="form-text">
-                                <a href="{{ url_for('cliente.direcciones') }}">Gestionar mis direcciones</a>
-                                ·
-                                <a href="{{ url_for('cliente.nueva_direccion', next='checkout') }}">Agregar otra y volver aquí</a>
-                            </div>
+                        <div class="list-group mb-3">
+                            {% for dir in direcciones %}
+                            <label class="list-group-item list-group-item-action d-flex gap-3 align-items-start py-3">
+                                <input class="form-check-input mt-1 flex-shrink-0"
+                                       type="radio"
+                                       name="id_direccion"
+                                       value="{{ dir.id_direccion }}"
+                                       {% if loop.first %}checked{% endif %}>
+                                <span>
+                                    <strong class="d-block">{{ dir.nombre_receptor }}</strong>
+                                    <span class="text-muted small">{{ dir.direccion }}, {{ dir.ciudad }}, {{ dir.pais }}{% if dir.codigo_postal %} · CP {{ dir.codigo_postal }}{% endif %}</span>
+                                </span>
+                            </label>
+                            {% endfor %}
+                            <label class="list-group-item list-group-item-action d-flex gap-3 align-items-center py-3">
+                                <input class="form-check-input flex-shrink-0" type="radio" name="id_direccion" value="" id="dir-nueva-radio">
+                                <span><strong>Registrar una dirección nueva en este paso</strong></span>
+                            </label>
                         </div>
-                        <hr class="my-4">
-                        <h5 class="mb-3">O registrar nueva dirección en este paso</h5>
+                        <p class="form-text mb-4">
+                            <a href="{{ url_for('cliente.direcciones') }}">Gestionar mis direcciones</a>
+                        </p>
                         {% else %}
-                        <div class="alert alert-info py-2">
-                            Aún no tienes direcciones guardadas. Completa el formulario abajo o
-                            <a href="{{ url_for('cliente.nueva_direccion', next='checkout') }}">crea una antes de pagar</a>.
+                        <div class="alert alert-info py-2 mb-4">
+                            Completa tu dirección de envío para continuar.
                         </div>
                         {% endif %}
 
-                        <div class="row g-3 mb-4" id="nueva-direccion-campos">
+                        <div class="row g-3 mb-4 {% if direcciones %}d-none{% endif %}" id="nueva-direccion-campos">
                             <div class="col-md-6">
                                 <label for="nombre_receptor" class="form-label">Nombre del receptor</label>
                                 <input type="text" class="form-control" id="nombre_receptor" name="nombre_receptor" value="{{ current_user.nombre }}" {% if not direcciones %}required{% endif %}>
@@ -52,7 +55,7 @@
                                 <input type="text" class="form-control" id="telefono" name="telefono">
                             </div>
                             <div class="col-12">
-                                <label for="direccion" class="form-label">Dirección Completa</label>
+                                <label for="direccion" class="form-label">Dirección</label>
                                 <input type="text" class="form-control" id="direccion" name="direccion" {% if not direcciones %}required{% endif %}>
                             </div>
                             <div class="col-md-5">
@@ -64,89 +67,57 @@
                                 <input type="text" class="form-control" id="pais" name="pais" value="México" {% if not direcciones %}required{% endif %}>
                             </div>
                             <div class="col-md-3">
-                                <label for="codigo_postal" class="form-label">Código Postal</label>
+                                <label for="codigo_postal" class="form-label">C.P.</label>
                                 <input type="text" class="form-control" id="codigo_postal" name="codigo_postal">
                             </div>
                         </div>
 
-                        <hr class="my-4">
+                        <hr>
 
-                        <h4 class="mb-3">Método de Pago</h4>
-                        <div class="my-3">
-                            <div class="form-check">
-                                <input id="tarjeta" name="metodo_pago" type="radio" class="form-check-input" checked required>
-                                <label class="form-check-label" for="tarjeta">Tarjeta de crédito/débito</label>
-                            </div>
-                            <div class="form-check">
-                                <input id="paypal" name="metodo_pago" type="radio" class="form-check-input" required>
-                                <label class="form-check-label" for="paypal">PayPal</label>
-                            </div>
+                        <h5 class="mb-3">Pago</h5>
+                        {% if payment_mode == 'stripe' %}
+                        <div class="alert alert-light border mb-3">
+                            <i class="fab fa-stripe me-2 text-primary"></i>
+                            Serás redirigida a <strong>Stripe Checkout</strong> para pagar con tarjeta de forma segura.
                         </div>
-
-                        <!-- Info simulada de tarjeta -->
-                        <div class="row gy-3">
-                            <div class="col-md-6">
-                                <label for="cc-nombre" class="form-label">Nombre en la tarjeta</label>
-                                <input type="text" class="form-control" id="cc-nombre" placeholder="Nombre completo">
-                                <small class="text-muted">Como aparece en la tarjeta</small>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="cc-numero" class="form-label">Número de tarjeta</label>
-                                <input type="text" class="form-control" id="cc-numero" placeholder="0000 0000 0000 0000">
-                            </div>
-                            <div class="col-md-3">
-                                <label for="cc-expiracion" class="form-label">Expiración</label>
-                                <input type="text" class="form-control" id="cc-expiracion" placeholder="MM/YY">
-                            </div>
-                            <div class="col-md-3">
-                                <label for="cc-cvv" class="form-label">CVV</label>
-                                <input type="text" class="form-control" id="cc-cvv" placeholder="123">
-                            </div>
+                        {% else %}
+                        <div class="alert alert-warning border-0 mb-3">
+                            <strong>Modo demo</strong> — sin claves Stripe configuradas. Simularás el pago en el siguiente paso (ideal para la presentación).
                         </div>
-
-                        <hr class="my-4">
+                        {% endif %}
 
                         <button class="btn btn-primary w-100 py-3" type="submit">
-                            Confirmar Pago (${{ total }})
+                            {% if payment_mode == 'stripe' %}
+                            Pagar {{ total_formateado }} con Stripe
+                            {% else %}
+                            Continuar al pago (demo) — {{ total_formateado }}
+                            {% endif %}
                         </button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- Resumen -->
-        <div class="col-md-4">
-            <div class="card shadow-sm sticky-top" style="top: 2rem;">
-                <div class="card-header bg-white pt-3">
-                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
-                        <span>Resumen</span>
-                        <span class="badge bg-primary rounded-pill">{{ count }}</span>
-                    </h5>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 5rem;">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Resumen <span class="badge bg-secondary">{{ count }}</span></h5>
                 </div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        {% for item in items %}
-                            <li class="list-group-item d-flex justify-content-between lh-sm py-3">
-                                <div>
-                                    <h6 class="my-0">{{ item.producto.nombre }}</h6>
-                                    <small class="text-muted">Cantidad: {{ item.cantidad }}</small>
-                                </div>
-                                <span class="text-muted">${{ item.subtotal }}</span>
-                            </li>
-                        {% endfor %}
-                        <li class="list-group-item d-flex justify-content-between bg-light">
-                            <div class="text-success">
-                                <h6 class="my-0">Envío</h6>
-                                <small>Estándar</small>
-                            </div>
-                            <span class="text-success">Gratis</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between py-3">
-                            <span>Total (MXN)</span>
-                            <strong>${{ total }}</strong>
-                        </li>
-                    </ul>
-                </div>
+                <ul class="list-group list-group-flush">
+                    {% for item in items %}
+                    <li class="list-group-item d-flex justify-content-between gap-2 py-3">
+                        <div>
+                            <div class="fw-semibold small">{{ item.producto.nombre }}</div>
+                            <small class="text-muted">× {{ item.cantidad }}</small>
+                        </div>
+                        <span class="small">{{ item.producto|precio_producto if item.cantidad == 1 else ('%.2f'|format(item.subtotal) ~ ' ' ~ moneda) }}</span>
+                    </li>
+                    {% endfor %}
+                    <li class="list-group-item d-flex justify-content-between bg-light fw-bold py-3">
+                        <span>Total</span>
+                        <span>{{ total_formateado }}</span>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
@@ -156,19 +127,23 @@
 {% block scripts %}
 <script>
 (function () {
-    const select = document.getElementById('direccion_existente');
+    const radios = document.querySelectorAll('input[name="id_direccion"]');
     const campos = document.getElementById('nueva-direccion-campos');
-    if (!select || !campos) return;
-
+    if (!campos) return;
     function toggleCampos() {
-        const usarGuardada = select.value !== '';
+        const seleccion = document.querySelector('input[name="id_direccion"]:checked');
+        const usarNueva = !seleccion || seleccion.value === '';
+        campos.classList.toggle('d-none', !usarNueva);
         campos.querySelectorAll('input').forEach(function (input) {
-            input.disabled = usarGuardada;
-            if (usarGuardada) input.removeAttribute('required');
+            input.disabled = !usarNueva;
+            if (usarNueva && ['nombre_receptor', 'direccion', 'ciudad', 'pais'].includes(input.name)) {
+                input.setAttribute('required', 'required');
+            } else {
+                input.removeAttribute('required');
+            }
         });
     }
-
-    select.addEventListener('change', toggleCampos);
+    radios.forEach(function (radio) { radio.addEventListener('change', toggleCampos); });
     toggleCampos();
 })();
 </script>

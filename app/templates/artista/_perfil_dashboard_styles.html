@@ -1,0 +1,322 @@
+<style>
+    /* === ÁGORA ART x BEHANCE PROFESSIONAL === */
+    :root {
+        --agora-accent: var(--turq, var(--primary, #1769FF));
+        --agora-secondary: var(--malva, #8B5CF6);
+        --agora-gray: var(--gray-100, #F5F5F5);
+        --bg-gray: #f9f9f9;
+        --border-color: #e8e8e8;
+        --piedra: var(--gray-600, #6E6E6E);
+        --carbon: var(--gray-900, #191919);
+        --noche: #0D0B21;
+        --noche-mid: #12102B;
+    }
+
+    .perfil-dashboard-page {
+        background-color: var(--bg-gray);
+        min-height: 50vh;
+    }
+
+    .artist-banner {
+        height: 200px;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 0;
+        background: linear-gradient(135deg, var(--noche), var(--noche-mid));
+    }
+
+    .artist-banner-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 50%;
+        display: block;
+    }
+
+    .banner-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.35));
+        pointer-events: none;
+    }
+
+    .banner-edit-btn {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        z-index: 5;
+    }
+
+    .actividad-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+        height: 100%;
+        transition: box-shadow 0.2s;
+    }
+    .actividad-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+    .actividad-card-img {
+        height: 280px;
+        min-height: 280px;
+        object-fit: cover;
+        object-position: center;
+        width: 100%;
+        background: #eee;
+        display: block;
+    }
+    .actividad-card-body { padding: 16px; }
+
+    .actividad-panel {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px 22px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        min-height: 420px;
+    }
+
+    .dashboard-wrapper {
+        position: relative;
+        z-index: 10;
+        padding-bottom: 80px;
+        padding-top: 24px;
+    }
+
+    .dashboard-header-grid {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 24px;
+        align-items: start;
+        width: 100%;
+        margin-bottom: 28px;
+    }
+
+    @media (max-width: 991.98px) {
+        .dashboard-header-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .actividad-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    @media (max-width: 991.98px) {
+        .actividad-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .actividad-grid {
+            grid-template-columns: 1fr;
+        }
+        .actividad-card-img {
+            height: 320px;
+            min-height: 320px;
+        }
+    }
+
+    .sidebar-artist {
+        background: white;
+        border-radius: 4px;
+        padding: 30px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        text-align: left;
+    }
+
+    .artist-profile-img {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        border: 4px solid white;
+        margin-top: 0;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        background: white;
+        object-fit: cover;
+    }
+
+    .profile-photo-wrap {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+
+    .profile-photo-wrap .artist-profile-img,
+    .profile-photo-wrap .artist-profile-img-placeholder {
+        margin-bottom: 0;
+    }
+
+    .profile-photo-edit {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .artist-name-professional {
+        font-family: 'Josefin Sans', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .artist-title-pro {
+        color: var(--piedra);
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    .btn-pro {
+        width: 100%;
+        padding: 12px;
+        border-radius: 25px;
+        font-weight: 700;
+        font-family: 'Josefin Sans', sans-serif;
+        margin-bottom: 10px;
+        border: none;
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
+    .btn-follow-pro { background-color: var(--agora-accent); color: white !important; }
+    .btn-message-pro { background-color: white; border: 1px solid var(--border-color); color: var(--carbon); }
+
+    .artist-stats-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin: 25px 0;
+        padding: 20px 0;
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .stat-row-pro {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+    }
+
+    .stat-value-pro { font-weight: 700; }
+
+    .social-section h6 {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--piedra);
+        margin-bottom: 15px;
+    }
+
+    .social-link-pro {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        margin-bottom: 8px;
+        color: var(--carbon);
+        font-size: 13px;
+        font-weight: 600;
+        transition: var(--transition, all 0.2s ease);
+        text-decoration: none;
+    }
+
+    .social-link-pro:hover {
+        background: var(--bg-gray);
+        border-color: var(--agora-accent);
+        color: var(--carbon);
+    }
+
+    .content-artist {
+        background: transparent;
+    }
+
+    .tabs-pro {
+        background: white;
+        padding: 0 30px;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        display: flex;
+        gap: 30px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
+
+    .tab-item-pro {
+        padding: 20px 0;
+        font-family: 'Josefin Sans', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--piedra);
+        cursor: pointer;
+        position: relative;
+        border-bottom: 2px solid transparent;
+        text-decoration: none;
+    }
+
+    .tab-item-pro:hover {
+        color: var(--carbon);
+        text-decoration: none;
+    }
+
+    .tab-item-pro.active {
+        color: var(--carbon);
+        border-bottom-color: var(--carbon);
+    }
+
+    .shop-card-pro {
+        background: white;
+        border-radius: 4px;
+        padding: 20px;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        margin-bottom: 15px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .shop-img-pro {
+        width: 80px;
+        height: 80px;
+        border-radius: 4px;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .panel-list-pro {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .panel-row-pro .min-width-0 {
+        min-width: 0;
+    }
+
+    .text-turq {
+        color: var(--agora-accent);
+    }
+
+    .panel-empty-pro {
+        text-align: center;
+        padding: 3rem 1.5rem;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+    }
+</style>

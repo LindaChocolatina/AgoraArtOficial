@@ -1,8 +1,8 @@
 <div class="mb-3">
     <label for="moneda" class="form-label">Moneda *</label>
     <select class="form-select" id="moneda" name="moneda" required>
-        <option value="USD" {% if (moneda_actual or 'USD') == 'USD' %}selected{% endif %}>USD — Dólar estadounidense</option>
+        <option value="COP" {% if (moneda_actual or 'COP') == 'COP' %}selected{% endif %}>COP — Peso colombiano</option>
+        <option value="USD" {% if moneda_actual == 'USD' %}selected{% endif %}>USD — Dólar estadounidense</option>
         <option value="EUR" {% if moneda_actual == 'EUR' %}selected{% endif %}>EUR — Euro</option>
-        <option value="COP" {% if moneda_actual == 'COP' %}selected{% endif %}>COP — Peso colombiano</option>
     </select>
 </div>

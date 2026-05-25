@@ -6,6 +6,7 @@ from app.models.obra_imagen import ObraImagen
 from app.models.producto_imagen import ProductoImagen
 from app.utils.file_upload import save_image_file, save_multiple_images
 from app.utils.moneda import normalizar_moneda
+from app.utils.perfil_usuario import foto_perfil_desde_form
 from app.utils.obra_galeria import (
     asegurar_galeria_migrada,
     agregar_imagenes_galeria,
@@ -165,6 +166,28 @@ def editar_banner():
     )
 
 
+@artista_bp.route('/foto-perfil', methods=['GET', 'POST'])
+@login_required
+@requiere_artista
+def editar_foto_perfil():
+    """Subir, cambiar o quitar la foto de perfil del artista."""
+    service_factory = get_service_factory()
+    usuario_service = service_factory.get_usuario_service()
+
+    if request.method == 'POST':
+        datos = foto_perfil_desde_form(request, current_app.config['UPLOAD_FOLDER'])
+        if not datos:
+            flash('Selecciona una imagen o marca quitar la foto actual.', 'error')
+        else:
+            exitoso, _ = usuario_service.actualizar_usuario(current_user.id_usuario, datos)
+            if exitoso:
+                flash('Foto de perfil actualizada.', 'success')
+                return redirect(url_for('artista.dashboard'))
+            flash('No se pudo guardar la foto.', 'error')
+
+    return render_template('artista/editar_foto_perfil.html')
+
+
 @artista_bp.route('/perfil')
 @login_required
 @requiere_artista
@@ -189,6 +212,7 @@ def editar_perfil():
             'email': request.form.get('email'),
             'biografia': request.form.get('biografia', '')
         }
+        data.update(foto_perfil_desde_form(request, current_app.config['UPLOAD_FOLDER']))
         
         # Validar y actualizar
         service_factory = get_service_factory()
@@ -400,7 +424,7 @@ def eliminar_obra(obra_id):
         return redirect(url_for('artista.obras'))
     
     # Eliminar obra
-    exitoso = obra_service.eliminar_obra(obra_id)
+    exitoso = obra_service.eliminar_obra(obra_id, current_user.id_usuario)
     
     if exitoso:
         flash('Obra eliminada correctamente', 'success')
@@ -675,7 +699,7 @@ def eliminar_producto(producto_id):
     if not producto or producto.id_artista != current_user.id_usuario:
         flash('Producto no encontrado o no tienes permisos', 'error')
         return redirect(url_for('artista.productos'))
-    if producto_service.eliminar_producto(producto_id):
+    if producto_service.eliminar_producto(producto_id, current_user.id_usuario):
         flash('Producto eliminado correctamente', 'success')
     else:
         if producto.orden_items.count() > 0:

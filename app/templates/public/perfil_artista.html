@@ -1,123 +1,186 @@
 {% extends "base.html" %}
 
-{% block title %}{{ artista.nombre }} - WindMills Art{% endblock %}
+{% block title %}{{ artista.nombre }} — Ágora Art{% endblock %}
+
+{% block head %}
+{% include 'artista/_perfil_dashboard_styles.html' %}
+{% endblock %}
 
 {% block content %}
-{% if artista.banner_perfil %}
-<div style="height:180px;background-image:url('{{ artista.banner_perfil }}');background-size:cover;background-position:center {{ artista.banner_offset or 50 }}%;"></div>
-{% endif %}
-<!-- Cabecera del Artista -->
-<div class="bg-light pt-5 pb-4 mb-5 border-bottom">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-2 text-center text-md-start mb-3 mb-md-0">
-                {% if artista.foto_perfil %}
-                    <img src="{{ artista.foto_perfil }}" alt="{{ artista.nombre }}" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                {% else %}
-                    <div class="bg-secondary text-white d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 150px; height: 150px; border: 4px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <i class="fas fa-user fa-4x"></i>
-                    </div>
-                {% endif %}
-            </div>
-            <div class="col-md-7 text-center text-md-start">
-                <h1 class="mb-1">{{ artista.nombre }}</h1>
-                <p class="text-muted fs-5 mb-2">@{{ artista.username }}</p>
-                {% if artista.biografia %}
-                    <p class="mb-0">{{ artista.biografia }}</p>
-                {% else %}
-                    <p class="text-muted font-italic mb-0">Artista en WindMills Art</p>
-                {% endif %}
-            </div>
-            <div class="col-md-3 text-center text-md-end mt-4 mt-md-0">
-                {% if current_user.is_authenticated and current_user.is_cliente() %}
-                    <form action="{{ url_for('public.seguir_artista') }}" method="POST">
-                        <input type="hidden" name="artista_id" value="{{ artista.id_usuario }}">
-                        <input type="hidden" name="accion" value="{{ 'dejar_seguir' if siguiendo else 'seguir' }}">
-                        <button type="submit" class="btn {% if siguiendo %}btn-outline-primary{% else %}btn-primary{% endif %} btn-lg px-4 rounded-pill">
-                            {% if siguiendo %}
-                                <i class="fas fa-check me-2"></i>Siguiendo
-                            {% else %}
-                                <i class="fas fa-user-plus me-2"></i>Seguir
-                            {% endif %}
-                        </button>
-                    </form>
-                {% elif not current_user.is_authenticated %}
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg px-4 rounded-pill">
-                        <i class="fas fa-user-plus me-2"></i>Seguir
-                    </a>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+<div class="perfil-dashboard-page">
+<!-- Banner -->
+<div class="artist-banner">
+    {% if artista.banner_perfil %}
+    <img src="{{ artista.banner_perfil }}" alt="Banner de {{ artista.nombre }}" class="artist-banner-img"
+         style="object-position: center {{ artista.banner_offset or 50 }}%;">
+    {% endif %}
+    <div class="banner-overlay"></div>
 </div>
 
-        <!-- Actividad reciente visible para clientes: debajo del banner y a la derecha de la info -->
-        <div class="container mb-4">
-            <div class="row">
-                <div class="col-md-8">
-                    <!-- espacio para la info del artista (ya está arriba) -->
+<div class="container dashboard-wrapper">
+    <div class="dashboard-header-grid">
+        <!-- Sidebar: info completa del artista -->
+        <aside class="sidebar-artist">
+            <div class="profile-photo-wrap">
+                {% if artista.foto_perfil %}
+                <img src="{{ artista.foto_perfil }}" class="artist-profile-img" alt="{{ artista.nombre }}">
+                {% else %}
+                <div class="artist-profile-img d-flex align-items-center justify-content-center bg-secondary text-white fs-1 fw-bold">
+                    {{ artista.nombre[0]|upper }}
                 </div>
-                <div class="col-md-4">
-                    {% include 'artista/_actividad_reciente.html' %}
+                {% endif %}
+            </div>
+
+            <h2 class="artist-name-professional">{{ artista.nombre }}</h2>
+            <p class="artist-title-pro">@{{ artista.username }} · Artista en Ágora Art</p>
+
+            {% if current_user.is_authenticated and current_user.is_cliente() %}
+            <div class="d-flex flex-column gap-2">
+                <form action="{{ url_for('public.seguir_artista') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="artista_id" value="{{ artista.id_usuario }}">
+                    <input type="hidden" name="accion" value="{{ 'dejar_seguir' if siguiendo else 'seguir' }}">
+                    <button type="submit" class="btn btn-pro btn-follow-pro">
+                        {% if siguiendo %}
+                        <i class="fas fa-check me-1"></i> Siguiendo
+                        {% else %}
+                        <i class="fas fa-user-plus me-1"></i> Seguir
+                        {% endif %}
+                    </button>
+                </form>
+                <form action="{{ url_for('public.toggle_newsletter_artista', artista_id=artista.id_usuario) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="accion" value="{{ 'desuscribir' if suscrito_newsletter else 'suscribir' }}">
+                    <button type="submit" class="btn btn-pro btn-message-pro">
+                        {% if suscrito_newsletter %}
+                        <i class="fas fa-envelope-open me-1"></i> Suscrito al newsletter
+                        {% else %}
+                        <i class="fas fa-envelope me-1"></i> Newsletter
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+            {% elif not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.login', next=request.url) }}" class="btn btn-pro btn-follow-pro">
+                <i class="fas fa-user-plus me-1"></i> Seguir
+            </a>
+            {% endif %}
+
+            <div class="artist-stats-grid">
+                <div class="stat-row-pro">
+                    <span>Obras publicadas</span>
+                    <span class="stat-value-pro">{{ stats.obras_count }}</span>
+                </div>
+                <div class="stat-row-pro">
+                    <span>Seguidores</span>
+                    <span class="stat-value-pro">{{ stats.seguidores_count }}</span>
+                </div>
+                <div class="stat-row-pro">
+                    <span>Productos en tienda</span>
+                    <span class="stat-value-pro">{{ stats.productos_count }}</span>
+                </div>
+                <div class="stat-row-pro">
+                    <span>Entradas de blog</span>
+                    <span class="stat-value-pro">{{ stats.blog_count }}</span>
                 </div>
             </div>
-        </div>
 
-        <div class="container mb-5">
-    <!-- Tabs -->
-    <ul class="nav nav-tabs mb-4 justify-content-center border-bottom-0" id="artistaTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active rounded-pill px-4 me-2 border" id="obras-tab" data-bs-toggle="tab" data-bs-target="#obras" type="button" role="tab" aria-controls="obras" aria-selected="true">Portafolio</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link rounded-pill px-4 border" id="tienda-tab" data-bs-toggle="tab" data-bs-target="#tienda" type="button" role="tab" aria-controls="tienda" aria-selected="false">Tienda (Próximamente)</button>
-        </li>
-    </ul>
+            <div class="mt-4 pt-4 border-top">
+                <h6>Sobre mí</h6>
+                <p class="small text-muted mb-2">
+                    {{ artista.biografia or ('Artista en Ágora Art. Miembro desde ' ~ (artista.fecha_registro|date)) }}
+                </p>
+                <p class="small text-muted mb-0">
+                    <i class="fas fa-calendar-alt me-1"></i> Desde {{ artista.fecha_registro|date }}
+                </p>
+            </div>
+        </aside>
 
-    <!-- Contenido Tabs -->
-    <div class="tab-content" id="artistaTabsContent">
-        <!-- Obras -->
-        <div class="tab-pane fade show active" id="obras" role="tabpanel" aria-labelledby="obras-tab">
+        <section class="actividad-panel">
+            {% include 'public/_actividad_reciente_public.html' %}
+        </section>
+    </div>
+
+    <div class="content-artist">
+        <!-- Tabs (mismas pestañas que el panel, sin Estadísticas) -->
+        <nav class="tabs-pro">
+            <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='trabajo') }}"
+               class="tab-item-pro {% if tab == 'trabajo' %}active{% endif %}">Trabajo</a>
+            <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='blog') }}"
+               class="tab-item-pro {% if tab == 'blog' %}active{% endif %}">Blog</a>
+            <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='tienda') }}"
+               class="tab-item-pro {% if tab == 'tienda' %}active{% endif %}">
+                Tienda{% if stats.productos_count %} <span class="text-muted fw-normal">({{ stats.productos_count }})</span>{% endif %}
+            </a>
+        </nav>
+
+        {% if tab == 'trabajo' %}
+        <div class="panel-list-pro">
             {% if obras %}
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                    {% for obra in obras %}
-                        <div class="col">
-                            <div class="card h-100 border-0 project-card shadow-sm">
-                                <a href="{{ url_for('public.detalle_obra', obra_id=obra.id_obra) }}" class="text-decoration-none">
-                                    {% if obra.imagen %}
-                                        <img src="{{ obra.imagen }}" class="card-img-top" alt="{{ obra.titulo }}" style="height: 250px; object-fit: cover;">
-                                    {% else %}
-                                        <div class="bg-light text-center" style="height: 250px; display: flex; align-items: center; justify-content: center;">
-                                            <i class="fas fa-image fa-3x text-muted"></i>
-                                        </div>
-                                    {% endif %}
-                                </a>
-                                <div class="card-body">
-                                    <h5 class="card-title text-dark">{{ obra.titulo }}</h5>
-                                    {% if obra.categoria %}
-                                        <span class="badge bg-light text-dark mb-2">{{ obra.categoria.nombre }}</span>
-                                    {% endif %}
-                                    <p class="card-text text-muted small text-truncate">{{ obra.descripcion or '' }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
+                {% for obra in obras %}
+                {% set thumb_url = obra.imagen %}
+                {% set titulo = obra.titulo %}
+                {% set subtitulo = obra.descripcion|truncate(100) if obra.descripcion else (obra.tecnica or '') %}
+                {% set badge = contar_imagenes_obra(obra)|string ~ ' fotos' %}
+                {% set meta_derecha = obra.categoria.nombre if obra.categoria else 'Arte' %}
+                {% set view_url = url_for('public.detalle_obra', obra_id=obra.id_obra) %}
+                {% set view_label = 'Ver obra' %}
+                {% include 'public/_panel_fila_public.html' %}
+                {% endfor %}
             {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-palette fa-3x text-muted mb-3"></i>
-                    <h4 class="text-muted">Este artista aún no ha publicado obras</h4>
-                </div>
+            <div class="panel-empty-pro">
+                <i class="fas fa-palette fa-3x text-muted mb-3 opacity-25"></i>
+                <h5 class="fw-bold">Sin obras publicadas</h5>
+                <p class="text-muted mb-0">Este artista aún no comparte proyectos en su portafolio.</p>
+            </div>
             {% endif %}
         </div>
-        
-        <!-- Tienda -->
-        <div class="tab-pane fade" id="tienda" role="tabpanel" aria-labelledby="tienda-tab">
-            <div class="text-center py-5">
-                <i class="fas fa-store fa-3x text-muted mb-3"></i>
-                <h4 class="text-muted">La tienda del artista estará disponible pronto</h4>
+
+        {% elif tab == 'blog' %}
+        <div class="panel-list-pro">
+            {% if entradas_blog %}
+                {% for entrada in entradas_blog %}
+                {% set thumb_url = entrada.imagen_miniatura() %}
+                {% set icon = 'fa-feather-alt' %}
+                {% set titulo = entrada.titulo %}
+                {% set subtitulo = entrada.contenido|striptags|truncate(120) %}
+                {% set meta_derecha = entrada.fecha_publicacion.strftime('%d/%m/%Y') if entrada.fecha_publicacion else '' %}
+                {% include 'public/_panel_fila_public.html' %}
+                {% endfor %}
+            {% else %}
+            <div class="panel-empty-pro">
+                <i class="fas fa-feather-alt fa-3x text-muted mb-3 opacity-25"></i>
+                <h5 class="fw-bold">Sin entradas de blog</h5>
+                <p class="text-muted mb-0">Cuando publique en su blog, las entradas aparecerán aquí.</p>
             </div>
+            {% endif %}
         </div>
+
+        {% elif tab == 'tienda' %}
+        <p class="small text-muted mb-3 px-1">
+            Productos en venta de {{ artista.nombre }}. El portafolio es solo exhibición; aquí puedes comprar.
+        </p>
+        <div class="panel-list-pro">
+            {% if productos_tienda %}
+                {% for producto in productos_tienda %}
+                {% set thumb_url = producto.imagen %}
+                {% set titulo = producto.nombre %}
+                {% set subtitulo = producto.descripcion|truncate_words(12) if producto.descripcion else '' %}
+                {% set precio = producto|precio_producto %}
+                {% set meta_derecha = 'En stock: ' ~ producto.stock|string if producto.is_disponible() else 'Agotado' %}
+                {% include 'public/_panel_fila_public.html' %}
+                {% endfor %}
+            {% else %}
+            <div class="panel-empty-pro">
+                <i class="fas fa-shopping-bag fa-3x text-muted mb-3 opacity-25"></i>
+                <h5 class="fw-bold">Tienda vacía</h5>
+                <p class="text-muted mb-3">Este artista aún no tiene productos en venta.</p>
+                <a href="{{ url_for('public.productos') }}" class="btn btn-outline-primary btn-sm">Explorar marketplace</a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
+</div>
 </div>
 {% endblock %}
