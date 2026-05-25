@@ -158,6 +158,12 @@ def register_template_globals(app):
         return contar(obra)
 
 
+    @app.template_global()
+    def contar_imagenes_producto(producto):
+        from app.utils.producto_galeria import contar_imagenes_producto as contar
+        return contar(producto)
+
+
 def register_template_filters(app):
     """Registrar filtros personalizados para plantillas"""
     

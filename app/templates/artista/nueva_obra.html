@@ -45,9 +45,9 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="imagenes" class="form-label fw-bold">Fotos del proyecto *</label>
-                            <input type="file" class="form-control" id="imagenes" name="imagenes" accept="image/*" multiple required>
-                            <div class="form-text">Estilo Behance: sube todas las que quieras. Se mostrarán en un <strong>carrusel</strong>; la primera imagen será la portada.</div>
+                            {% with required=True, label='Fotos del proyecto', help_text='Arrastra o elige muchas fotos. Puedes añadir más lotes antes de guardar. La primera será la portada del carrusel.' %}
+                            {% include 'artista/_upload_galeria_obra.html' %}
+                            {% endwith %}
                         </div>
 
                         <div class="form-check form-switch mb-4">

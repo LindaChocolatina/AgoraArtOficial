@@ -1,61 +1,55 @@
-<h5 class="fw-bold mb-3 mt-2">Actividad reciente</h5>
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="actividad-card">
-            {% if ultima_obra and ultima_obra.imagen %}
-            <img src="{{ ultima_obra.imagen }}" class="actividad-card-img" alt="">
+<h5 class="fw-bold mb-3">Actividad reciente</h5>
+<div class="actividad-grid">
+    <div class="actividad-card">
+        {% if ultima_obra and ultima_obra.imagen %}
+        <img src="{{ ultima_obra.imagen }}" class="actividad-card-img" alt="">
+        {% else %}
+        <div class="actividad-card-img d-flex align-items-center justify-content-center text-muted"><i class="fas fa-palette fa-2x opacity-25"></i></div>
+        {% endif %}
+        <div class="actividad-card-body">
+            <span class="badge bg-light text-dark mb-2">Última obra</span>
+            {% if ultima_obra %}
+            <h6 class="fw-bold mb-1 text-truncate">{{ ultima_obra.titulo }}</h6>
+            <p class="small text-muted mb-2">{{ contar_imagenes_obra(ultima_obra) }} foto(s)</p>
+            <a href="{{ url_for('artista.editar_obra', obra_id=ultima_obra.id_obra) }}" class="btn btn-sm btn-outline-primary">Editar</a>
             {% else %}
-            <div class="actividad-card-img d-flex align-items-center justify-content-center text-muted"><i class="fas fa-palette fa-2x opacity-25"></i></div>
+            <p class="small text-muted mb-2">Aún no hay obras</p>
+            <a href="{{ url_for('artista.nueva_obra') }}" class="btn btn-sm btn-primary">Publicar</a>
             {% endif %}
-            <div class="actividad-card-body">
-                <span class="badge bg-light text-dark mb-2">Última obra</span>
-                {% if ultima_obra %}
-                <h6 class="fw-bold mb-1 text-truncate">{{ ultima_obra.titulo }}</h6>
-                <p class="small text-muted mb-2">{{ contar_imagenes_obra(ultima_obra) }} foto(s)</p>
-                <a href="{{ url_for('artista.editar_obra', obra_id=ultima_obra.id_obra) }}" class="btn btn-sm btn-outline-primary">Editar</a>
-                {% else %}
-                <p class="small text-muted mb-2">Aún no hay obras</p>
-                <a href="{{ url_for('artista.nueva_obra') }}" class="btn btn-sm btn-primary">Publicar</a>
-                {% endif %}
-            </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="actividad-card">
-            <div class="actividad-card-img d-flex align-items-center justify-content-center bg-malva bg-opacity-10 text-malva">
-                <i class="fas fa-feather-alt fa-2x"></i>
-            </div>
-            <div class="actividad-card-body">
-                <span class="badge bg-light text-dark mb-2">Última entrada</span>
-                {% if ultima_entrada %}
-                <h6 class="fw-bold mb-1 text-truncate">{{ ultima_entrada.titulo }}</h6>
-                <p class="small text-muted mb-2">{{ ultima_entrada.fecha_publicacion.strftime('%d/%m/%Y') if ultima_entrada.fecha_publicacion else '' }}</p>
-                <a href="{{ url_for('artista.editar_entrada', entrada_id=ultima_entrada.id_entrada) }}" class="btn btn-sm btn-outline-primary">Editar</a>
-                {% else %}
-                <p class="small text-muted mb-2">Sin entradas de blog</p>
-                <a href="{{ url_for('artista.nueva_entrada') }}" class="btn btn-sm btn-primary">Escribir</a>
-                {% endif %}
-            </div>
+    <div class="actividad-card">
+        <div class="actividad-card-img d-flex align-items-center justify-content-center bg-malva bg-opacity-10 text-malva">
+            <i class="fas fa-feather-alt fa-2x"></i>
+        </div>
+        <div class="actividad-card-body">
+            <span class="badge bg-light text-dark mb-2">Última entrada</span>
+            {% if ultima_entrada %}
+            <h6 class="fw-bold mb-1 text-truncate">{{ ultima_entrada.titulo }}</h6>
+            <p class="small text-muted mb-2">{{ ultima_entrada.fecha_publicacion.strftime('%d/%m/%Y') if ultima_entrada.fecha_publicacion else '' }}</p>
+            <a href="{{ url_for('artista.editar_entrada', entrada_id=ultima_entrada.id_entrada) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+            {% else %}
+            <p class="small text-muted mb-2">Sin entradas de blog</p>
+            <a href="{{ url_for('artista.nueva_entrada') }}" class="btn btn-sm btn-primary">Escribir</a>
+            {% endif %}
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="actividad-card">
-            {% if ultimo_producto and ultimo_producto.imagen %}
-            <img src="{{ ultimo_producto.imagen }}" class="actividad-card-img" alt="">
+    <div class="actividad-card">
+        {% if ultimo_producto and ultimo_producto.imagen %}
+        <img src="{{ ultimo_producto.imagen }}" class="actividad-card-img" alt="">
+        {% else %}
+        <div class="actividad-card-img d-flex align-items-center justify-content-center text-muted"><i class="fas fa-shopping-bag fa-2x opacity-25"></i></div>
+        {% endif %}
+        <div class="actividad-card-body">
+            <span class="badge bg-light text-dark mb-2">Último producto</span>
+            {% if ultimo_producto %}
+            <h6 class="fw-bold mb-1 text-truncate">{{ ultimo_producto.nombre }}</h6>
+            <p class="small text-muted mb-2">{{ ultimo_producto|precio_producto }}</p>
+            <a href="{{ url_for('artista.editar_producto', producto_id=ultimo_producto.id_producto) }}" class="btn btn-sm btn-outline-primary">Editar</a>
             {% else %}
-            <div class="actividad-card-img d-flex align-items-center justify-content-center text-muted"><i class="fas fa-shopping-bag fa-2x opacity-25"></i></div>
+            <p class="small text-muted mb-2">Tienda vacía</p>
+            <a href="{{ url_for('artista.nuevo_producto') }}" class="btn btn-sm btn-primary">Agregar</a>
             {% endif %}
-            <div class="actividad-card-body">
-                <span class="badge bg-light text-dark mb-2">Último producto</span>
-                {% if ultimo_producto %}
-                <h6 class="fw-bold mb-1 text-truncate">{{ ultimo_producto.nombre }}</h6>
-                <p class="small text-muted mb-2">{{ ultimo_producto|precio_producto }}</p>
-                <a href="{{ url_for('artista.editar_producto', producto_id=ultimo_producto.id_producto) }}" class="btn btn-sm btn-outline-primary">Editar</a>
-                {% else %}
-                <p class="small text-muted mb-2">Tienda vacía</p>
-                <a href="{{ url_for('artista.nuevo_producto') }}" class="btn btn-sm btn-primary">Agregar</a>
-                {% endif %}
-            </div>
         </div>
     </div>
 </div>

@@ -1,0 +1,139 @@
+{# Subida múltiple de imágenes (arrastrar, acumular lotes, subida AJAX opcional).
+   Parámetros: input_name, ajax_upload_url (opcional), csrf_token #}
+<style>
+.galeria-drop-zone {
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    padding: 2rem 1rem;
+    background: #fafafa;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+.galeria-drop-zone.dragover { border-color: var(--turq, #20c997); background: #e8faf5; }
+.galeria-preview-thumb {
+    width: 72px; height: 72px; object-fit: cover; border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+</style>
+
+<div class="galeria-upload-widget" data-input-name="{{ input_name|default('imagenes') }}" {% if ajax_upload_url %}data-ajax-url="{{ ajax_upload_url }}"{% endif %}>
+    <label class="form-label fw-bold">{{ label|default('Fotos del proyecto') }}{% if required %} *{% endif %}</label>
+    <div class="galeria-drop-zone text-center mb-2" tabindex="0" role="button" aria-label="Zona para arrastrar fotos">
+        <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+        <p class="mb-1 fw-semibold">Arrastra aquí muchas fotos a la vez</p>
+        <p class="small text-muted mb-2">o haz clic para elegir · puedes repetir y acumular más lotes</p>
+        <button type="button" class="btn btn-sm btn-outline-primary galeria-pick-btn">Elegir archivos</button>
+    </div>
+    <input type="file" class="galeria-file-input d-none" name="{{ input_name|default('imagenes') }}" accept="image/*" multiple {% if required %}required{% endif %}>
+    <div class="galeria-preview row g-2 mb-2"></div>
+    <p class="small text-muted galeria-count mb-2">0 fotos listas para subir</p>
+    {% if ajax_upload_url %}
+    <button type="button" class="btn btn-success btn-sm galeria-upload-now d-none">
+        <i class="fas fa-upload me-1"></i> Subir <span class="galeria-upload-n">0</span> fotos ahora
+    </button>
+    <span class="small text-success ms-2 galeria-upload-status"></span>
+    {% endif %}
+    <div class="form-text">{{ help_text|default('La primera foto será la portada del carrusel.') }}</div>
+</div>
+
+<script>
+(function () {
+  document.querySelectorAll('.galeria-upload-widget').forEach(function (widget) {
+    if (widget.dataset.galeriaInit) return;
+    widget.dataset.galeriaInit = '1';
+
+    const drop = widget.querySelector('.galeria-drop-zone');
+    const input = widget.querySelector('.galeria-file-input');
+    const preview = widget.querySelector('.galeria-preview');
+    const countEl = widget.querySelector('.galeria-count');
+    const pickBtn = widget.querySelector('.galeria-pick-btn');
+    const uploadBtn = widget.querySelector('.galeria-upload-now');
+    const uploadStatus = widget.querySelector('.galeria-upload-status');
+    const ajaxUrl = widget.dataset.ajaxUrl;
+    let files = [];
+
+    function syncInput() {
+      const dt = new DataTransfer();
+      files.forEach(function (f) { dt.items.add(f); });
+      input.files = dt.files;
+      const n = files.length;
+      if (countEl) countEl.textContent = n + ' foto' + (n !== 1 ? 's' : '') + ' listas para subir';
+      if (uploadBtn) {
+        uploadBtn.classList.toggle('d-none', !ajaxUrl || n === 0);
+        const nSpan = uploadBtn.querySelector('.galeria-upload-n');
+        if (nSpan) nSpan.textContent = n;
+      }
+      preview.innerHTML = '';
+      files.forEach(function (file, i) {
+        const col = document.createElement('div');
+        col.className = 'col-auto position-relative';
+        const img = document.createElement('img');
+        img.className = 'galeria-preview-thumb';
+        img.alt = file.name;
+        img.src = URL.createObjectURL(file);
+        const rm = document.createElement('button');
+        rm.type = 'button';
+        rm.className = 'btn btn-danger btn-sm position-absolute top-0 end-0 p-0 px-1';
+        rm.style.fontSize = '10px';
+        rm.innerHTML = '&times;';
+        rm.title = 'Quitar';
+        rm.addEventListener('click', function (e) {
+          e.stopPropagation();
+          files.splice(i, 1);
+          syncInput();
+        });
+        col.appendChild(img);
+        col.appendChild(rm);
+        preview.appendChild(col);
+      });
+    }
+
+    function addFiles(list) {
+      Array.from(list || []).forEach(function (f) {
+        if (f.type && f.type.startsWith('image/')) files.push(f);
+      });
+      syncInput();
+    }
+
+    pickBtn.addEventListener('click', function (e) { e.preventDefault(); input.click(); });
+    drop.addEventListener('click', function () { input.click(); });
+    input.addEventListener('change', function () { addFiles(input.files); input.value = ''; });
+    drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('dragover'); });
+    drop.addEventListener('dragleave', function () { drop.classList.remove('dragover'); });
+    drop.addEventListener('drop', function (e) {
+      e.preventDefault();
+      drop.classList.remove('dragover');
+      addFiles(e.dataTransfer.files);
+    });
+
+    if (uploadBtn && ajaxUrl) {
+      uploadBtn.addEventListener('click', function () {
+        if (!files.length) return;
+        uploadBtn.disabled = true;
+        if (uploadStatus) uploadStatus.textContent = 'Subiendo…';
+        const fd = new FormData();
+        files.forEach(function (f) { fd.append('imagenes', f); });
+        const csrf = document.querySelector('input[name="csrf_token"]');
+        if (csrf) fd.append('csrf_token', csrf.value);
+        fetch(ajaxUrl, { method: 'POST', body: fd, credentials: 'same-origin' })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data.ok) {
+              if (uploadStatus) uploadStatus.textContent = data.count + ' foto(s) subidas. Recargando…';
+              files = [];
+              syncInput();
+              setTimeout(function () { window.location.reload(); }, 600);
+            } else {
+              throw new Error(data.error || 'Error');
+            }
+          })
+          .catch(function (err) {
+            if (uploadStatus) uploadStatus.textContent = '';
+            alert(err.message || 'No se pudieron subir las fotos.');
+            uploadBtn.disabled = false;
+          });
+      });
+    }
+  });
+})();
+</script>

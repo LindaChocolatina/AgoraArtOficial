@@ -14,6 +14,14 @@ from app.utils.obra_galeria import (
     guardar_galeria_completa,
     listar_imagenes_obra,
 )
+from app.utils.producto_galeria import (
+    agregar_imagenes_galeria as agregar_imgs_producto,
+    asegurar_galeria_migrada as asegurar_galeria_producto,
+    eliminar_imagen_galeria as eliminar_imagen_producto_galeria,
+    establecer_portada as establecer_portada_producto,
+    guardar_galeria_completa as guardar_galeria_producto,
+    listar_imagenes_producto,
+)
 from functools import wraps
 
 
@@ -99,6 +107,8 @@ def dashboard():
     ultima_obra = obras[0] if obras else None
     ultima_entrada = entradas_blog[0] if entradas_blog else None
     ultimo_producto = productos[0] if productos else None
+
+    perfil = usuario_service.get_by_id(current_user.id_usuario)
     
     return render_template('artista/dashboard.html',
                          stats=stats,
@@ -108,7 +118,9 @@ def dashboard():
                          categorias=categorias,
                          ultima_obra=ultima_obra,
                          ultima_entrada=ultima_entrada,
-                         ultimo_producto=ultimo_producto)
+                         ultimo_producto=ultimo_producto,
+                         banner_perfil=perfil.banner_perfil if perfil else None,
+                         banner_offset=perfil.banner_offset if perfil and perfil.banner_offset is not None else 50)
 
 @artista_bp.route('/banner', methods=['GET', 'POST'])
 @login_required
@@ -117,34 +129,40 @@ def editar_banner():
     """Subir o cambiar el banner del panel del artista."""
     service_factory = get_service_factory()
     usuario_service = service_factory.get_usuario_service()
+    perfil = usuario_service.get_by_id(current_user.id_usuario)
 
     if request.method == 'POST':
+        try:
+            offset_val = int(request.form.get('banner_offset', 50))
+            offset_val = max(0, min(100, offset_val))
+        except (TypeError, ValueError):
+            offset_val = 50
+
         path = save_image_file(
             request.files.get('banner'),
             current_app.config['UPLOAD_FOLDER'],
             'banners',
         )
-        # Banner offset (0-100)
-        try:
-            offset_val = int(request.form.get('banner_offset', 50))
-            if offset_val < 0: offset_val = 0
-            if offset_val > 100: offset_val = 100
-        except (TypeError, ValueError):
-            offset_val = 50
+        datos = {'banner_offset': offset_val}
         if path:
-            datos = {'banner_perfil': path, 'banner_offset': offset_val}
+            datos['banner_perfil'] = path
+
+        if path or (perfil and perfil.banner_perfil):
             exitoso, _ = usuario_service.actualizar_usuario(
                 current_user.id_usuario,
                 datos,
             )
             if exitoso:
-                flash('Banner actualizado. Así lo verán en tu panel.', 'success')
+                flash('Banner actualizado.', 'success')
                 return redirect(url_for('artista.dashboard'))
             flash('No se pudo guardar el banner.', 'error')
         else:
-            flash('Elige una imagen válida (JPG, PNG, WebP).', 'error')
+            flash('Sube una imagen de banner la primera vez.', 'error')
 
-    return render_template('artista/editar_banner.html')
+    return render_template(
+        'artista/editar_banner.html',
+        banner_offset=perfil.banner_offset if perfil and perfil.banner_offset is not None else 50,
+    )
 
 
 @artista_bp.route('/perfil')
@@ -305,6 +323,30 @@ def editar_obra(obra_id):
     galeria = listar_imagenes_obra(obra)
 
     return render_template('artista/editar_obra.html', obra=obra, categorias=categorias, galeria=galeria)
+
+
+@artista_bp.route('/obras/<int:obra_id>/imagenes/subir', methods=['POST'])
+@login_required
+@requiere_artista
+def subir_imagenes_obra(obra_id):
+    """Sube varias fotos de golpe sin guardar el resto del formulario."""
+    obra = get_service_factory().get_obra_service().get_by_id(obra_id)
+    if not obra or obra.id_artista != current_user.id_usuario:
+        return jsonify({'error': 'Sin permisos'}), 403
+    paths = save_multiple_images(
+        request.files.getlist('imagenes'),
+        current_app.config['UPLOAD_FOLDER'],
+        'obras',
+    )
+    if not paths:
+        return jsonify({'error': 'No se recibieron imágenes válidas'}), 400
+    agregar_imagenes_galeria(obra_id, paths)
+    from app.utils.obra_galeria import contar_imagenes_obra
+    return jsonify({
+        'ok': True,
+        'count': len(paths),
+        'total': contar_imagenes_obra(obra),
+    })
 
 
 @artista_bp.route('/obras/<int:obra_id>/imagen/<int:id_imagen>/eliminar', methods=['POST'])
@@ -516,11 +558,8 @@ def nuevo_producto():
         producto_service = service_factory.get_producto_service()
         exitoso, producto = producto_service.crear_producto(data, current_user.id_usuario)
         if exitoso:
-            # Si hay imágenes adicionales, guardarlas en producto_imagenes
             if imagenes_paths:
-                for i, path in enumerate(imagenes_paths):
-                    db.session.add(ProductoImagen(id_producto=producto.id_producto, imagen=path, orden=i+1))
-                db.session.commit()
+                guardar_galeria_producto(producto.id_producto, imagenes_paths)
             flash('Producto creado correctamente', 'success')
             return redirect(url_for('artista.productos'))
         flash('Error al crear el producto. Verifica nombre, precio y stock.', 'error')
@@ -558,22 +597,64 @@ def editar_producto(producto_id):
             current_app.config['UPLOAD_FOLDER'],
             'productos'
         )
-        if nuevas_paths:
-            data['imagen'] = nuevas_paths[0]
 
         exitoso, producto_act = producto_service.actualizar_producto(
             producto_id, data, current_user.id_usuario
         )
         if exitoso:
-            # Guardar imágenes adicionales si se subieron
             if nuevas_paths:
-                for i, path in enumerate(nuevas_paths):
-                    db.session.add(ProductoImagen(id_producto=producto_id, imagen=path, orden=i+1))
-                db.session.commit()
+                agregar_imgs_producto(producto_id, nuevas_paths)
             flash('Producto actualizado (stock guardado en base de datos)', 'success')
             return redirect(url_for('artista.productos'))
         flash('Error al actualizar el producto', 'error')
-    return render_template('artista/editar_producto.html', producto=producto)
+    asegurar_galeria_producto(producto)
+    galeria = listar_imagenes_producto(producto)
+    return render_template('artista/editar_producto.html', producto=producto, galeria=galeria)
+
+
+@artista_bp.route('/productos/<int:producto_id>/imagenes/subir', methods=['POST'])
+@login_required
+@requiere_artista
+def subir_imagenes_producto(producto_id):
+    producto = get_service_factory().get_producto_service().get_by_id(producto_id)
+    if not producto or producto.id_artista != current_user.id_usuario:
+        return jsonify({'error': 'Sin permisos'}), 403
+    paths = save_multiple_images(
+        request.files.getlist('imagenes'),
+        current_app.config['UPLOAD_FOLDER'],
+        'productos',
+    )
+    if not paths:
+        return jsonify({'error': 'No se recibieron imágenes válidas'}), 400
+    agregar_imgs_producto(producto_id, paths)
+    from app.utils.producto_galeria import contar_imagenes_producto
+    return jsonify({'ok': True, 'count': len(paths), 'total': contar_imagenes_producto(producto)})
+
+
+@artista_bp.route('/productos/<int:producto_id>/imagen/<int:id_imagen>/eliminar', methods=['POST'])
+@login_required
+@requiere_artista
+def eliminar_imagen_producto(producto_id, id_imagen):
+    producto = get_service_factory().get_producto_service().get_by_id(producto_id)
+    if not producto or producto.id_artista != current_user.id_usuario:
+        flash('Sin permisos', 'error')
+        return redirect(url_for('artista.productos'))
+    eliminar_imagen_producto_galeria(producto_id, id_imagen)
+    flash('Imagen eliminada', 'success')
+    return redirect(url_for('artista.editar_producto', producto_id=producto_id))
+
+
+@artista_bp.route('/productos/<int:producto_id>/imagen/<int:id_imagen>/portada', methods=['POST'])
+@login_required
+@requiere_artista
+def portada_imagen_producto(producto_id, id_imagen):
+    producto = get_service_factory().get_producto_service().get_by_id(producto_id)
+    if not producto or producto.id_artista != current_user.id_usuario:
+        flash('Sin permisos', 'error')
+        return redirect(url_for('artista.productos'))
+    if establecer_portada_producto(producto_id, id_imagen):
+        flash('Portada actualizada', 'success')
+    return redirect(url_for('artista.editar_producto', producto_id=producto_id))
 
 @artista_bp.route('/productos/<int:producto_id>/eliminar', methods=['POST'])
 @login_required

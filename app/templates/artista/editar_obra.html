@@ -1,192 +1,100 @@
 {% extends "base.html" %}
-
-
-
 {% block title %}Editar Obra - Ágora Art{% endblock %}
 
-
-
 {% block head %}
-
 <style>
-
     .obra-carousel .obra-carousel-img { max-height: 420px; object-fit: contain; background: #f5f5f5; }
-
     .galeria-thumb { width: 88px; height: 88px; object-fit: cover; border-radius: 8px; border: 2px solid transparent; }
-
     .galeria-thumb.portada { border-color: var(--turq, #20c997); }
-
 </style>
-
 {% endblock %}
 
-
-
 {% block content %}
-
 <div class="container my-5">
-
     {% include 'artista/_panel_nav.html' %}
-
     <div class="row justify-content-center">
-
         <div class="col-lg-10">
-
             <div class="card shadow-sm">
-
                 <div class="card-body p-4">
-
                     <h3 class="mb-2">Editar proyecto: {{ obra.titulo }}</h3>
-
-                    <p class="text-muted small mb-4">Portafolio tipo Behance: todas tus fotos en carrusel. La <strong>portada</strong> es la primera del carrusel público.</p>
-
-
+                    <p class="text-muted small mb-4">Sube <strong>muchas fotos de una vez</strong> con arrastrar y soltar. No hace falta guardar de una en una.</p>
 
                     {% if galeria %}
-                    <h6 class="fw-bold mb-3">Vista previa del proyecto ({{ galeria|length }} fotos)</h6>
+                    <h6 class="fw-bold mb-3">Carrusel del proyecto ({{ galeria|length }} fotos)</h6>
                     <div class="mb-4">
                         {% with imagenes=galeria, carousel_id='editarObraCarousel' %}
                         {% include 'partials/_carousel_imagenes.html' %}
                         {% endwith %}
                     </div>
-
                     <div class="row g-3 mb-4">
-
                         {% for img in galeria %}
-
                         <div class="col-auto text-center">
-
                             <img src="{{ img.url }}" class="galeria-thumb {% if obra.imagen == img.url %}portada{% endif %}" alt="">
-
-                            <div class="btn-group btn-group-sm mt-1 d-flex flex-column gap-1">
-
+                            <div class="d-flex flex-column gap-1 mt-1">
                                 {% if img.id_imagen %}
-
                                 {% if obra.imagen != img.url %}
-
                                 <form method="POST" action="{{ url_for('artista.portada_imagen_obra', obra_id=obra.id_obra, id_imagen=img.id_imagen) }}">
-
                                     {% include 'artista/_csrf.html' %}
-
                                     <button type="submit" class="btn btn-outline-primary btn-sm">Portada</button>
-
                                 </form>
-
                                 {% else %}
-
                                 <span class="badge bg-success">Portada</span>
-
                                 {% endif %}
-
                                 {% if galeria|length > 1 %}
-
                                 <form method="POST" action="{{ url_for('artista.eliminar_imagen_obra', obra_id=obra.id_obra, id_imagen=img.id_imagen) }}" onsubmit="return confirm('¿Eliminar esta foto?');">
-
                                     {% include 'artista/_csrf.html' %}
-
                                     <button type="submit" class="btn btn-outline-danger btn-sm">Quitar</button>
-
                                 </form>
-
                                 {% endif %}
-
                                 {% endif %}
-
                             </div>
-
                         </div>
-
                         {% endfor %}
-
                     </div>
-
                     {% endif %}
 
-
-
-                    <form method="POST" action="{{ url_for('artista.editar_obra', obra_id=obra.id_obra) }}" enctype="multipart/form-data">
-
+                    <div class="border rounded p-3 mb-4 bg-light">
                         {% include 'artista/_csrf.html' %}
+                        {% with ajax_upload_url=url_for('artista.subir_imagenes_obra', obra_id=obra.id_obra), label='Añadir más fotos al proyecto', help_text='Selecciona o arrastra muchas imágenes y pulsa «Subir fotos ahora». Se guardan al instante sin tocar título ni descripción.' %}
+                        {% include 'artista/_upload_galeria_obra.html' %}
+                        {% endwith %}
+                    </div>
 
+                    <form method="POST" action="{{ url_for('artista.editar_obra', obra_id=obra.id_obra) }}">
+                        {% include 'artista/_csrf.html' %}
                         <div class="mb-3">
-
                             <label for="titulo" class="form-label">Título *</label>
-
                             <input type="text" class="form-control" id="titulo" name="titulo" value="{{ obra.titulo }}" required>
-
                         </div>
-
                         <div class="row mb-3">
-
                             <div class="col-md-6">
-
                                 <label for="categoria" class="form-label">Categoría</label>
-
                                 <select class="form-select" id="categoria" name="categoria">
-
                                     <option value="">Sin categoría</option>
-
                                     {% for cat in categorias %}
-
                                     <option value="{{ cat.id_categoria }}" {% if obra.id_categoria == cat.id_categoria %}selected{% endif %}>{{ cat.nombre }}</option>
-
                                     {% endfor %}
-
                                 </select>
-
                             </div>
-
                             <div class="col-md-6">
-
                                 <label for="tecnica" class="form-label">Técnica</label>
-
                                 <input type="text" class="form-control" id="tecnica" name="tecnica" value="{{ obra.tecnica or '' }}">
-
                             </div>
-
                         </div>
-
                         <div class="mb-3">
-
                             <label for="descripcion" class="form-label">Descripción</label>
-
                             <textarea class="form-control" id="descripcion" name="descripcion" rows="4">{{ obra.descripcion or '' }}</textarea>
-
                         </div>
-
-                        <div class="mb-3">
-
-                            <label for="imagenes" class="form-label fw-bold">Añadir más fotos al proyecto</label>
-
-                            <input type="file" class="form-control" id="imagenes" name="imagenes" accept="image/*" multiple>
-
-                            <div class="form-text">Puedes seleccionar muchas a la vez; se añaden al carrusel (sin límite práctico).</div>
-
-                        </div>
-
                         <div class="form-check form-switch mb-4">
-
                             <input class="form-check-input" type="checkbox" id="visible" name="visible" {% if obra.visible %}checked{% endif %}>
-
                             <label class="form-check-label" for="visible">Visible en galería pública</label>
-
                         </div>
-
-                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
-
+                        <button type="submit" class="btn btn-primary">Guardar datos del proyecto</button>
                         <a href="{{ url_for('artista.obras') }}" class="btn btn-outline-secondary ms-2">Cancelar</a>
-
                     </form>
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
 </div>
-
 {% endblock %}
-

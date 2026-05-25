@@ -1,59 +1,93 @@
 {% extends "base.html" %}
 
-{% block title %}Editar Producto - WindMills Art{% endblock %}
+{% block title %}Editar Producto - Ágora Art{% endblock %}
+
+{% block head %}
+<style>
+    .galeria-thumb { width: 88px; height: 88px; object-fit: cover; border-radius: 8px; border: 2px solid transparent; }
+    .galeria-thumb.portada { border-color: var(--turq, #20c997); }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container my-5">
     {% include 'artista/_panel_nav.html' %}
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-lg-10">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white pt-3 pb-2 border-bottom-0">
-                    <h3 class="mb-0">Editar Producto: {{ producto.nombre }}</h3>
+                    <h3 class="mb-0">Editar producto: {{ producto.nombre }}</h3>
                 </div>
                 <div class="card-body">
-                    {% if producto.imagen %}
-                    <img src="{{ producto.imagen }}" alt="" class="img-fluid rounded mb-3" style="max-height:160px;">
+                    <p class="text-muted small mb-4">Sube varias fotos a la vez (arrastrar y soltar). Carrusel en la ficha pública del producto.</p>
+
+                    {% if galeria %}
+                    <h6 class="fw-bold mb-3">Galería ({{ galeria|length }} fotos)</h6>
+                    <div class="mb-4">
+                        {% with imagenes=galeria, carousel_id='editarProductoCarousel' %}
+                        {% include 'partials/_carousel_imagenes.html' %}
+                        {% endwith %}
+                    </div>
+                    <div class="row g-3 mb-4">
+                        {% for img in galeria %}
+                        <div class="col-auto text-center">
+                            <img src="{{ img.url }}" class="galeria-thumb {% if producto.imagen == img.url %}portada{% endif %}" alt="">
+                            <div class="d-flex flex-column gap-1 mt-1">
+                                {% if img.id_imagen %}
+                                {% if producto.imagen != img.url %}
+                                <form method="POST" action="{{ url_for('artista.portada_imagen_producto', producto_id=producto.id_producto, id_imagen=img.id_imagen) }}">
+                                    {% include 'artista/_csrf.html' %}
+                                    <button type="submit" class="btn btn-outline-primary btn-sm">Portada</button>
+                                </form>
+                                {% else %}
+                                <span class="badge bg-success">Portada</span>
+                                {% endif %}
+                                {% if galeria|length > 1 %}
+                                <form method="POST" action="{{ url_for('artista.eliminar_imagen_producto', producto_id=producto.id_producto, id_imagen=img.id_imagen) }}" onsubmit="return confirm('¿Eliminar esta foto?');">
+                                    {% include 'artista/_csrf.html' %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Quitar</button>
+                                </form>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                     {% endif %}
-                    <form method="POST" action="{{ url_for('artista.editar_producto', producto_id=producto.id_producto) }}" enctype="multipart/form-data">
+
+                    <div class="border rounded p-3 mb-4 bg-light">
+                        {% include 'artista/_csrf.html' %}
+                        {% with ajax_upload_url=url_for('artista.subir_imagenes_producto', producto_id=producto.id_producto), label='Añadir fotos al producto', help_text='Arrastra muchas imágenes y pulsa «Subir fotos ahora». Se guardan al instante.' %}
+                        {% include 'artista/_upload_galeria_obra.html' %}
+                        {% endwith %}
+                    </div>
+
+                    <form method="POST" action="{{ url_for('artista.editar_producto', producto_id=producto.id_producto) }}">
                         {% include 'artista/_csrf.html' %}
                         <div class="mb-3">
-                            <label for="nombre" class="form-label">Nombre del Producto *</label>
+                            <label for="nombre" class="form-label">Nombre *</label>
                             <input type="text" class="form-control" id="nombre" name="nombre" required value="{{ producto.nombre }}">
                         </div>
-                        
                         <div class="mb-3">
                             <label for="descripcion" class="form-label">Descripción</label>
                             <textarea class="form-control" id="descripcion" name="descripcion" rows="4">{{ producto.descripcion }}</textarea>
                         </div>
-                        
                         {% with moneda_actual=producto.moneda or 'USD' %}
                         {% include 'artista/_moneda_select.html' %}
                         {% endwith %}
-                        <div class="row g-3">
-                            <div class="col-md-6 mb-3">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
                                 <label for="precio" class="form-label">Precio *</label>
                                 <input type="number" step="0.01" min="0.01" class="form-control" id="precio" name="precio" required value="{{ producto.precio }}">
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="stock" class="form-label">Stock en inventario *</label>
+                            <div class="col-md-6">
+                                <label for="stock" class="form-label">Stock *</label>
                                 <input type="number" class="form-control" id="stock" name="stock" min="0" required value="{{ producto.stock }}">
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="imagenes" class="form-label">Subir nuevas fotos</label>
-                            <input type="file" class="form-control" id="imagenes" name="imagenes" accept="image/*" multiple>
-                            <div class="form-text">Puedes seleccionar varias imágenes; la primera será la nueva principal.</div>
-                        </div>
-                        <div class="mb-4">
-                            <label for="imagen" class="form-label">Ruta o URL de imagen (opcional)</label>
-                            <input type="text" class="form-control" id="imagen" name="imagen" value="{{ producto.imagen or '' }}" placeholder="/static/uploads/... o https://...">
-                            <div class="form-text">Si subes una foto nueva arriba, no hace falta cambiar este campo.</div>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between mt-4 border-top pt-4">
+                        <div class="d-flex justify-content-between border-top pt-4">
                             <a href="{{ url_for('artista.productos') }}" class="btn btn-outline-secondary">Cancelar</a>
-                            <button type="submit" class="btn btn-primary px-5">Actualizar Producto</button>
+                            <button type="submit" class="btn btn-primary px-5">Guardar datos</button>
                         </div>
                     </form>
                 </div>

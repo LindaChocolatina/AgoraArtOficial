@@ -4,7 +4,7 @@
 
 {% block content %}
 {% if artista.banner_perfil %}
-<div style="height:180px;background:url('{{ artista.banner_perfil }}') center/cover no-repeat;"></div>
+<div style="height:180px;background-image:url('{{ artista.banner_perfil }}');background-size:cover;background-position:center {{ artista.banner_offset or 50 }}%;"></div>
 {% endif %}
 <!-- Cabecera del Artista -->
 <div class="bg-light pt-5 pb-4 mb-5 border-bottom">
