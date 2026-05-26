@@ -197,6 +197,69 @@ def cambiar_password():
     
     return render_template('auth/cambiar_password.html')
 
+@auth_bp.route('/olvide-contrasena', methods=['GET', 'POST'])
+def olvide_contrasena():
+    """Solicitar enlace para restablecer contraseña."""
+    if current_user.is_authenticated:
+        return redirect(url_for('public.home'))
+
+    reset_link = None
+    if request.method == 'POST':
+        email = request.form.get('email', '')
+        service_factory = get_service_factory()
+        auth_service = service_factory.get_auth_service()
+
+        def build_url(token):
+            return url_for('auth.restablecer_contrasena', token=token, _external=True)
+
+        mensaje, reset_link = auth_service.solicitar_restablecimiento(email, build_url)
+        from app.utils.email_envio import modo_demo_correo
+        if reset_link and modo_demo_correo():
+            flash(
+                'Modo local: no se envió ningún correo. Copia el enlace que aparece abajo en esta misma página.',
+                'warning',
+            )
+        else:
+            flash(mensaje, 'success')
+
+    from app.utils.email_envio import modo_demo_correo, mail_configurado
+    return render_template(
+        'auth/olvide_contrasena.html',
+        reset_link=reset_link,
+        modo_demo=modo_demo_correo(),
+        mail_configurado=mail_configurado(),
+    )
+
+
+@auth_bp.route('/restablecer-contrasena/<token>', methods=['GET', 'POST'])
+def restablecer_contrasena(token):
+    """Nueva contraseña con token de recuperación."""
+    if current_user.is_authenticated:
+        return redirect(url_for('public.home'))
+
+    if request.method == 'POST':
+        password_nueva = request.form.get('password_nueva', '')
+        password_confirmar = request.form.get('password_confirmar', '')
+
+        if password_nueva != password_confirmar:
+            flash('Las contraseñas no coinciden', 'error')
+        elif len(password_nueva) < 6:
+            flash('La contraseña debe tener al menos 6 caracteres', 'error')
+        else:
+            service_factory = get_service_factory()
+            auth_service = service_factory.get_auth_service()
+            exitoso, mensaje = auth_service.restablecer_password_con_token(
+                token,
+                password_nueva,
+                current_app.config['SECRET_KEY'],
+            )
+            if exitoso:
+                flash(mensaje, 'success')
+                return redirect(url_for('auth.login'))
+            flash(mensaje, 'error')
+
+    return render_template('auth/restablecer_contrasena.html', token=token)
+
 # API endpoints para AJAX
 @auth_bp.route('/api/verificar-email', methods=['POST'])
 def verificar_email():

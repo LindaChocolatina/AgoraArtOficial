@@ -33,6 +33,23 @@
     margin-top: 1.5rem;
     margin-bottom: 0.75rem;
 }
+.comentarios-blog { margin-top: 3rem; }
+.comentario-item {
+    display: flex;
+    gap: 12px;
+    padding: 16px 0;
+    border-bottom: 1px solid #eee;
+}
+.comentario-item:last-child { border-bottom: none; }
+.comentario-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.comentario-meta { font-size: 12px; color: #888; }
+.comentario-texto { font-size: 15px; line-height: 1.55; color: #333; white-space: pre-wrap; }
 </style>
 {% endblock %}
 
@@ -68,6 +85,59 @@
     <article class="entrada-blog-contenido">
         {{ entrada.contenido|safe }}
     </article>
+
+    <section class="comentarios-blog border-top pt-4" id="comentarios">
+        <h2 class="h5 fw-bold mb-1">
+            Comentarios
+            <span class="text-muted fw-normal">({{ comentarios|length }})</span>
+        </h2>
+
+        {% if current_user.is_authenticated %}
+        <form method="POST" class="mb-4 mt-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="contenido" class="form-label small text-muted">Escribe tu comentario</label>
+            <textarea class="form-control mb-2" id="contenido" name="contenido" rows="3" maxlength="2000" required placeholder="Comparte tu opinión sobre esta entrada…"></textarea>
+            <button type="submit" class="btn btn-primary btn-sm">Publicar comentario</button>
+        </form>
+        {% else %}
+        <p class="text-muted small mb-4 mt-2">
+            <a href="{{ url_for('auth.login', next=request.url + '#comentarios') }}">Inicia sesión</a>
+            para dejar un comentario.
+        </p>
+        {% endif %}
+
+        {% if comentarios %}
+        <div>
+            {% for c in comentarios %}
+            <div class="comentario-item">
+                {% if c.usuario.foto_perfil %}
+                <img src="{{ c.usuario.foto_perfil }}" alt="" class="comentario-avatar">
+                {% else %}
+                <div class="comentario-avatar bg-secondary text-white d-flex align-items-center justify-content-center fw-bold small">
+                    {{ c.usuario.nombre[0]|upper }}
+                </div>
+                {% endif %}
+                <div class="flex-grow-1">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <strong class="small">{{ c.usuario.nombre }}</strong>
+                        <span class="comentario-meta">@{{ c.usuario.username }}</span>
+                        <span class="comentario-meta">· {{ c.fecha.strftime('%d/%m/%Y %H:%M') if c.fecha else '' }}</span>
+                    </div>
+                    <p class="comentario-texto mb-1">{{ c.contenido }}</p>
+                    {% if current_user.is_authenticated and (current_user.id_usuario == c.id_usuario or current_user.id_usuario == artista.id_usuario) %}
+                    <form method="POST" action="{{ url_for('public.eliminar_comentario_blog', entrada_id=entrada.id_entrada, comentario_id=c.id_comentario) }}" class="d-inline" onsubmit="return confirm('¿Eliminar este comentario?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-link btn-sm text-danger p-0" style="font-size:12px;">Eliminar</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted small">Aún no hay comentarios. Sé el primero en comentar.</p>
+        {% endif %}
+    </section>
 
     <div class="mt-5 pt-4 border-top d-flex flex-wrap gap-2">
         <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='blog') }}" class="btn btn-outline-secondary">

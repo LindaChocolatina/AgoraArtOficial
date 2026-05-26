@@ -85,6 +85,9 @@ def create_app(config_name='default'):
     login_manager.init_app(app)
     migrate.init_app(app, db)
     csrf.init_app(app)
+
+    from app.utils.email_envio import mail
+    mail.init_app(app)
     
     # Configurar Login Manager
     login_manager.login_view = 'auth.login'

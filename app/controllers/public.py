@@ -171,9 +171,9 @@ def perfil_artista(artista_id):
                          ultimo_producto=ultimo_producto,
                          tab=tab)
 
-@public_bp.route('/blog/<int:entrada_id>')
+@public_bp.route('/blog/<int:entrada_id>', methods=['GET', 'POST'])
 def detalle_entrada_blog(entrada_id):
-    """Lectura pública de una entrada de blog."""
+    """Lectura pública de una entrada de blog y comentarios."""
     service_factory = get_service_factory()
     blog_service = service_factory.get_blog_service()
     usuario_service = service_factory.get_usuario_service()
@@ -188,11 +188,57 @@ def detalle_entrada_blog(entrada_id):
         flash('Artista no encontrado', 'error')
         return redirect(url_for('public.artistas'))
 
+    if request.method == 'POST':
+        if not current_user.is_authenticated:
+            flash('Inicia sesión para comentar', 'info')
+            return redirect(url_for('auth.login', next=request.url))
+
+        contenido = request.form.get('contenido', '')
+        exitoso, _, mensaje = blog_service.agregar_comentario(
+            entrada_id,
+            current_user.id_usuario,
+            contenido,
+        )
+        if exitoso:
+            flash('Comentario publicado', 'success')
+        else:
+            flash(mensaje or 'No se pudo publicar el comentario', 'error')
+        return redirect(url_for('public.detalle_entrada_blog', entrada_id=entrada_id))
+
+    comentarios = blog_service.listar_comentarios(entrada_id)
+
     return render_template(
         'public/detalle_entrada_blog.html',
         entrada=entrada,
         artista=artista,
+        comentarios=comentarios,
     )
+
+
+@public_bp.route('/blog/<int:entrada_id>/comentarios/<int:comentario_id>/eliminar', methods=['POST'])
+@login_required
+def eliminar_comentario_blog(entrada_id, comentario_id):
+    """Eliminar comentario (autor o artista dueño de la entrada)."""
+    service_factory = get_service_factory()
+    blog_service = service_factory.get_blog_service()
+
+    entrada = blog_service.get_by_id(entrada_id)
+    if not entrada or not entrada.is_visible():
+        flash('Entrada no encontrada', 'error')
+        return redirect(url_for('public.explorar'))
+
+    es_artista = current_user.id_usuario == entrada.id_artista
+    exitoso, mensaje = blog_service.eliminar_comentario(
+        comentario_id,
+        current_user.id_usuario,
+        es_artista_entrada=es_artista,
+    )
+    if exitoso:
+        flash('Comentario eliminado', 'success')
+    else:
+        flash(mensaje or 'No se pudo eliminar', 'error')
+
+    return redirect(url_for('public.detalle_entrada_blog', entrada_id=entrada_id))
 
 @public_bp.route('/obra/<int:obra_id>')
 def detalle_obra(obra_id):

@@ -177,14 +177,14 @@ class AuthService:
             usuario = self.usuario_repo.get_by_email(email.lower())
             
             if not usuario:
-                return (False, None, 'El email no está registrado')
+                return (False, None, 'Email o contraseña incorrectos')
             
             if not usuario.is_active():
-                return (False, None, 'La cuenta está bloqueada')
+                return (False, None, 'La cuenta está bloqueada. Contacta al administrador.')
             
             # Verificar contraseña
             if not self.verificar_password(password, usuario.password):
-                return (False, None, 'La contraseña es incorrecta')
+                return (False, None, 'Email o contraseña incorrectos')
             
             # Iniciar sesión
             login_user(usuario, remember=remember)
@@ -252,6 +252,84 @@ class AuthService:
         except Exception as e:
             print(f"Error al cambiar contraseña: {e}")
             return (False, 'Error interno del servidor')
+
+    def solicitar_restablecimiento(self, email, reset_url_builder):
+        """
+        Generar token y enviar correo (o devolver enlace en modo demo).
+
+        Args:
+            email (str): Email del usuario
+            reset_url_builder (callable): recibe token y devuelve URL absoluta
+
+        Returns:
+            tuple: (mensaje_usuario, reset_url_demo|None)
+        """
+        from flask import current_app
+        from app.utils.password_reset import generar_token_reset
+        from app.utils.email_envio import enviar_correo_reset, modo_demo_correo
+
+        mensaje_generico = (
+            'Si existe una cuenta con ese email, recibirás instrucciones '
+            'para restablecer tu contraseña.'
+        )
+        email_norm = (email or '').strip().lower()
+        if not email_norm or '@' not in email_norm:
+            return (mensaje_generico, None)
+
+        usuario = self.usuario_repo.get_by_email(email_norm)
+        if not usuario or not usuario.is_active():
+            return (mensaje_generico, None)
+
+        token = generar_token_reset(current_app.config['SECRET_KEY'], usuario.id_usuario)
+        reset_url = reset_url_builder(token)
+
+        if modo_demo_correo():
+            return (mensaje_generico, reset_url)
+
+        try:
+            enviar_correo_reset(usuario.email, reset_url)
+        except Exception as e:
+            print(f"Error al enviar correo de reset: {e}")
+            return (
+                'No pudimos enviar el correo. Revisa la configuración SMTP o usa modo demo.',
+                None,
+            )
+        return (mensaje_generico, None)
+
+    def restablecer_password_con_token(self, token, password_nueva, secret_key, max_age=None):
+        """
+        Cambiar contraseña usando token de recuperación.
+
+        Returns:
+            tuple: (exitoso, mensaje)
+        """
+        from flask import current_app
+        from app.utils.password_reset import verificar_token_reset
+
+        if max_age is None:
+            max_age = current_app.config.get('PASSWORD_RESET_MAX_AGE', 3600)
+
+        user_id = verificar_token_reset(secret_key, token, max_age=max_age)
+        if not user_id:
+            return (False, 'El enlace no es válido o ha expirado. Solicita uno nuevo.')
+
+        if len(password_nueva or '') < 6:
+            return (False, 'La contraseña debe tener al menos 6 caracteres')
+
+        usuario = self.usuario_repo.get_by_id(user_id)
+        if not usuario or not usuario.is_active():
+            return (False, 'Usuario no encontrado')
+
+        password_hash = self.encriptar_password(password_nueva)
+        actualizado = self.usuario_repo.update(
+            user_id,
+            {'password': password_hash},
+            user_id,
+        )
+        if actualizado:
+            self.usuario_repo.save()
+            return (True, 'Contraseña actualizada. Ya puedes iniciar sesión.')
+        return (False, 'No se pudo actualizar la contraseña')
     
     def verificar_permiso(self, usuario, rol_requerido=None, rol_minimo=None):
         """
