@@ -18,6 +18,8 @@ def requiere_cliente(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
+def _validar_campos_direccion(data):
     """Validar campos obligatorios de una dirección de envío."""
     errores = []
     for campo in ('nombre_receptor', 'direccion', 'ciudad', 'pais'):
@@ -431,6 +433,41 @@ def ordenes():
     """Historial de compras (pestaña del dashboard)."""
     return redirect(url_for('cliente.dashboard', tab='compras'))
 
+
+@cliente_bp.route('/ordenes/<int:orden_id>')
+@login_required
+@requiere_cliente
+def ver_orden(orden_id):
+    """Detalle de una compra del cliente."""
+    service_factory = get_service_factory(db.session)
+    orden_service = service_factory.get_orden_service()
+
+    orden = orden_service.get_by_id_for_cliente(orden_id, current_user.id_usuario)
+    if not orden:
+        flash('Orden no encontrada.', 'error')
+        return redirect(url_for('cliente.dashboard', tab='compras'))
+
+    items = list(orden.items.all())
+    moneda = 'COP'
+    for item in items:
+        if item.producto:
+            moneda = getattr(item.producto, 'moneda', None) or 'COP'
+            break
+
+    pago = orden.pagos.filter_by(estado='aprobado').first() or orden.pagos.first()
+
+    from app.utils.moneda import formatear_precio
+
+    return render_template(
+        'cliente/detalle_orden.html',
+        orden=orden,
+        items=items,
+        pago=pago,
+        moneda=moneda,
+        total_formateado=formatear_precio(orden.total, moneda),
+        **_cliente_nav(current_user.id_usuario, active_nav='compras'),
+    )
+
 @cliente_bp.route('/carrito/agregar/<int:producto_id>', methods=['POST'])
 @login_required
 @requiere_cliente
@@ -465,15 +502,23 @@ def carrito():
     """
     service_factory = get_service_factory()
     carrito_service = service_factory.get_carrito_service()
-    
+    payment_service = service_factory.get_payment_service()
+
     items, total = carrito_service.get_items()
     count = carrito_service.get_count()
-    
+    ok_moneda, moneda, error_moneda = payment_service.validar_moneda_unica(items)
+
+    from app.utils.moneda import formatear_precio
+
     return render_template(
         'cliente/carrito.html',
         items=items,
         total=total,
+        total_formateado=formatear_precio(total, moneda or 'COP'),
+        moneda=moneda or 'COP',
         count=count,
+        checkout_ok=ok_moneda,
+        checkout_error=error_moneda,
         **_cliente_nav(current_user.id_usuario, active_nav='carrito'),
     )
 
@@ -556,6 +601,7 @@ def checkout():
         direcciones=direcciones,
         payment_mode=payment_service.modo_pago(),
         stripe_publishable_key=current_app.config.get('STRIPE_PUBLISHABLE_KEY'),
+        **_cliente_nav(current_user.id_usuario, active_nav='carrito'),
     )
 
 

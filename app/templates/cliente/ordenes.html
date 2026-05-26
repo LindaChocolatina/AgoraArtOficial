@@ -28,7 +28,7 @@
                         <tr>
                             <td><strong>#{{ orden.id_orden }}</strong></td>
                             <td>{{ orden.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</td>
-                            <td>${{ orden.total }}</td>
+                            <td>{{ orden.total|formatear_monto('COP') }}</td>
                             <td>
                                 {% if orden.estado == 'pagada' %}
                                     <span class="badge bg-success">Completada</span>

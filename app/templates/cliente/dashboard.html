@@ -260,6 +260,31 @@
         padding: 20px;
         margin-bottom: 12px;
         background: #fff;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    a.compra-card-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    a.compra-card-link:hover .compra-card {
+        border-color: #1769FF;
+        box-shadow: 0 4px 16px rgba(23, 105, 255, 0.08);
+    }
+
+    .compra-card-footer {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #f0f0f0;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #1769FF;
+    }
+
+    a.compra-card-link:hover .compra-card-footer {
+        text-decoration: underline;
     }
 
     .compra-card-header {
@@ -429,6 +454,7 @@
 <div class="compras-list">
     {% if ordenes %}
         {% for orden in ordenes %}
+        <a href="{{ url_for('cliente.ver_orden', orden_id=orden.id_orden) }}" class="compra-card-link">
         <div class="compra-card">
             <div class="compra-card-header">
                 <div>
@@ -448,7 +474,7 @@
                 </div>
             </div>
             <div class="d-flex justify-content-between align-items-center">
-                <span class="fw-bold fs-5">${{ orden.total }}</span>
+                <span class="fw-bold fs-5">{{ orden.total|formatear_monto('COP') }}</span>
                 <small class="text-muted text-truncate ms-3" style="max-width: 220px;">
                     {% if orden.direccion_envio %}
                     {{ orden.direccion_envio.ciudad }}, {{ orden.direccion_envio.pais }}
@@ -457,7 +483,11 @@
                     {% endif %}
                 </small>
             </div>
+            <div class="compra-card-footer">
+                Ver detalle de la compra <i class="fas fa-chevron-right ms-1" style="font-size:0.75rem;"></i>
+            </div>
         </div>
+        </a>
         {% endfor %}
     {% else %}
         <div class="compra-empty">

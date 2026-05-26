@@ -1,5 +1,5 @@
 {# Fila de contenido público (mismo layout que panel artista, sin editar/eliminar). #}
-<div class="shop-card-pro panel-row-pro">
+<div class="shop-card-pro panel-row-pro"{% if row_id %} id="{{ row_id }}"{% endif %}>
     {% if thumb_url %}
     <img src="{{ thumb_url }}" class="shop-img-pro" alt="">
     {% else %}

@@ -14,10 +14,11 @@
         Tu orden <strong>#{{ orden.id_orden }}</strong> quedó registrada como
         <span class="badge bg-success">pagada</span>.
     </p>
-    <p class="mb-4">Total: <strong>${{ orden.total }}</strong></p>
+    <p class="mb-4">Total: <strong>{{ orden.total|formatear_monto('COP') }}</strong></p>
     <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
-        <a href="{{ url_for('cliente.dashboard', tab='compras') }}" class="btn btn-primary">Ver mis compras</a>
-        <a href="{{ url_for('public.productos') }}" class="btn btn-outline-secondary">Seguir en el marketplace</a>
+        <a href="{{ url_for('cliente.ver_orden', orden_id=orden.id_orden) }}" class="btn btn-primary">Ver detalle de la compra</a>
+        <a href="{{ url_for('cliente.dashboard', tab='compras') }}" class="btn btn-outline-secondary">Mis compras</a>
+        <a href="{{ url_for('public.productos') }}" class="btn btn-outline-secondary">Marketplace</a>
     </div>
 </div>
 {% endblock %}

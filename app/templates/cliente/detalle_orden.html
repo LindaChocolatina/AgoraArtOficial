@@ -1,0 +1,186 @@
+{% extends "cliente/base_cliente.html" %}
+
+{% block title %}Orden #{{ orden.id_orden }} — Ágora Art{% endblock %}
+
+{% block cliente_head %}
+<style>
+.detalle-orden-wrap {
+    max-width: 820px;
+    margin: 1.5rem auto 4rem;
+    padding: 0 1.5rem;
+}
+.detalle-orden-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.detalle-orden-card {
+    background: #fff;
+    border: 1px solid #ebebeb;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+.detalle-orden-card h3 {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #767676;
+    margin-bottom: 1rem;
+}
+.detalle-item {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.detalle-item:last-child { border-bottom: none; padding-bottom: 0; }
+.detalle-item:first-child { padding-top: 0; }
+.detalle-item-img {
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: #f5f5f5;
+}
+.detalle-item-img-placeholder {
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #b0b0b0;
+}
+.detalle-item-name {
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    color: #191919;
+}
+.detalle-item-meta {
+    font-size: 0.85rem;
+    color: #767676;
+}
+.detalle-item-price {
+    text-align: right;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.detalle-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+    border-top: 1.5px solid #ebebeb;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+.detalle-dato {
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    color: #4a4a4a;
+}
+.detalle-dato strong { color: #191919; }
+</style>
+{% endblock %}
+
+{% block cliente_content %}
+<div class="detalle-orden-wrap">
+    <a href="{{ url_for('cliente.dashboard', tab='compras') }}" class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 mb-3">
+        <i class="fas fa-arrow-left"></i> Volver a mis compras
+    </a>
+
+    <div class="detalle-orden-header">
+        <div>
+            <h1 class="h3 fw-bold mb-1">Orden #{{ orden.id_orden }}</h1>
+            <p class="text-muted mb-0">{{ orden.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</p>
+        </div>
+        <div>
+            {% if orden.estado == 'pagada' %}
+            <span class="badge bg-success fs-6">Completada</span>
+            {% elif orden.estado == 'pendiente' %}
+            <span class="badge bg-warning text-dark fs-6">Pendiente de pago</span>
+            {% elif orden.estado == 'cancelada' %}
+            <span class="badge bg-danger fs-6">Cancelada</span>
+            {% else %}
+            <span class="badge bg-secondary fs-6">{{ orden.estado|title }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if orden.estado == 'pendiente' %}
+    <div class="alert alert-warning border-0 mb-3">
+        Esta orden aún no está pagada.
+        <a href="{{ url_for('cliente.checkout_pago_demo', orden_id=orden.id_orden) }}" class="alert-link">Continuar al pago</a>
+    </div>
+    {% endif %}
+
+    <div class="detalle-orden-card">
+        <h3>Productos</h3>
+        {% for item in items %}
+        <div class="detalle-item">
+            {% if item.producto and item.producto.imagen %}
+            <img src="{{ item.producto.imagen }}" alt="" class="detalle-item-img">
+            {% else %}
+            <div class="detalle-item-img-placeholder"><i class="fas fa-image"></i></div>
+            {% endif %}
+            <div>
+                {% if item.producto %}
+                <div class="detalle-item-name">{{ item.producto.nombre }}</div>
+                <div class="detalle-item-meta">
+                    {% if item.producto.artista %}por {{ item.producto.artista.nombre }} · {% endif %}
+                    {{ item.cantidad }} × {{ item.precio_unitario|formatear_monto(moneda) }}
+                </div>
+                {% else %}
+                <div class="detalle-item-name">Producto no disponible</div>
+                <div class="detalle-item-meta">{{ item.cantidad }} unidad(es)</div>
+                {% endif %}
+            </div>
+            <div class="detalle-item-price">{{ item.subtotal|formatear_monto(moneda) }}</div>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">Sin productos registrados en esta orden.</p>
+        {% endfor %}
+        <div class="detalle-total-row">
+            <span>Total</span>
+            <span>{{ total_formateado }}</span>
+        </div>
+    </div>
+
+    {% if orden.direccion_envio %}
+    <div class="detalle-orden-card">
+        <h3>Envío</h3>
+        <div class="detalle-dato"><strong>{{ orden.direccion_envio.nombre_receptor }}</strong></div>
+        <div class="detalle-dato">{{ orden.direccion_envio.direccion }}</div>
+        <div class="detalle-dato">
+            {{ orden.direccion_envio.ciudad }}, {{ orden.direccion_envio.pais }}
+            {% if orden.direccion_envio.codigo_postal %}· CP {{ orden.direccion_envio.codigo_postal }}{% endif %}
+        </div>
+        {% if orden.direccion_envio.telefono %}
+        <div class="detalle-dato">Tel: {{ orden.direccion_envio.telefono }}</div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if pago %}
+    <div class="detalle-orden-card">
+        <h3>Pago</h3>
+        <div class="detalle-dato">Proveedor: <strong>{{ pago.proveedor }}</strong></div>
+        <div class="detalle-dato">Referencia: <strong>{{ pago.referencia }}</strong></div>
+        <div class="detalle-dato">Monto: <strong>{{ pago.monto|formatear_monto(moneda) }}</strong></div>
+        {% if pago.fecha_pago %}
+        <div class="detalle-dato">Fecha: {{ pago.fecha_pago.strftime('%d/%m/%Y %H:%M') }}</div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

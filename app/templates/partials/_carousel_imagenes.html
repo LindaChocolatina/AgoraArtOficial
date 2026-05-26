@@ -1,21 +1,9 @@
-<style>
-.obra-carousel .carousel-inner {
-    background: #f5f5f5;
-    max-height: 420px;
-    min-height: 180px;
-}
-.obra-carousel .obra-carousel-img {
-    max-height: 420px;
-    width: 100%;
-    object-fit: contain;
-    background: #f5f5f5;
-}
-</style>
-{# Carrusel Bootstrap para galería. Requiere: imagenes, carousel_id #}
+{# Carrusel Bootstrap para galería. Requiere: imagenes, carousel_id. Opcional: carousel_variant #}
 {% set cid = carousel_id|default('obraCarousel') %}
+{% set variant = carousel_variant|default('') %}
 {% set slides = imagenes if imagenes else [] %}
 {% if slides %}
-<div id="{{ cid }}" class="carousel slide obra-carousel" data-bs-ride="false">
+<div id="{{ cid }}" class="carousel slide obra-carousel {{ variant }}" data-bs-ride="false">
     {% if slides|length > 1 %}
     <div class="carousel-indicators">
         {% for img in slides %}
@@ -27,22 +15,20 @@
         {% for img in slides %}
         {% set src = img.url if img.url is defined else img %}
         <div class="carousel-item {% if loop.first %}active{% endif %}">
-            <img src="{{ src }}" class="d-block w-100 obra-carousel-img" alt="">
+            <img src="{{ src }}" class="d-block w-100 obra-carousel-img" alt="Imagen {{ loop.index }} del carrusel">
         </div>
         {% endfor %}
     </div>
     {% if slides|length > 1 %}
-    <button class="carousel-control-prev" type="button" data-bs-target="#{{ cid }}" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Anterior</span>
+    <button class="carousel-control-prev" type="button" data-bs-target="#{{ cid }}" data-bs-slide="prev" aria-label="Imagen anterior">
+        <span class="obra-carousel-arrow" aria-hidden="true"><i class="fas fa-chevron-left"></i></span>
     </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#{{ cid }}" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Siguiente</span>
+    <button class="carousel-control-next" type="button" data-bs-target="#{{ cid }}" data-bs-slide="next" aria-label="Imagen siguiente">
+        <span class="obra-carousel-arrow" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
     </button>
     {% endif %}
 </div>
 {% if slides|length > 1 %}
-<p class="text-center small text-muted mt-2 mb-0">{{ slides|length }} imágenes · usa las flechas para navegar</p>
+<p class="obra-carousel-caption">{{ slides|length }} imágenes · usa las flechas para navegar</p>
 {% endif %}
 {% endif %}

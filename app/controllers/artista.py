@@ -212,6 +212,8 @@ def editar_perfil():
             'email': request.form.get('email'),
             'biografia': request.form.get('biografia', '')
         }
+        from app.utils.enlaces_artista import enlaces_desde_formulario
+        data.update(enlaces_desde_formulario(request.form))
         data.update(foto_perfil_desde_form(request, current_app.config['UPLOAD_FOLDER']))
         
         # Validar y actualizar

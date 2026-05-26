@@ -13,10 +13,9 @@
 
         <div style="display:grid;grid-template-columns:1fr 360px;gap:32px;align-items:start;">
             <!-- Galería / carrusel -->
-            <div style="background:white;border-radius:12px;overflow:hidden;border:1px solid #ECECEC;padding:12px;">
+            <div style="background:white;border-radius:12px;border:1px solid #ECECEC;padding:12px;">
                 {% if galeria_imagenes %}
-                <style>.obra-carousel .obra-carousel-img { max-height: 560px; object-fit: contain; background: #fafafa; }</style>
-                {% with imagenes=galeria_imagenes, carousel_id='detalleObraCarousel' %}
+                {% with imagenes=galeria_imagenes, carousel_id='detalleObraCarousel', carousel_variant='obra-carousel--tall' %}
                 {% include 'partials/_carousel_imagenes.html' %}
                 {% endwith %}
                 {% elif obra.imagen %}

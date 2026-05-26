@@ -35,6 +35,16 @@ def _ensure_dev_schema_patches():
                 "ALTER TABLE usuarios ADD COLUMN banner_offset INTEGER DEFAULT 50"
             ))
             db.session.commit()
+        for col, ddl in (
+            ('enlace_instagram', "ALTER TABLE usuarios ADD COLUMN enlace_instagram VARCHAR(255)"),
+            ('enlace_web', "ALTER TABLE usuarios ADD COLUMN enlace_web VARCHAR(255)"),
+            ('enlace_extra_url', "ALTER TABLE usuarios ADD COLUMN enlace_extra_url VARCHAR(255)"),
+            ('enlace_extra_etiqueta', "ALTER TABLE usuarios ADD COLUMN enlace_extra_etiqueta VARCHAR(80)"),
+        ):
+            if col not in cols:
+                db.session.execute(text(ddl))
+                db.session.commit()
+                cols.add(col)
 
 
 def create_app(config_name='default'):
@@ -65,6 +75,11 @@ def create_app(config_name='default'):
         with app.app_context():
             db.create_all()
             _ensure_dev_schema_patches()
+
+    if config_name != 'testing':
+        with app.app_context():
+            from app.utils.categorias_seed import ensure_categorias_catalogo
+            ensure_categorias_catalogo(db.session)
 
     bcrypt.init_app(app)
     login_manager.init_app(app)
@@ -183,6 +198,17 @@ def register_template_filters(app):
             return ''
         moneda = getattr(producto, 'moneda', None) or MONEDA_DEFAULT
         return formatear_precio(producto.precio, moneda)
+
+    @app.template_filter('formatear_monto')
+    def formatear_monto_filter(precio, moneda='COP'):
+        """Formatea un número con separador de miles (punto) y moneda."""
+        from app.utils.moneda import formatear_precio
+        return formatear_precio(precio, moneda)
+
+    @app.template_filter('enlaces_artista')
+    def enlaces_artista_filter(usuario):
+        from app.utils.enlaces_artista import listar_enlaces_artista
+        return listar_enlaces_artista(usuario)
     
     @app.template_filter('date')
     def date_filter(value, format='%d/%m/%Y'):

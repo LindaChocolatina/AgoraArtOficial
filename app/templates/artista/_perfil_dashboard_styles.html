@@ -211,6 +211,30 @@
         font-size: 14px;
     }
 
+    a.stat-row-link {
+        text-decoration: none;
+        color: inherit;
+        padding: 8px 10px;
+        margin: -8px -10px;
+        border-radius: 8px;
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    a.stat-row-link:hover {
+        background: var(--bg-gray, #f5f5f5);
+        color: var(--agora-accent, #1769FF);
+    }
+
+    a.stat-row-link:hover .stat-value-pro {
+        color: var(--agora-accent, #1769FF);
+    }
+
+    .stat-row-static {
+        padding: 8px 10px;
+        margin: -8px -10px;
+        color: inherit;
+    }
+
     .stat-value-pro { font-weight: 700; }
 
     .social-section h6 {
@@ -244,6 +268,11 @@
 
     .content-artist {
         background: transparent;
+        scroll-margin-top: 88px;
+    }
+
+    .panel-row-pro[id^="entrada-"] {
+        scroll-margin-top: 88px;
     }
 
     .tabs-pro {

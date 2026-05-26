@@ -77,23 +77,13 @@ def init_database():
             else:
                 print("Usuario administrador ya existe")
             
-            # Crear algunas categorías de ejemplo
-            categoria_service = service_factory.get_categoria_service()
-            
-            categorias_ejemplo = [
-                {'nombre': 'Pintura', 'descripcion': 'Obras de pintura al óleo, acrílico, acuarela, etc.'},
-                {'nombre': 'Escultura', 'descripcion': 'Obras escultóricas en diversos materiales'},
-                {'nombre': 'Fotografía', 'descripcion': 'Arte fotográfico digital y analógico'},
-                {'nombre': 'Arte Digital', 'descripcion': 'Ilustraciones digitales, arte NFT, etc.'},
-                {'nombre': 'Dibujo', 'descripcion': 'Bocetos, ilustraciones, dibujos técnicos'}
-            ]
-            
-            for cat_data in categorias_ejemplo:
-                if not categoria_service.name_exists(cat_data['nombre']):
-                    categoria = categoria_service.create(cat_data)
-                    print(f"Categoría creada: {cat_data['nombre']}")
-                else:
-                    print(f"Categoría ya existe: {cat_data['nombre']}")
+            # Crear categorías del catálogo (solo las que falten)
+            from app.utils.categorias_seed import ensure_categorias_catalogo
+            creadas = ensure_categorias_catalogo(db.session)
+            if creadas:
+                print(f'Categorías nuevas en catálogo: {creadas}')
+            else:
+                print('Catálogo de categorías ya está completo')
             
             # Crear usuarios artistas de ejemplo
             usuario_service = service_factory.get_usuario_service()
@@ -106,15 +96,6 @@ def init_database():
                     'password': 'artista123',
                     'rol': 'artista',
                     'biografia': 'Artista plástica especializada en pintura al óleo',
-                    'is_active': True
-                },
-                {
-                    'nombre': 'Carlos Rodríguez',
-                    'username': 'carlos_foto',
-                    'email': 'carlos.foto@example.com',
-                    'password': 'artista123',
-                    'rol': 'artista',
-                    'biografia': 'Fotógrafo profesional con más de 10 años de experiencia',
                     'is_active': True
                 }
             ]
@@ -164,7 +145,7 @@ def init_database():
                     'imagen': '/static/uploads/obra3.jpg',
                     'tecnica': 'Fotografía digital',
                     'id_categoria': 3,  # Fotografía
-                    'id_artista': artistas_creados[1].id_usuario if len(artistas_creados) > 1 else (artistas_creados[0].id_usuario if artistas_creados else 3),
+                    'id_artista': artistas_creados[0].id_usuario if artistas_creados else 2,
                     'visible': True,
                     'fecha_publicacion': datetime.now()
                 }

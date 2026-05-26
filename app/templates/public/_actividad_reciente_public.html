@@ -30,7 +30,7 @@
             {% if ultima_entrada %}
             <h6 class="fw-bold mb-1 text-truncate">{{ ultima_entrada.titulo }}</h6>
             <p class="small text-muted mb-2">{{ ultima_entrada.fecha_publicacion.strftime('%d/%m/%Y') if ultima_entrada.fecha_publicacion else '' }}</p>
-            <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='blog') }}" class="btn btn-sm btn-outline-primary">Ver blog</a>
+            <a href="{{ url_for('public.detalle_entrada_blog', entrada_id=ultima_entrada.id_entrada) }}" class="btn btn-sm btn-outline-primary">Leer entrada</a>
             {% else %}
             <p class="small text-muted mb-0">Sin entradas de blog</p>
             {% endif %}
@@ -47,7 +47,7 @@
             {% if ultimo_producto %}
             <h6 class="fw-bold mb-1 text-truncate">{{ ultimo_producto.nombre }}</h6>
             <p class="small text-muted mb-2">{{ ultimo_producto|precio_producto }}</p>
-            <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='tienda') }}" class="btn btn-sm btn-outline-primary">Ver tienda</a>
+            <a href="{{ url_for('public.detalle_producto', producto_id=ultimo_producto.id_producto) }}" class="btn btn-sm btn-outline-primary">Ver producto</a>
             {% else %}
             <p class="small text-muted mb-0">Tienda vacía</p>
             {% endif %}

@@ -46,6 +46,8 @@
     display: flex;
     flex-direction: column;
     gap: 0;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .carrito-item {
@@ -58,7 +60,11 @@
     transition: var(--transition);
 }
 .carrito-item:first-child { border-top: 1px solid var(--border, #ECECEC); }
-.carrito-item:hover { background: var(--blue-light, #E8F0FE); margin: 0 -1.5rem; padding: 1.75rem 1.5rem; border-radius: var(--radius-md); border-color: transparent; }
+.carrito-item:hover {
+    background: var(--blue-light, #E8F0FE);
+    border-radius: var(--radius-md);
+    border-color: transparent;
+}
 
 /* Imagen */
 .item-img {
@@ -179,6 +185,7 @@
     padding: 2rem;
     position: sticky;
     top: 100px;
+    z-index: 5;
 }
 
 .resumen-title {
@@ -235,6 +242,26 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(23, 105, 255, 0.35);
     text-decoration: none;
+}
+.btn-checkout.is-disabled,
+.btn-checkout.is-disabled:hover {
+    background: var(--gray-300, #DEDEDE);
+    color: var(--gray-600, #6E6E6E) !important;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    pointer-events: none;
+}
+
+.carrito-alerta-checkout {
+    font-size: 0.85rem;
+    color: #856404;
+    background: #fff8e6;
+    border: 1px solid #ffe08a;
+    border-radius: var(--radius-sm, 8px);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    line-height: 1.45;
 }
 
 .seguir-comprando {
@@ -293,7 +320,7 @@
     .item-price{ grid-column: 3; grid-row: 2; }
     .item-remove { grid-column: 3; grid-row: 1; }
     .carrito-resumen { position: static; }
-    .carrito-item:hover { margin: 0; padding: 1.75rem 0; border-radius: 0; border-color: var(--border, #ECECEC); background: transparent; }
+    .carrito-item:hover { background: transparent; border-radius: 0; border-color: var(--border, #ECECEC); }
 }
 </style>
 {% endblock %}
@@ -341,7 +368,7 @@
                 </form>
 
                 <!-- Precio -->
-                <div class="item-price">${{ '%.2f'|format(item.subtotal) }}</div>
+                <div class="item-price">{{ item.subtotal|formatear_monto(item.producto.moneda or moneda) }}</div>
 
                 <!-- Eliminar -->
                 <form action="{{ url_for('cliente.remover_carrito', producto_id=item.producto.id_producto) }}" method="POST">
@@ -361,7 +388,7 @@
 
             <div class="resumen-linea">
                 <span>Subtotal</span>
-                <span>${{ '%.2f'|format(total) }}</span>
+                <span>{{ total_formateado }}</span>
             </div>
             <div class="resumen-linea">
                 <span>Envío</span>
@@ -369,12 +396,17 @@
             </div>
             <div class="resumen-linea total">
                 <span>Total estimado</span>
-                <span>${{ '%.2f'|format(total) }}</span>
+                <span>{{ total_formateado }}</span>
             </div>
 
+            {% if checkout_error %}
+            <div class="carrito-alerta-checkout">{{ checkout_error }}</div>
+            <span class="btn-checkout is-disabled" aria-disabled="true">Proceder al pago</span>
+            {% else %}
             <a href="{{ url_for('cliente.checkout') }}" class="btn-checkout">
                 Proceder al pago
             </a>
+            {% endif %}
             <a href="{{ url_for('public.explorar') }}" class="seguir-comprando">
                 ← Seguir explorando
             </a>

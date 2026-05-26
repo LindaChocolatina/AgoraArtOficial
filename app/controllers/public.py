@@ -171,6 +171,29 @@ def perfil_artista(artista_id):
                          ultimo_producto=ultimo_producto,
                          tab=tab)
 
+@public_bp.route('/blog/<int:entrada_id>')
+def detalle_entrada_blog(entrada_id):
+    """Lectura pública de una entrada de blog."""
+    service_factory = get_service_factory()
+    blog_service = service_factory.get_blog_service()
+    usuario_service = service_factory.get_usuario_service()
+
+    entrada = blog_service.get_by_id(entrada_id)
+    if not entrada or not entrada.is_visible():
+        flash('Entrada no encontrada', 'error')
+        return redirect(url_for('public.explorar'))
+
+    artista = usuario_service.get_by_id(entrada.id_artista)
+    if not artista or not artista.is_artista() or not artista.is_active():
+        flash('Artista no encontrado', 'error')
+        return redirect(url_for('public.artistas'))
+
+    return render_template(
+        'public/detalle_entrada_blog.html',
+        entrada=entrada,
+        artista=artista,
+    )
+
 @public_bp.route('/obra/<int:obra_id>')
 def detalle_obra(obra_id):
     """

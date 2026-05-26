@@ -1,0 +1,11 @@
+{% set enlaces = usuario|enlaces_artista %}
+{% if enlaces %}
+<div class="social-section">
+    <h6>En la web</h6>
+    {% for enlace in enlaces %}
+    <a href="{{ enlace.url }}" class="social-link-pro" target="_blank" rel="noopener noreferrer">
+        <i class="{{ enlace.icon }}"></i> {{ enlace.label }}
+    </a>
+    {% endfor %}
+</div>
+{% endif %}

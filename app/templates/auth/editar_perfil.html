@@ -52,6 +52,39 @@
                             <textarea class="form-control" id="biografia" name="biografia" rows="4">{{ current_user.biografia or '' }}</textarea>
                             <div class="form-text">Cuéntanos un poco sobre ti.</div>
                         </div>
+
+                        {% if current_user.is_artista() %}
+                        <div class="mb-4 pt-3 border-top">
+                            <h5 class="mb-3">Enlaces en tu perfil público</h5>
+                            <p class="form-text mb-3">Opcional. Se muestran en la sección «En la web» de tu perfil.</p>
+                            <div class="mb-3">
+                                <label for="enlace_instagram" class="form-label">Instagram</label>
+                                <input type="text" class="form-control" id="enlace_instagram" name="enlace_instagram"
+                                       value="{{ current_user.enlace_instagram or '' }}"
+                                       placeholder="@tu_usuario o https://instagram.com/tu_usuario">
+                            </div>
+                            <div class="mb-3">
+                                <label for="enlace_web" class="form-label">Sitio web / portafolio</label>
+                                <input type="url" class="form-control" id="enlace_web" name="enlace_web"
+                                       value="{{ current_user.enlace_web or '' }}"
+                                       placeholder="https://tusitio.com">
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <label for="enlace_extra_etiqueta" class="form-label">Otro enlace (nombre)</label>
+                                    <input type="text" class="form-control" id="enlace_extra_etiqueta" name="enlace_extra_etiqueta"
+                                           value="{{ current_user.enlace_extra_etiqueta or '' }}"
+                                           placeholder="Behance, TikTok…">
+                                </div>
+                                <div class="col-md-7">
+                                    <label for="enlace_extra_url" class="form-label">URL</label>
+                                    <input type="url" class="form-control" id="enlace_extra_url" name="enlace_extra_url"
+                                           value="{{ current_user.enlace_extra_url or '' }}"
+                                           placeholder="https://…">
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                         
                         <div class="d-flex justify-content-between">
                             <a href="{% if current_user.is_artista() %}{{ url_for('artista.perfil') }}{% elif current_user.is_cliente() %}{{ url_for('cliente.dashboard') }}{% else %}{{ url_for('auth.perfil') }}{% endif %}" class="btn btn-outline-secondary">Cancelar</a>

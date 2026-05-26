@@ -39,6 +39,10 @@ class Usuario(UserMixin, db.Model):
     foto_perfil = db.Column(db.String(255))
     banner_perfil = db.Column(db.String(255))
     banner_offset = db.Column(db.Integer, default=50)
+    enlace_instagram = db.Column(db.String(255))
+    enlace_web = db.Column(db.String(255))
+    enlace_extra_url = db.Column(db.String(255))
+    enlace_extra_etiqueta = db.Column(db.String(80))
     fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
     estado = db.Column(db.String(20), default='activo')  # activo, bloqueado
     

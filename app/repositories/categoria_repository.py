@@ -13,6 +13,11 @@ class CategoriaRepository(BaseRepository):
     def __init__(self, session):
         """Inicializar repositorio de categorías"""
         super().__init__(Categoria, session)
+
+    def get_all(self, filters=None, order_by=None, limit=None, offset=None):
+        if order_by is None:
+            order_by = 'nombre'
+        return super().get_all(filters=filters, order_by=order_by, limit=limit, offset=offset)
     
     def get_all_with_obras_count(self):
         """

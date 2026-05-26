@@ -62,12 +62,14 @@
                     </div>
                 </div>
 
-                <div class="social-section">
-                    <h6>En la Web</h6>
-                    <a href="#" class="social-link-pro"><i class="fab fa-instagram"></i> Instagram</a>
-                    <a href="#" class="social-link-pro"><i class="fab fa-twitter"></i> Twitter</a>
-                    <a href="#" class="social-link-pro"><i class="fas fa-link"></i> Portafolio Externo</a>
-                </div>
+                {% with usuario=current_user %}
+                {% include 'public/_enlaces_artista.html' %}
+                {% endwith %}
+                {% if (current_user|enlaces_artista)|length == 0 %}
+                <p class="small text-muted">
+                    <a href="{{ url_for('artista.editar_perfil') }}">Añade tus enlaces</a> (Instagram, sitio web, Behance…).
+                </p>
+                {% endif %}
 
                 <div class="mt-4 pt-4 border-top">
                     <h6>Sobre Mí</h6>

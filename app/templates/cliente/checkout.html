@@ -110,7 +110,7 @@
                             <div class="fw-semibold small">{{ item.producto.nombre }}</div>
                             <small class="text-muted">× {{ item.cantidad }}</small>
                         </div>
-                        <span class="small">{{ item.producto|precio_producto if item.cantidad == 1 else ('%.2f'|format(item.subtotal) ~ ' ' ~ moneda) }}</span>
+                        <span class="small">{% if item.cantidad == 1 %}{{ item.producto|precio_producto }}{% else %}{{ item.subtotal|formatear_monto(moneda) }}{% endif %}</span>
                     </li>
                     {% endfor %}
                     <li class="list-group-item d-flex justify-content-between bg-light fw-bold py-3">

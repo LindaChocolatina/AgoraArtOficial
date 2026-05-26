@@ -67,23 +67,30 @@
             {% endif %}
 
             <div class="artist-stats-grid">
-                <div class="stat-row-pro">
+                <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='trabajo') }}#contenido-artista"
+                   class="stat-row-pro stat-row-link">
                     <span>Obras publicadas</span>
                     <span class="stat-value-pro">{{ stats.obras_count }}</span>
-                </div>
-                <div class="stat-row-pro">
+                </a>
+                <div class="stat-row-pro stat-row-static" title="Comunidad del artista">
                     <span>Seguidores</span>
                     <span class="stat-value-pro">{{ stats.seguidores_count }}</span>
                 </div>
-                <div class="stat-row-pro">
+                <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='tienda') }}#contenido-artista"
+                   class="stat-row-pro stat-row-link">
                     <span>Productos en tienda</span>
                     <span class="stat-value-pro">{{ stats.productos_count }}</span>
-                </div>
-                <div class="stat-row-pro">
+                </a>
+                <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='blog') }}#contenido-artista"
+                   class="stat-row-pro stat-row-link">
                     <span>Entradas de blog</span>
                     <span class="stat-value-pro">{{ stats.blog_count }}</span>
-                </div>
+                </a>
             </div>
+
+            {% with usuario=artista %}
+            {% include 'public/_enlaces_artista.html' %}
+            {% endwith %}
 
             <div class="mt-4 pt-4 border-top">
                 <h6>Sobre mí</h6>
@@ -101,7 +108,7 @@
         </section>
     </div>
 
-    <div class="content-artist">
+    <div class="content-artist" id="contenido-artista">
         <!-- Tabs (mismas pestañas que el panel, sin Estadísticas) -->
         <nav class="tabs-pro">
             <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='trabajo') }}"
@@ -145,6 +152,8 @@
                 {% set titulo = entrada.titulo %}
                 {% set subtitulo = entrada.contenido|striptags|truncate(120) %}
                 {% set meta_derecha = entrada.fecha_publicacion.strftime('%d/%m/%Y') if entrada.fecha_publicacion else '' %}
+                {% set view_url = url_for('public.detalle_entrada_blog', entrada_id=entrada.id_entrada) %}
+                {% set view_label = 'Leer entrada' %}
                 {% include 'public/_panel_fila_public.html' %}
                 {% endfor %}
             {% else %}
@@ -168,6 +177,8 @@
                 {% set subtitulo = producto.descripcion|truncate_words(12) if producto.descripcion else '' %}
                 {% set precio = producto|precio_producto %}
                 {% set meta_derecha = 'En stock: ' ~ producto.stock|string if producto.is_disponible() else 'Agotado' %}
+                {% set view_url = url_for('public.detalle_producto', producto_id=producto.id_producto) %}
+                {% set view_label = 'Ver producto' %}
                 {% include 'public/_panel_fila_public.html' %}
                 {% endfor %}
             {% else %}
