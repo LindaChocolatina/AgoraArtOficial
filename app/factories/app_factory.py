@@ -40,6 +40,7 @@ def _ensure_dev_schema_patches():
             ('enlace_web', "ALTER TABLE usuarios ADD COLUMN enlace_web VARCHAR(255)"),
             ('enlace_extra_url', "ALTER TABLE usuarios ADD COLUMN enlace_extra_url VARCHAR(255)"),
             ('enlace_extra_etiqueta', "ALTER TABLE usuarios ADD COLUMN enlace_extra_etiqueta VARCHAR(80)"),
+            ('ubicacion', "ALTER TABLE usuarios ADD COLUMN ubicacion VARCHAR(150)"),
         ):
             if col not in cols:
                 db.session.execute(text(ddl))

@@ -26,11 +26,22 @@ def home():
     
     artistas_destacados = usuario_service.get_artistas_activos(limit=10)
 
+    lienzos = []
+    obras_favoritas_ids = set()
+    if current_user.is_authenticated and current_user.is_cliente():
+        lienzos = service_factory.get_moodboard_service().get_by_usuario(
+            current_user.id_usuario
+        )
+        favoritas = obra_service.get_favoritos_usuario(current_user.id_usuario)
+        obras_favoritas_ids = {o.id_obra for o in favoritas}
+
     return render_template('public/home.html', 
                          obras_recientes=obras_recientes,
                          categorias=categorias,
                          categorias_destacadas=categorias_destacadas,
-                         artistas_destacados=artistas_destacados)
+                         artistas_destacados=artistas_destacados,
+                         lienzos=lienzos,
+                         obras_favoritas_ids=obras_favoritas_ids)
 
 @public_bp.route('/explorar')
 def explorar():
@@ -56,7 +67,16 @@ def explorar():
         return redirect(url_for('public.productos', q=termino, filtro=filtro))
     
     # Búsqueda por defecto (Proyectos/Imágenes -> Obras)
-    obras = obra_service.buscar_obras(termino, limit=12)
+    if termino:
+        obras = obra_service.buscar_obras(termino, limit=12)
+    elif categoria_id:
+        obras = obra_service.get_obras_por_categoria(categoria_id, limit=12)
+    else:
+        obras = obra_service.get_publicas(limit=12)
+    
+    # Filtrar por categoría cuando hay término de búsqueda
+    if categoria_id and termino:
+        obras = [o for o in obras if o.id_categoria == categoria_id]
     
     # Aplicar ordenamiento según el filtro
     if filtro == 'mas_antiguos':
@@ -70,10 +90,13 @@ def explorar():
     categorias = categoria_service.get_all()
 
     lienzos = []
+    obras_favoritas_ids = set()
     if current_user.is_authenticated and current_user.is_cliente():
         lienzos = service_factory.get_moodboard_service().get_by_usuario(
             current_user.id_usuario
         )
+        favoritas = obra_service.get_favoritos_usuario(current_user.id_usuario)
+        obras_favoritas_ids = {o.id_obra for o in favoritas}
 
     return render_template('public/explorar.html',
                          obras=obras,
@@ -82,7 +105,8 @@ def explorar():
                          termino_busqueda=termino,
                          tipo_busqueda=tipo,
                          filtro_actual=filtro,
-                         lienzos=lienzos)
+                         lienzos=lienzos,
+                         obras_favoritas_ids=obras_favoritas_ids)
 
 @public_bp.route('/artistas')
 def artistas():
@@ -257,7 +281,7 @@ def detalle_obra(obra_id):
     
     # Verificar si es favorito del usuario actual
     es_favorito = False
-    if current_user.is_authenticated:
+    if current_user.is_authenticated and current_user.is_cliente():
         es_favorito = obra_service.es_favorito(current_user.id_usuario, obra_id)
     
     # Obtener obras relacionadas del mismo artista
@@ -389,7 +413,20 @@ def seguir_artista():
 @login_required
 def favorito_obra():
     """Agregar o quitar obra de favoritos (JSON o formulario)."""
+    if not current_user.is_cliente():
+        if request.is_json:
+            return jsonify({'error': 'Solo los clientes pueden guardar favoritos'}), 403
+        flash('Inicia sesión como cliente para guardar favoritos', 'error')
+        next_url = request.form.get('next') or request.referrer
+        if next_url:
+            return redirect(next_url)
+        return redirect(url_for('public.explorar'))
+
     obra_id, accion = _parse_favorito_request()
+    if not obra_id:
+        flash('Obra no válida', 'error')
+        return _redirect_back('public.explorar')
+
     service_factory = get_service_factory()
     obra_service = service_factory.get_obra_service()
 
@@ -404,9 +441,10 @@ def favorito_obra():
         return jsonify({'exitoso': exitoso, 'mensaje': mensaje})
 
     flash(mensaje, 'success' if exitoso else 'error')
-    if obra_id:
-        return redirect(url_for('public.detalle_obra', obra_id=obra_id))
-    return _redirect_back('cliente.obras_favoritas')
+    next_url = request.form.get('next') or request.referrer
+    if next_url:
+        return redirect(next_url)
+    return redirect(url_for('public.detalle_obra', obra_id=obra_id))
 
 
 @public_bp.route('/obra/<int:obra_id>/favorito/toggle', methods=['POST'])

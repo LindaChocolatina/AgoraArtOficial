@@ -1,14 +1,17 @@
 {# Botones favorito + guardar en lienzo para tarjetas de obra. #}
 <div class="obra-acciones-cliente" onclick="event.stopPropagation();">
-    <form action="{{ url_for('public.favorito_obra') }}" method="POST" class="d-inline">
+    <form action="{{ url_for('public.favorito_obra') }}" method="POST" class="d-inline m-0">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="obra_id" value="{{ obra.id_obra }}">
-        <input type="hidden" name="accion" value="agregar">
-        <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm" title="Guardar en favoritos">
+        <input type="hidden" name="accion" value="{{ 'quitar' if es_favorito else 'agregar' }}">
+        <input type="hidden" name="next" value="{{ request.url }}">
+        <button type="submit"
+                class="obra-action-btn obra-btn-favorito{% if es_favorito %} is-active{% endif %}"
+                title="{{ 'Quitar de favoritos' if es_favorito else 'Guardar en favoritos' }}">
             <i class="fas fa-heart"></i>
         </button>
     </form>
-    {% with obra_id=obra.id_obra, lienzos=lienzos, btn_class='btn-light rounded-circle shadow-sm', label='' %}
+    {% with obra_id=obra.id_obra, lienzos=lienzos, btn_class='obra-action-btn', label='' %}
     {% include 'cliente/_guardar_lienzo.html' %}
     {% endwith %}
 </div>

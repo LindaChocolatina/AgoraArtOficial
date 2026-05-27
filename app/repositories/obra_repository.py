@@ -181,7 +181,7 @@ class ObraRepository(BaseRepository):
             ).first()
             
             if existe:
-                return False
+                return True
             
             # Agregar a favoritos
             self.session.execute(

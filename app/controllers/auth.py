@@ -44,6 +44,10 @@ def register():
     """
     Página de registro de usuarios
     """
+    rol_preseleccionado = request.args.get('rol', '')
+    if rol_preseleccionado not in ('cliente', 'artista'):
+        rol_preseleccionado = ''
+
     if current_user.is_authenticated:
         return redirect(url_for('public.home'))
     
@@ -72,7 +76,7 @@ def register():
             for error in errores:
                 flash(error, 'error')
     
-    return render_template('auth/register.html')
+    return render_template('auth/register.html', rol_preseleccionado=rol_preseleccionado)
 
 @auth_bp.route('/logout')
 @login_required

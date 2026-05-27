@@ -3,7 +3,7 @@
 {% block head %}
 {% include 'artista/_perfil_dashboard_styles.html' %}
 <style>
-    body { background-color: var(--bg-gray) !important; }
+    body { background-color: var(--theme-bg-secondary) !important; }
 </style>
 {% endblock %}
 
@@ -37,6 +37,11 @@
 
                 <h2 class="artist-name-professional">{{ current_user.nombre }}</h2>
                 <p class="artist-title-pro">Artista Visual / Creador Ágora Art</p>
+                {% if current_user.ubicacion %}
+                <p class="artist-location-pro text-muted small mb-3">
+                    <i class="fas fa-map-marker-alt me-1"></i>{{ current_user.ubicacion }}
+                </p>
+                {% endif %}
                 
                 <div class="d-flex flex-column gap-2">
                     <a href="{{ url_for('artista.nueva_obra') }}" class="btn btn-pro btn-follow-pro">Publicar Proyecto</a>
@@ -87,7 +92,7 @@
     <div class="content-artist">
             <!-- Tabs -->
             <div class="tabs-pro">
-                <div class="tab-item-pro active" onclick="switchTab('portfolio')">Trabajo</div>
+                <div class="tab-item-pro active" onclick="switchTab('portfolio')">Portafolio</div>
                 <div class="tab-item-pro" onclick="switchTab('blog')">Blog</div>
                 <div class="tab-item-pro" onclick="switchTab('shop')">Tienda</div>
                 <div class="tab-item-pro" onclick="switchTab('insights')">Estadísticas</div>

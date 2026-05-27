@@ -215,28 +215,20 @@ class ObraService:
     def agregar_favorito(self, usuario_id, obra_id):
         """
         Agregar obra a favoritos de usuario
-        
-        Args:
-            usuario_id (int): ID del usuario
-            obra_id (int): ID de la obra
-            
-        Returns:
-            bool: True si se agregó correctamente
         """
-        return self.obra_repo.agregar_favorito(usuario_id, obra_id)
+        result = self.obra_repo.agregar_favorito(usuario_id, obra_id)
+        if result:
+            self.obra_repo.save()
+        return result
     
     def quitar_favorito(self, usuario_id, obra_id):
         """
         Quitar obra de favoritos de usuario
-        
-        Args:
-            usuario_id (int): ID del usuario
-            obra_id (int): ID de la obra
-            
-        Returns:
-            bool: True se quitó correctamente
         """
-        return self.obra_repo.quitar_favorito(usuario_id, obra_id)
+        result = self.obra_repo.quitar_favorito(usuario_id, obra_id)
+        if result:
+            self.obra_repo.save()
+        return result
     
     def es_favorito(self, usuario_id, obra_id):
         """

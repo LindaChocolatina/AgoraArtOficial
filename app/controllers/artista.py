@@ -210,7 +210,8 @@ def editar_perfil():
             'nombre': request.form.get('nombre'),
             'username': request.form.get('username'),
             'email': request.form.get('email'),
-            'biografia': request.form.get('biografia', '')
+            'biografia': request.form.get('biografia', ''),
+            'ubicacion': request.form.get('ubicacion', '').strip() or None
         }
         from app.utils.enlaces_artista import enlaces_desde_formulario
         data.update(enlaces_desde_formulario(request.form))

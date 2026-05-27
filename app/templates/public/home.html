@@ -11,8 +11,8 @@
     }
 
     body {
-        background-color: var(--bg-color) !important; /* Indigo Profundo Cosmico */
-        color: #FFFFFF !important;
+        background-color: var(--bg-color) !important;
+        color: var(--text-color) !important;
         font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
 
@@ -20,15 +20,15 @@
     .hero-cosmic {
         position: relative;
         width: 100%;
-        height: 65vh; /* Altura reducida */
-        min-height: 480px;
+        min-height: clamp(520px, 72vh, 680px);
+        padding: 56px 0 48px;
         background-color: #0d0b21;
         background-image: url('/static/img/hero_indie.png');
         background-size: cover;
-        background-position: center;
+        background-position: 58% center;
         display: flex;
         align-items: center;
-        overflow: hidden;
+        overflow: visible;
         color: #FFFFFF !important;
     }
 
@@ -92,6 +92,10 @@
         text-decoration: none;
         transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         box-shadow: 0 8px 20px rgba(255, 45, 149, 0.25);
+        position: relative;
+        z-index: 20;
+        pointer-events: auto;
+        cursor: pointer;
     }
 
     .btn-cosmic-cta:hover {
@@ -103,18 +107,13 @@
 
     /* 2. DISCOVERY BAR */
     .discovery-bar-pro {
-        background: var(--bg-color); opacity: 0.95;
-        backdrop-filter: blur(10px);
-        border-top: 1px solid rgba(255, 45, 149, 0.2);
-        border-bottom: 1px solid rgba(255, 45, 149, 0.2);
-        padding: 15px 0;
-        background: white;
-        border-top: 1px solid var(--be-border);
-        border-bottom: 1px solid var(--be-border);
+        background: #FFFFFF;
+        border-top: 1px solid #ECECEC;
+        border-bottom: 1px solid #ECECEC;
         padding: 12px 0;
         position: sticky;
-        top: 0;
-        z-index: 1000;
+        top: 56px;
+        z-index: 999;
     }
 
     .discovery-inner {
@@ -126,38 +125,40 @@
     .filter-btn-pro {
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 8px;
         font-weight: 700;
         font-size: 13px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 8px 16px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        border: 1px solid #ECECEC;
+        padding: 8px 12px;
         border-radius: 4px;
         cursor: pointer;
-        color: #FFFFFF !important;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 700;
-        font-size: 13px;
-        border: 1px solid var(--be-border);
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
+        color: #191919;
+        background: #FFFFFF;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-width: 38px;
+        min-height: 38px;
+    }
+
+    .filter-btn-pro.is-active {
+        border-color: var(--cosmic-purple, #8B5CF6);
+        color: var(--cosmic-purple, #8B5CF6);
+        background: rgba(139, 92, 246, 0.08);
+    }
+
+    .filter-btn-pro:hover {
+        background: #F5F5F5;
+        color: #191919;
     }
 
     .search-group-pro {
         flex-grow: 1;
         display: flex;
         align-items: center;
-        background: var(--bg-secondary); border: 1px solid var(--border-color);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 100px;
-        padding: 0 20px;
-        flex-grow: 1;
-        display: flex;
-        align-items: center;
         background: #f9f9f9;
-        border: 1px solid var(--be-border);
+        border: 1px solid #ECECEC;
         border-radius: 100px;
         padding: 0 20px;
     }
@@ -171,14 +172,12 @@
         outline: none;
         font-weight: 600;
         font-size: 14px;
-        color: #FFFFFF !important;
-        border: none;
-        background: transparent;
-        padding: 10px 0;
-        width: 100%;
-        outline: none;
-        font-weight: 600;
-        font-size: 14px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #191919;
+    }
+
+    .search-group-pro input::placeholder {
+        color: #959595;
     }
 
     .search-types-pro {
@@ -190,14 +189,15 @@
     .search-type-item {
         font-size: 12px;
         font-weight: 700;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         color: #959595;
         cursor: pointer;
         padding: 5px 0;
     }
 
     .search-type-item.active {
-        color: var(--be-text);
-        border-bottom: 2px solid var(--be-text);
+        color: #191919;
+        border-bottom: 2px solid var(--cosmic-purple, #8B5CF6);
     }
 
     /* 3. CATEGORY MENU */
@@ -301,6 +301,14 @@
 
     .project-card-replica {
         cursor: pointer;
+        position: relative;
+    }
+
+    .project-card-replica .obra-acciones-cliente {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 8;
     }
 
     .project-thumb {
@@ -329,13 +337,15 @@
     }
 
     .project-author-info { display: flex; align-items: center; gap: 8px; }
-    .project-author-av { width: 24px; height: 24px; border-radius: 50%; background: #ccc; }
+    .project-author-av { width: 24px; height: 24px; border-radius: 50%; background: #8B5CF6; flex-shrink: 0; }
     .project-title-pro {
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-weight: 700;
         font-size: 14px;
         margin-bottom: 2px;
-        color: #FFFFFF !important; font-weight: 700; font-size: 14px; margin-bottom: 2px; }
-    .project-author-name { font-size: 12px; color: #696969; font-weight: 600; }
+        color: #191919;
+    }
+    .project-author-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; color: #696969; font-weight: 600; }
     
     .project-actions-pro {
         display: flex;
@@ -352,34 +362,319 @@
     }
 
 
-    /* Discovery Bar Theme Fix */
+    /* Discovery Bar Theme Fix — theme.css cubre el resto */
     .discovery-bar-pro {
-        background: var(--bg-color);
-        border-bottom: 1px solid var(--border-color);
+        background: var(--theme-surface, #FFFFFF);
+        border-bottom: 1px solid var(--theme-border, #ECECEC);
+    }
+
+    .home-roles-row {
+        display: flex;
+        gap: 24px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .home-role-item {
+        flex: 1 1 280px;
+        max-width: 360px;
+        min-width: 0;
+    }
+
+    .home-role-card {
+        background: var(--card-bg);
+        padding: 40px 24px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
         transition: 0.3s;
+        height: 100%;
+        text-align: center;
     }
-    .search-group-pro {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
+
+    .home-role-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 20px;
     }
-    .search-group-pro input {
-        background: transparent;
-        color: var(--text-color);
+
+    .home-role-icon--artist {
+        background: #E8F6F8;
+        color: #8B5CF6;
     }
-    .search-type-item {
+
+    .home-role-icon--collector {
+        background: #F4F0F9;
+        color: #8A6EA8;
+    }
+
+    .home-role-icon--community {
+        background: #E8F6F8;
+        color: #8B5CF6;
+    }
+
+    .home-role-card h4 {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        margin-bottom: 12px;
+        font-size: 18px;
+        color: var(--text-color) !important;
+    }
+
+    .home-role-card p {
+        font-family: 'Plus Jakarta Sans', sans-serif;
         color: var(--text-muted);
+        line-height: 1.6;
+        font-size: 14px;
+        margin: 0 auto;
+        max-width: 280px;
     }
-    .search-type-item.active {
-        color: var(--text-color);
-        border-bottom: 2px solid var(--accent-purple);
+
+    .home-section-header {
+        text-align: center;
+        margin-bottom: 48px;
     }
-    .filter-btn-pro {
-        color: var(--text-color);
-        border: 1px solid var(--border-color);
-        background: var(--card-bg);
+
+    .home-section-header h2 {
+        font-family: 'Outfit', sans-serif;
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        font-weight: 700;
+        color: var(--text-color) !important;
+        margin-bottom: 12px;
     }
-    .discovery-inner .btn {
-        color: var(--text-color);
+
+    .home-section-header p {
+        font-family: 'Outfit', sans-serif;
+        font-size: 16px;
+        color: var(--text-muted);
+        font-style: italic;
+        margin: 0;
+    }
+
+    .home-cta-banner {
+        background: linear-gradient(135deg, #1A0B3B 0%, #6D28D9 50%, #BE185D 100%);
+        padding: clamp(48px, 10vw, 100px) clamp(20px, 5vw, 40px);
+        border-radius: 30px;
+        text-align: center;
+        color: #FFFFFF !important;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    .home-cta-banner h2 {
+        font-family: 'Outfit', sans-serif;
+        font-size: clamp(1.6rem, 5vw, 2.6rem);
+        font-weight: 800;
+        margin-bottom: 20px;
+        text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        color: #fff !important;
+    }
+
+    .home-cta-banner p {
+        font-family: 'Outfit', sans-serif;
+        font-size: clamp(1rem, 2.5vw, 1.25rem);
+        font-weight: 500;
+        color: #fff;
+        margin-bottom: 32px;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .btn-cta-register {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: #fff;
+        color: #1B2B3A !important;
+        padding: 14px 32px;
+        border-radius: 100px;
+        text-decoration: none;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        transition: 0.3s;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        position: relative;
+        z-index: 2;
+        pointer-events: auto;
+        cursor: pointer;
+    }
+
+    .btn-cta-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 28px rgba(0,0,0,0.15);
+        color: #1B2B3A !important;
+    }
+
+    @media (max-width: 991px) {
+        .hero-cosmic {
+            min-height: auto;
+            padding: 48px 0 44px;
+            align-items: flex-start;
+            background-position: center 30%;
+        }
+
+        .hero-cosmic::before {
+            background: linear-gradient(
+                180deg,
+                rgba(13, 11, 33, 0.94) 0%,
+                rgba(13, 11, 33, 0.82) 45%,
+                rgba(13, 11, 33, 0.5) 100%
+            );
+        }
+
+        .hero-container {
+            grid-template-columns: 1fr;
+            padding: 0 20px;
+            gap: 0;
+        }
+
+        .hero-action-side { display: none; }
+
+        .hero-text-side h1 {
+            font-size: clamp(1.55rem, 6.5vw, 2.25rem);
+            margin-bottom: 16px;
+        }
+
+        .hero-text-side p {
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+            max-width: none;
+        }
+
+        .project-grid-replica {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .discovery-inner {
+            flex-wrap: nowrap;
+            gap: 8px;
+        }
+
+        .discovery-inner .dropdown {
+            flex: 0 0 auto;
+        }
+
+        .search-group-pro {
+            flex: 1 1 auto;
+            min-width: 0;
+            max-width: 100%;
+            padding: 0 12px;
+        }
+
+        .search-group-pro input {
+            font-size: 13px;
+            padding: 8px 0;
+        }
+
+        .search-group-pro input::placeholder {
+            font-size: 12px;
+        }
+
+        .search-types-pro {
+            display: none !important;
+        }
+
+        .category-scroll-container {
+            padding: 0 8px;
+        }
+
+        .arrow-pro {
+            width: 28px;
+            height: 28px;
+        }
+
+        .home-roles-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+        }
+
+        .home-roles-row > div,
+        .home-role-item {
+            flex: 1 1 auto;
+            max-width: none;
+            width: 100%;
+        }
+
+        .home-role-card {
+            padding: 28px 20px;
+        }
+
+        .home-section-header {
+            margin-bottom: 32px;
+        }
+    }
+
+    .home-section-pad {
+        padding: 80px 0;
+    }
+
+    @media (max-width: 767px) {
+        .home-section-pad {
+            padding: 48px 16px;
+        }
+    }
+
+    @media (max-width: 575px) {
+        .hero-cosmic {
+            padding: 32px 0 44px;
+            align-items: flex-start;
+            background-position: center 25%;
+        }
+
+        .hero-container {
+            padding: 0 16px;
+        }
+
+        .hero-text-side h1 {
+            font-size: clamp(1.45rem, 7vw, 1.85rem);
+            line-height: 1.15;
+        }
+
+        .hero-text-side p {
+            margin-bottom: 20px;
+        }
+
+        .btn-cosmic-cta {
+            width: 100%;
+            justify-content: center;
+            padding: 14px 20px;
+            font-size: 14px;
+        }
+
+        .filter-btn-pro {
+            font-size: 12px;
+            padding: 8px 12px;
+        }
+
+        .project-grid-replica {
+            grid-template-columns: 1fr;
+        }
+
+        .project-meta {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .home-cta-banner {
+            border-radius: 20px;
+            padding: 40px 20px;
+        }
+
+        .btn-cta-register {
+            width: 100%;
+            max-width: 320px;
+        }
     }
 
 </style>
@@ -413,7 +708,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const text = this.textContent;
             
             inputFiltro.value = val;
-            filterBtnText.innerHTML = `<i class="fas fa-sliders-h"></i> ${text}`;
+            filterBtnText.classList.add('is-active');
+            filterBtnText.setAttribute('title', text);
+            filterBtnText.setAttribute('aria-label', 'Filtro: ' + text);
             
             // Auto-enviar el formulario al seleccionar un filtro
             form.submit();
@@ -442,16 +739,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {% block content %}
 
+{% if current_user.is_authenticated %}
+    {% if current_user.is_artista() %}
+        {% set home_cta_url = url_for('artista.dashboard') %}
+        {% set home_cta_hero = 'Ir a mi Estudio' %}
+        {% set home_cta_banner = 'Ir a mi Estudio' %}
+    {% elif current_user.is_cliente() %}
+        {% set home_cta_url = url_for('cliente.dashboard') %}
+        {% set home_cta_hero = 'Ir a mi Espacio' %}
+        {% set home_cta_banner = 'Ir a mi Espacio' %}
+    {% elif current_user.is_admin() %}
+        {% set home_cta_url = url_for('admin.dashboard') %}
+        {% set home_cta_hero = 'Panel Admin' %}
+        {% set home_cta_banner = 'Panel Admin' %}
+    {% else %}
+        {% set home_cta_url = url_for('public.home') %}
+        {% set home_cta_hero = 'Ir al inicio' %}
+        {% set home_cta_banner = 'Ir al inicio' %}
+    {% endif %}
+{% else %}
+    {% set home_cta_url = url_for('auth.register', rol='artista') %}
+    {% set home_cta_hero = 'Impulsa tu Arte' %}
+    {% set home_cta_banner = 'Crear mi cuenta' %}
+{% endif %}
+
 <!-- 1. COSMIC HERO SECTION -->
 <section class="hero-cosmic">
     <div class="hero-container">
         <div class="hero-text-side">
             <h1 data-aos="fade-right">Ágora Art: Donde el Talento Encuentra su <span>Impulso Cósmico.</span></h1>
             <p data-aos="fade-right" data-aos-delay="200">Una comunidad de artistas contemporáneos y coleccionistas visionarios, unidos en un Refugio Creativo.</p>
-            <div data-aos="fade-up" data-aos-delay="400">
-                <a href="{{ url_for('public.explorar') }}" class="btn-cosmic-cta">
+            <div>
+                <a href="{{ home_cta_url }}" class="btn-cosmic-cta">
                     <i class="fas fa-rocket"></i>
-                    Impulsa tu Arte
+                    {{ home_cta_hero }}
                 </a>
             </div>
         </div>
@@ -469,10 +790,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <input type="hidden" name="filtro" id="search-filtro" value="">
             
             <div class="dropdown">
-                <div class="filter-btn-pro" data-bs-toggle="dropdown" style="cursor: pointer;" id="filter-btn-text">
+                <button type="button" class="filter-btn-pro" data-bs-toggle="dropdown" id="filter-btn-text" aria-label="Filtros" title="Filtros">
                     <i class="fas fa-sliders-h"></i>
-                    Filtro
-                </div>
+                </button>
                 <ul class="dropdown-menu shadow border-0" style="background: var(--bg-secondary); color: var(--text-color); margin-top: 10px; min-width: 150px; font-size: 0.85rem;">
                     <li><a class="dropdown-item filter-opt" href="#" data-val="paleta" style="color: var(--text-color); padding: 4px 12px;">Paleta de color</a></li>
                     <li><a class="dropdown-item filter-opt" href="#" data-val="ubicacion" style="color: var(--text-color); padding: 4px 12px;">Ubicación (artista)</a></li>
@@ -484,7 +804,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             <div class="search-group-pro">
                 <i class="fas fa-search"></i>
-                <input type="text" name="q" placeholder="Buscar en Ágora Art...">
+                <input type="text" name="q" placeholder="Buscar…" aria-label="Buscar en Ágora Art">
                 <div class="search-types-pro d-none d-md-flex">
                     <span class="search-type-item active" data-type="proyectos">Proyectos</span>
                     <span class="search-type-item" data-type="personas">Personas</span>
@@ -550,6 +870,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         {% endif %}
                     </div>
+                    {% if current_user.is_authenticated and current_user.is_cliente() %}
+                    {% set es_favorito = obra.id_obra in obras_favoritas_ids %}
+                    {% include 'cliente/_obra_acciones_explorar.html' %}
+                    {% endif %}
                     <div class="project-meta">
                         <div class="project-author-info">
                             <div class="project-author-av" style="background-image: url('https://ui-avatars.com/api/?name={{ obra.artista.nombre }}&background=8B5CF6&color=fff'); background-size: cover;"></div>
@@ -570,122 +894,55 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </section>
 
-<!-- ===== STATS BAR (Un solo renglón) ===== -->
-<section style="background: var(--bg-secondary); border-top: 1px solid rgba(255, 45, 149, 0.1); border-bottom: 1px solid rgba(255, 45, 149, 0.1); padding: 60px 0;">
-    <div class="container">
-        <div style="display: flex; justify-content: space-around; text-align: center; flex-wrap: nowrap; gap: 10px;">
-            <div style="flex: 1;">
-                <h2 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; color: #8B5CF6; margin-bottom: 5px; font-size: clamp(1.2rem, 3vw, 2rem);">{{ obras_recientes|length if obras_recientes else '0' }}+</h2>
-                <p style="font-family: 'Josefin Sans', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #8C8C8C; font-weight: 600; white-space: nowrap;">Obras Publicadas</p>
-            </div>
-            <div style="flex: 1;">
-                <h2 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; color: #8B5CF6; margin-bottom: 5px; font-size: clamp(1.2rem, 3vw, 2rem);">{{ artistas_destacados|length if artistas_destacados else '0' }}+</h2>
-                <p style="font-family: 'Josefin Sans', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #8C8C8C; font-weight: 600; white-space: nowrap;">Artistas Activos</p>
-            </div>
-            <div style="flex: 1;">
-                <h2 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; color: #8B5CF6; margin-bottom: 5px; font-size: clamp(1.2rem, 3vw, 2rem);">{{ categorias|length if categorias else '0' }}</h2>
-                <p style="font-family: 'Josefin Sans', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #8C8C8C; font-weight: 600; white-space: nowrap;">Categorías</p>
-            </div>
-            <div style="flex: 1;">
-                <h2 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; color: #8B5CF6; margin-bottom: 5px; font-size: clamp(1.2rem, 3vw, 2rem);">100%</h2>
-                <p style="font-family: 'Josefin Sans', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #8C8C8C; font-weight: 600; white-space: nowrap;">Libres de Algoritmos</p>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- ===== UN ESPACIO PARA CADA ROL (Un solo renglón) ===== -->
-<section style="padding: 80px 0; background: var(--bg-color);">
-    <div class="container">
-        <div style="text-align: center; margin-bottom: 60px;">
-            <h2 style="font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 700; color: #FFFFFF !important; margin-bottom: 15px;">Un espacio para cada rol</h2>
-            <p style="font-family: 'Josefin Sans', sans-serif; font-size: 16px; color: #8C8C8C; font-style: italic;">Sin complejidad. Solo lo que necesitas para crear, coleccionar e inspirarte.</p>
+<section class="home-section-pad" style="background: var(--bg-color);">
+    <div class="container px-3 px-md-4">
+        <div class="home-section-header">
+            <h2>Un espacio para cada rol</h2>
+            <p>Sin complejidad. Solo lo que necesitas para crear, coleccionar e inspirarte.</p>
         </div>
         
-        <div style="display: flex; gap: 24px; justify-content: center; flex-wrap: nowrap;">
-            <!-- Artistas -->
-            <div style="flex: 1; min-width: 0;">
-                <div style="background: var(--card-bg); padding: 40px 20px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.05); transition: 0.3s; height: 100%; text-align: center;">
-                    <div style="width: 60px; height: 60px; background: #E8F6F8; color: #8B5CF6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 20px;">
+        <div class="home-roles-row">
+            <div class="home-role-item">
+                <div class="home-role-card">
+                    <div class="home-role-icon home-role-icon--artist">
                         <i class="fas fa-palette"></i>
                     </div>
-                    <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 12px; font-size: 18px; color: #FFFFFF !important;">Para artistas</h4>
-                    <p style="font-family: 'Josefin Sans', sans-serif; color: #696969; line-height: 1.5; font-size: 13px;">Publica tu portafolio, escribe en tu blog, abre tu tienda.</p>
+                    <h4>Para artistas</h4>
+                    <p>Publica tu portafolio, escribe en tu blog, abre tu tienda.</p>
                 </div>
             </div>
-            <!-- Coleccionistas -->
-            <div style="flex: 1; min-width: 0;">
-                <div style="background: var(--card-bg); padding: 40px 20px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.05); transition: 0.3s; height: 100%; text-align: center;">
-                    <div style="width: 60px; height: 60px; background: #F4F0F9; color: #8A6EA8; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 20px;">
+            <div class="home-role-item">
+                <div class="home-role-card">
+                    <div class="home-role-icon home-role-icon--collector">
                         <i class="fas fa-heart"></i>
                     </div>
-                    <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 12px; font-size: 18px; color: #FFFFFF !important;">Para coleccionistas</h4>
-                    <p style="font-family: 'Josefin Sans', sans-serif; color: #696969; line-height: 1.5; font-size: 13px;">Sigue artistas, guarda tus favoritos, crea moodboards.</p>
+                    <h4>Para coleccionistas</h4>
+                    <p>Sigue artistas, guarda tus favoritos, crea moodboards.</p>
                 </div>
             </div>
-            <!-- Comunidad -->
-            <div style="flex: 1; min-width: 0;">
-                <div style="background: var(--card-bg); padding: 40px 20px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.05); transition: 0.3s; height: 100%; text-align: center;">
-                    <div style="width: 60px; height: 60px; background: #E8F6F8; color: #8B5CF6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 20px;">
+            <div class="home-role-item">
+                <div class="home-role-card">
+                    <div class="home-role-icon home-role-icon--community">
                         <i class="fas fa-users"></i>
                     </div>
-                    <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 12px; font-size: 18px; color: #FFFFFF !important;">Comunidad real</h4>
-                    <p style="font-family: 'Josefin Sans', sans-serif; color: #696969; line-height: 1.5; font-size: 13px;">Recibe newsletters de los artistas que amas.</p>
+                    <h4>Comunidad real</h4>
+                    <p>Recibe newsletters de los artistas que amas.</p>
                 </div>
             </div>
         </div>
-    </div>
-</section>
-
-<!-- ===== ARTISTAS DE LA COMUNIDAD ===== -->
-<section style="padding: 80px 0; background: var(--bg-secondary);">
-    <div class="container text-center">
-        <h2 style="font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 700; color: #FFFFFF !important; margin-bottom: 15px;">Artistas de la comunidad</h2>
-        <p style="font-family: 'Josefin Sans', sans-serif; font-size: 16px; color: #8C8C8C; font-style: italic; margin-bottom: 60px;">Creadores independientes que dan vida a este espacio</p>
-        
-        <div style="display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 50px;">
-            {% if artistas_destacados %}
-                {% for artista in artistas_destacados[:4] %}
-                <div style="flex: 0 0 260px;">
-                    <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario) }}" style="text-decoration: none; color: inherit;">
-                        <div style="background: var(--card-bg); padding: 40px 25px; border-radius: 25px; border: 1px solid rgba(255, 255, 255, 0.05); transition: 0.3s; height: 100%; display: flex; flex-direction: column; align-items: center;">
-                            <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #1A0B3B 0%, #6D28D9 50%, #BE185D 100%); color: #FFFFFF !important; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; font-size: 32px; font-weight: 700; box-shadow: 0 8px 20px rgba(27, 143, 160, 0.2);">
-                                {{ artista.nombre[0]|upper }}
-                            </div>
-                            <h5 style="font-family: 'Josefin Sans', sans-serif; font-weight: 700; margin-bottom: 5px; font-size: 18px;">{{ artista.nombre }}</h5>
-                            <p style="font-size: 12px; color: #8C8C8C; margin-bottom: 15px;">@{{ artista.username }}</p>
-                            <p style="font-family: 'Josefin Sans', sans-serif; font-size: 13px; color: #696969; line-height: 1.5; margin-bottom: 25px;">{{ artista.biografia[:80] + '...' if artista.biografia else 'Creador independiente en Ágora Art' }}</p>
-                            <div style="display: flex; gap: 30px; border-top: 1px solid #F5F5F5; padding-top: 20px; width: 100%; justify-content: center;">
-                                <div style="text-align: center;">
-                                    <div style="font-weight: 700; color: #FFFFFF !important; font-size: 16px;">{{ (range(1, 20)|random) }}</div>
-                                    <div style="font-size: 10px; color: #8C8C8C; text-transform: uppercase; font-weight: 600;">obras</div>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="font-weight: 700; color: #FFFFFF !important; font-size: 16px;">{{ (range(5, 100)|random) }}</div>
-                                    <div style="font-size: 10px; color: #8C8C8C; text-transform: uppercase; font-weight: 600;">seguidores</div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-        <a href="{{ url_for('public.artistas') }}" style="display: inline-block; padding: 12px 35px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 100px; color: var(--accent-cyan); font-family: 'Josefin Sans', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 1px; text-decoration: none; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-            VER TODOS LOS ARTISTAS
-        </a>
     </div>
 </section>
 
 <!-- ===== CTA BANNER (Antes del footer) ===== -->
-<section style="padding: 60px 0; background: var(--bg-color);">
-    <div class="container">
-        <div style="background: linear-gradient(135deg, #1A0B3B 0%, #6D28D9 50%, #BE185D 100%); padding: 100px 40px; border-radius: 30px; text-align: center; color: #FFFFFF !important; box-shadow: 0 20px 40px rgba(0,0,0,0.15); position: relative; overflow: hidden;">
-            <h2 style="font-family: 'Josefin Sans', sans-serif; font-size: 42px; font-weight: 800; margin-bottom: 24px; text-shadow: 0 4px 15px rgba(0,0,0,0.4);">Tu arte merece un refugio propio</h2>
-            <p style="font-family: 'Josefin Sans', sans-serif; font-size: 20px; opacity: 1; font-weight: 500; letter-spacing: 0.5px; color: #FFFFFF; margin-bottom: 40px; max-width: 700px; margin-left: auto; margin-right: auto;">Sin algoritmos que decidan quién te ve. Sin ruido. Solo tu obra y las personas que genuinamente la valoran.</p>
-            <a href="{{ url_for('public.explorar') }}" style="display: inline-flex; align-items: center; gap: 10px; background: white; color: #1B2B3A; padding: 15px 35px; border-radius: 100px; text-decoration: none; font-family: 'Josefin Sans', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 1px; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
-                <i class="fas fa-compass"></i>
-                EXPLORAR OBRAS
+<section style="padding: 48px 0 60px; background: var(--bg-color);">
+    <div class="container px-3 px-md-4">
+        <div class="home-cta-banner">
+            <h2>Tu arte merece un refugio propio</h2>
+            <p>Sin algoritmos que decidan quién te ve. Sin ruido. Solo tu obra y las personas que genuinamente la valoran.</p>
+            <a href="{{ home_cta_url }}" class="btn-cta-register">
+                <i class="fas fa-rocket"></i>
+                {{ home_cta_banner }}
             </a>
         </div>
     </div>

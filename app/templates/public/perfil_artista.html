@@ -25,7 +25,7 @@
                 {% if artista.foto_perfil %}
                 <img src="{{ artista.foto_perfil }}" class="artist-profile-img" alt="{{ artista.nombre }}">
                 {% else %}
-                <div class="artist-profile-img d-flex align-items-center justify-content-center bg-secondary text-white fs-1 fw-bold">
+                <div class="artist-profile-img d-flex align-items-center justify-content-center text-white fs-1 fw-bold" style="background:#8B5CF6;">
                     {{ artista.nombre[0]|upper }}
                 </div>
                 {% endif %}
@@ -33,6 +33,11 @@
 
             <h2 class="artist-name-professional">{{ artista.nombre }}</h2>
             <p class="artist-title-pro">@{{ artista.username }} · Artista en Ágora Art</p>
+            {% if artista.ubicacion %}
+            <p class="artist-location-pro text-muted small mb-3">
+                <i class="fas fa-map-marker-alt me-1"></i>{{ artista.ubicacion }}
+            </p>
+            {% endif %}
 
             {% if current_user.is_authenticated and current_user.is_cliente() %}
             <div class="d-flex flex-column gap-2">
@@ -97,6 +102,11 @@
                 <p class="small text-muted mb-2">
                     {{ artista.biografia or ('Artista en Ágora Art. Miembro desde ' ~ (artista.fecha_registro|date)) }}
                 </p>
+                {% if artista.ubicacion %}
+                <p class="small text-muted mb-2">
+                    <i class="fas fa-map-marker-alt me-1"></i>{{ artista.ubicacion }}
+                </p>
+                {% endif %}
                 <p class="small text-muted mb-0">
                     <i class="fas fa-calendar-alt me-1"></i> Desde {{ artista.fecha_registro|date }}
                 </p>
@@ -112,7 +122,7 @@
         <!-- Tabs (mismas pestañas que el panel, sin Estadísticas) -->
         <nav class="tabs-pro">
             <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='trabajo') }}"
-               class="tab-item-pro {% if tab == 'trabajo' %}active{% endif %}">Trabajo</a>
+               class="tab-item-pro {% if tab == 'trabajo' %}active{% endif %}">Portafolio</a>
             <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='blog') }}"
                class="tab-item-pro {% if tab == 'blog' %}active{% endif %}">Blog</a>
             <a href="{{ url_for('public.perfil_artista', artista_id=artista.id_usuario, tab='tienda') }}"

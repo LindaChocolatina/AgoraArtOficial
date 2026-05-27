@@ -5,8 +5,8 @@
 <style>
 .be-explore-header {
     padding: 24px 0 0;
-    background: white;
-    border-bottom: 1px solid #ECECEC;
+    background: var(--theme-surface);
+    border-bottom: 1px solid var(--theme-border);
 }
 .be-explore-filters {
     display: flex;
@@ -19,20 +19,23 @@
     flex: 1;
     min-width: 200px;
     padding: 9px 14px 9px 36px;
-    border: 1px solid #DEDEDE;
+    border: 1px solid var(--theme-border);
     border-radius: 100px;
     font-size: 13px;
     outline: none;
     transition: border-color 0.2s;
     position: relative;
+    background: var(--theme-surface);
+    color: var(--theme-text);
 }
-.be-filter-input:focus { border-color: #1769FF; }
+.be-filter-input:focus { border-color: #8B5CF6; }
 .be-filter-select {
     padding: 9px 32px 9px 14px;
-    border: 1px solid #DEDEDE;
+    border: 1px solid var(--theme-border);
     border-radius: 100px;
     font-size: 13px;
-    background: white;
+    background: var(--theme-surface);
+    color: var(--theme-text);
     cursor: pointer;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234A4A4A' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
@@ -40,19 +43,43 @@
     background-position: right 12px center;
     outline: none;
 }
-.be-filter-select:focus { border-color: #1769FF; }
+.be-filter-select:focus { border-color: #8B5CF6; }
 .project-card { position: relative; cursor: pointer; }
-.obra-acciones-cliente {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    gap: 6px;
-    z-index: 3;
-    opacity: 0;
-    transition: opacity 0.2s;
+.project-card-image-wrap {
+    position: relative;
+    height: 210px;
+    overflow: hidden;
+    border-radius: 8px;
 }
-.project-card:hover .obra-acciones-cliente { opacity: 1; }
+.project-card-image-wrap > a {
+    display: block;
+    height: 100%;
+}
+.project-card-meta {
+    padding: 10px 2px;
+}
+.project-card-meta a.card-title-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+.project-card-meta a.card-title-link:hover .project-card-title {
+    color: #8B5CF6;
+}
+.project-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--theme-text);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.project-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 </style>
 {% endblock %}
 
@@ -86,39 +113,55 @@
 </div>
 
 <!-- Grid de resultados -->
-<section style="padding:24px 0 48px;background:#FAFAFA;min-height:60vh;">
+<section class="page-section-muted" style="padding:24px 0 48px;min-height:60vh;">
     <div class="container">
         {% if obras %}
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
             {% for obra in obras %}
             <div class="project-card">
-                <a href="{{ url_for('public.detalle_obra', obra_id=obra.id_obra) }}" class="text-decoration-none text-reset d-block">
-                <div class="project-image" style="height:210px;overflow:hidden;border-radius:8px;">
-                    {% if obra.imagen %}
-                    <img src="{{ obra.imagen }}" alt="{{ obra.titulo }}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s;">
-                    {% else %}
-                    <div style="width:100%;height:100%;background:linear-gradient(135deg,#F0F0F0,#E0E0E0);display:flex;align-items:center;justify-content:center;">
-                        <i class="fas fa-image" style="font-size:2rem;color:#CECECE;"></i>
-                    </div>
-                    {% endif %}
-                </div>
-                <div style="padding:10px 2px;">
-                    <p style="font-size:13px;font-weight:600;color:#191919;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ obra.titulo }}</p>
-                    <div style="display:flex;align-items:center;justify-content:space-between;">
-                        <div style="display:flex;align-items:center;gap:6px;">
-                            <div style="width:20px;height:20px;border-radius:50%;background:#1769FF;color:white;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">{{ obra.artista.nombre[0]|upper }}</div>
-                            <span style="font-size:12px;color:#6E6E6E;">{{ obra.artista.nombre }}</span>
+                <div class="project-card-image-wrap">
+                    <a href="{{ url_for('public.detalle_obra', obra_id=obra.id_obra) }}">
+                        {% if obra.imagen %}
+                        <img src="{{ obra.imagen }}" alt="{{ obra.titulo }}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s;">
+                        {% else %}
+                        <div style="width:100%;height:100%;background:linear-gradient(135deg,#F0F0F0,#E0E0E0);display:flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-image" style="font-size:2rem;color:#CECECE;"></i>
                         </div>
-                        <div style="display:flex;gap:10px;font-size:11px;color:#B0B0B0;">
+                        {% endif %}
+                    </a>
+                </div>
+                {% if current_user.is_authenticated and current_user.is_cliente() %}
+                {% set es_favorito = obra.id_obra in obras_favoritas_ids %}
+                {% include 'cliente/_obra_acciones_explorar.html' %}
+                {% endif %}
+                <div class="project-card-meta">
+                    <a href="{{ url_for('public.detalle_obra', obra_id=obra.id_obra) }}" class="card-title-link">
+                        <p class="project-card-title">{{ obra.titulo }}</p>
+                    </a>
+                    <div class="project-card-footer">
+                        <a href="{{ url_for('public.perfil_artista', artista_id=obra.artista.id_usuario) }}" style="display:flex;align-items:center;gap:6px;text-decoration:none;color:inherit;">
+                            <div class="agora-avatar-initial" style="width:20px;height:20px;border-radius:50%;background:#8B5CF6;color:white;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">{{ obra.artista.nombre[0]|upper }}</div>
+                            <span style="font-size:12px;color:var(--theme-text-muted);">{{ obra.artista.nombre }}</span>
+                        </a>
+                        <div style="display:flex;gap:10px;font-size:11px;color:var(--theme-text-subtle);align-items:center;">
+                            {% if current_user.is_authenticated and current_user.is_cliente() %}
+                            {% set es_favorito = obra.id_obra in obras_favoritas_ids %}
+                            <form action="{{ url_for('public.favorito_obra') }}" method="POST" class="d-inline m-0">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="obra_id" value="{{ obra.id_obra }}">
+                                <input type="hidden" name="accion" value="{{ 'quitar' if es_favorito else 'agregar' }}">
+                                <input type="hidden" name="next" value="{{ request.url }}">
+                                <button type="submit" class="obra-favorito-inline{% if es_favorito %} is-active{% endif %}" title="{{ 'Quitar de favoritos' if es_favorito else 'Guardar en favoritos' }}">
+                                    <i class="fas fa-heart"></i> {{ obra.favoritos_count or 0 }}
+                                </button>
+                            </form>
+                            {% else %}
                             <span><i class="fas fa-heart"></i> {{ obra.favoritos_count or 0 }}</span>
+                            {% endif %}
                             <span><i class="fas fa-eye"></i> {{ obra.vistas_count or 0 }}</span>
                         </div>
                     </div>
                 </div>
-                </a>
-                {% if current_user.is_authenticated and current_user.is_cliente() %}
-                {% include 'cliente/_obra_acciones_explorar.html' %}
-                {% endif %}
             </div>
             {% endfor %}
         </div>

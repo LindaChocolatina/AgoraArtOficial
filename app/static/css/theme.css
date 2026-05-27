@@ -1,0 +1,491 @@
+/* ============================================
+   ÁGORA ART — Modo claro / oscuro unificado
+   ============================================ */
+
+html[data-theme="dark"],
+html:not([data-theme="light"]) {
+  --theme-bg: #0D0B21;
+  --theme-bg-secondary: #12102B;
+  --theme-surface: #1a1735;
+  --theme-surface-elevated: #12102B;
+  --theme-text: #FFFFFF;
+  --theme-text-muted: rgba(255, 255, 255, 0.72);
+  --theme-text-subtle: rgba(255, 255, 255, 0.52);
+  --theme-border: rgba(255, 255, 255, 0.12);
+
+  --bg-color: #0D0B21;
+  --bg-secondary: #12102B;
+  --text-color: #FFFFFF;
+  --text-muted: rgba(255, 255, 255, 0.7);
+  --nav-bg: #0D0B21;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --card-bg: rgba(255, 255, 255, 0.04);
+
+  --canvas: #0D0B21;
+  --surface: #1a1735;
+  --surface-2: #12102B;
+  --surface-3: #1e1b3a;
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255, 255, 255, 0.75);
+  --text-muted-legacy: rgba(255, 255, 255, 0.55);
+  --border: rgba(255, 255, 255, 0.12);
+  --background: #0D0B21;
+}
+
+html[data-theme="light"] {
+  --theme-bg: #FFFFFF;
+  --theme-bg-secondary: #F8F8F8;
+  --theme-surface: #FFFFFF;
+  --theme-surface-elevated: #FAFAFA;
+  --theme-text: #191919;
+  --theme-text-muted: #696969;
+  --theme-text-subtle: #8C8C8C;
+  --theme-border: #ECECEC;
+
+  --bg-color: #FFFFFF;
+  --bg-secondary: #F8F8F8;
+  --text-color: #191919;
+  --text-muted: #696969;
+  --nav-bg: #191919;
+  --border-color: #ECECEC;
+  --card-bg: #FFFFFF;
+
+  --canvas: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-2: #FAFAFA;
+  --surface-3: #F5F5F5;
+  --text-primary: #191919;
+  --text-secondary: #6E6E6E;
+  --text-muted-legacy: #8C8C8C;
+  --border: #ECECEC;
+  --background: #FFFFFF;
+}
+
+/* === Base === */
+body {
+  background-color: var(--theme-bg) !important;
+  color: var(--theme-text) !important;
+}
+
+main {
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  color: var(--theme-text) !important;
+}
+
+p, .lead {
+  color: var(--theme-text-muted);
+}
+
+.text-muted {
+  color: var(--theme-text-subtle) !important;
+}
+
+.text-dark {
+  color: var(--theme-text) !important;
+}
+
+.text-secondary {
+  color: var(--theme-text-muted) !important;
+}
+
+/* === Bootstrap surfaces === */
+.card,
+.card-body,
+.card-header {
+  background-color: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.card-header {
+  background-color: var(--theme-bg-secondary) !important;
+}
+
+.bg-white {
+  background-color: var(--theme-surface) !important;
+}
+
+.bg-light {
+  background-color: var(--theme-bg-secondary) !important;
+  color: var(--theme-text);
+}
+
+.table-light,
+.table-light th,
+.table-light td {
+  background-color: var(--theme-bg-secondary) !important;
+  color: var(--theme-text) !important;
+}
+
+.list-group-item {
+  background-color: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.alert-light {
+  background-color: var(--theme-bg-secondary) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.form-control,
+.form-select {
+  background-color: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.form-control::placeholder {
+  color: var(--theme-text-subtle) !important;
+}
+
+.form-label {
+  color: var(--theme-text) !important;
+}
+
+.form-text {
+  color: var(--theme-text-subtle) !important;
+}
+
+.dropdown-menu {
+  background-color: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.dropdown-item {
+  color: var(--theme-text) !important;
+}
+
+.dropdown-item:hover {
+  background-color: var(--theme-bg-secondary) !important;
+}
+
+.modal-content {
+  background-color: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.btn-light {
+  background-color: var(--theme-bg-secondary) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.btn-outline-secondary {
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text-muted) !important;
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--theme-bg-secondary) !important;
+  color: var(--theme-text) !important;
+}
+
+/* === Nav header (usa variables, no hardcode) === */
+.be-header {
+  background: var(--nav-bg) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* === Footer === */
+.footer {
+  background: var(--theme-bg-secondary) !important;
+  border-top: 1px solid var(--theme-border);
+}
+
+html[data-theme="light"] .footer {
+  background: #191919 !important;
+}
+
+.footer h5 {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.footer a,
+.footer-tagline,
+.footer-bottom {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+.footer-brand {
+  color: #fff !important;
+}
+
+/* === Perfil artista / dashboard === */
+.perfil-dashboard-page {
+  background-color: var(--theme-bg-secondary) !important;
+}
+
+.sidebar-artist,
+.actividad-panel,
+.tabs-pro,
+.actividad-card,
+.shop-card-pro,
+.panel-list-pro .bg-white {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.artist-name-professional,
+.tab-item-pro.active,
+.stat-value-pro,
+.dash-name {
+  color: var(--theme-text) !important;
+}
+
+.artist-title-pro,
+.tab-item-pro,
+.stat-row-pro,
+.dash-user,
+.dash-tab,
+.dash-pin-sub {
+  color: var(--theme-text-muted) !important;
+}
+
+.dash-tabs-wrap {
+  background: var(--theme-surface) !important;
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.dash-tab.active {
+  color: var(--theme-text) !important;
+}
+
+.compra-card,
+.dash-pin-img,
+.board-card {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+}
+
+/* === Cliente shell === */
+.cliente-shell,
+.cliente-sidebar {
+  background: var(--theme-bg) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.cliente-sidebar-brand,
+.cliente-nav-link {
+  color: var(--theme-text) !important;
+}
+
+.cliente-nav-link:hover {
+  background: var(--theme-bg-secondary) !important;
+}
+
+html[data-theme="dark"] .cliente-nav-link.active,
+html:not([data-theme="light"]) .cliente-nav-link.active {
+  background: var(--accent-purple, #8B5CF6) !important;
+  color: #fff !important;
+}
+
+html[data-theme="light"] .cliente-nav-link.active {
+  background: #191919 !important;
+  color: #fff !important;
+}
+
+/* === Páginas públicas con clases propias === */
+.be-explore-header {
+  background: var(--theme-surface) !important;
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.be-filter-input,
+.be-filter-select {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.page-section-muted {
+  background: var(--theme-bg-secondary) !important;
+}
+
+.page-section-header {
+  background: var(--theme-surface) !important;
+  border-bottom: 1px solid var(--theme-border);
+}
+
+/* === Home: secciones que usan var(--bg-color) === */
+.home-themed-section {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+.home-themed-section h2,
+.home-themed-section h4,
+.home-themed-section p {
+  color: var(--text-color) !important;
+}
+
+.home-themed-section .text-muted-inline {
+  color: var(--text-muted) !important;
+}
+
+/* Discovery bar en home */
+.discovery-bar-pro {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.filter-btn-pro {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.search-group-pro {
+  background: var(--theme-bg-secondary) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.search-group-pro input {
+  color: var(--theme-text) !important;
+}
+
+.search-type-item {
+  color: var(--theme-text-subtle) !important;
+}
+
+.search-type-item.active {
+  color: var(--theme-text) !important;
+}
+
+.project-title-pro {
+  color: var(--theme-text) !important;
+}
+
+.project-author-name {
+  color: var(--theme-text-muted) !important;
+}
+
+.category-menu-pro {
+  background: var(--theme-bg) !important;
+}
+
+/* Dropdown usuario en header */
+html[data-theme="dark"] .be-dropdown,
+html:not([data-theme="light"]) .be-dropdown {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] .be-dropdown-header,
+html:not([data-theme="light"]) .be-dropdown-header {
+  border-bottom-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] .be-dropdown-header strong,
+html:not([data-theme="light"]) .be-dropdown-header strong {
+  color: var(--theme-text) !important;
+}
+
+html[data-theme="dark"] .be-dropdown a,
+html:not([data-theme="light"]) .be-dropdown a {
+  color: var(--theme-text-muted) !important;
+}
+
+html[data-theme="dark"] .be-dropdown a:hover,
+html:not([data-theme="light"]) .be-dropdown a:hover {
+  background: var(--theme-bg-secondary) !important;
+  color: var(--theme-text) !important;
+}
+
+/* === Tarjetas en listados públicos === */
+.theme-surface-card,
+a.theme-surface-card {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+html[data-theme="dark"] .dash-tabs-wrap,
+html:not([data-theme="light"]) .dash-tabs-wrap {
+  background: rgba(18, 16, 43, 0.95) !important;
+}
+
+body {
+  transition: background-color 0.25s ease, color 0.25s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+/* === Acciones rápidas en tarjetas de obra (favorito / lienzo) === */
+.obra-acciones-cliente {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+  z-index: 6;
+}
+
+/* Sobre imágenes: siempre fondo claro (también en modo oscuro) */
+.obra-acciones-cliente .obra-action-btn {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.97) !important;
+  color: #2d2d2d !important;
+  border: 1px solid rgba(0, 0, 0, 0.14) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.obra-acciones-cliente .obra-action-btn i {
+  color: #2d2d2d !important;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.obra-acciones-cliente .obra-action-btn:hover {
+  background: #ffffff !important;
+  color: #8B5CF6 !important;
+  border-color: rgba(139, 92, 246, 0.35) !important;
+}
+
+.obra-acciones-cliente .obra-action-btn:hover i {
+  color: #8B5CF6 !important;
+}
+
+.obra-acciones-cliente .obra-action-btn.is-active,
+.obra-acciones-cliente .obra-action-btn.is-active i {
+  color: #8B5CF6 !important;
+}
+
+.obra-acciones-cliente .dropdown-menu {
+  z-index: 20;
+}
+
+.obra-favorito-inline {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 11px;
+  color: var(--theme-text-subtle);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.obra-favorito-inline.is-active,
+.obra-favorito-inline.is-active i {
+  color: #8B5CF6 !important;
+}

@@ -1,6 +1,6 @@
 /* ============================================
-   ÁGORA ART — Estilo Behance
-   Paleta: Blanco + Negro + Azul Behance #1769FF
+   ÁGORA ART — Paleta espacial cósmica
+   Magenta CTA #FF2D95 · Morado acento #8B5CF6
    ============================================ */
 
 :root {
@@ -17,9 +17,17 @@
   --gray-800: #333333;
   --gray-900: #191919;
 
-  --blue: #1769FF;
-  --blue-hover: #0D5BDB;
-  --blue-light: #E8F0FE;
+  --cosmic-pink: #FF2D95;
+  --cosmic-pink-hover: #e62283;
+  --cosmic-purple: #8B5CF6;
+  --cosmic-purple-hover: #7C3AED;
+  --cosmic-pink-light: rgba(255, 45, 149, 0.12);
+  --cosmic-purple-light: rgba(139, 92, 246, 0.12);
+
+  /* Botones primarios = morado; magenta solo en .btn-cosmic-cta del hero */
+  --blue: var(--cosmic-purple);
+  --blue-hover: var(--cosmic-purple-hover);
+  --blue-light: var(--cosmic-purple-light);
 
   --canvas: var(--white);
   --surface: var(--white);
@@ -50,7 +58,7 @@
 html{scroll-behavior:smooth;}
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--canvas);
   color: var(--text-primary);
   line-height: 1.5;
@@ -60,6 +68,7 @@ body {
 
 /* ===== TIPOGRAFÍA ===== */
 h1,h2,h3,h4,h5,h6 {
+  font-family: 'Outfit', sans-serif;
   font-weight: 700;
   line-height: 1.25;
   margin-bottom: 0.75rem;
@@ -109,7 +118,7 @@ a:hover{color:var(--blue-hover);}
 .logo-mark {
   width: 32px;
   height: 32px;
-  background: var(--blue);
+  background: var(--cosmic-purple);
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -122,7 +131,7 @@ a:hover{color:var(--blue-hover);}
   letter-spacing: -0.01em;
   color: var(--white);
 }
-.logo-name span { color: var(--blue); }
+.logo-name span { color: var(--cosmic-purple); }
 
 /* NAV (hidden - replaced by top bar) */
 .nav-main { display: none !important; }
@@ -159,7 +168,7 @@ a:hover{color:var(--blue-hover);}
 .user-menu { display: flex; align-items: center; gap: 8px; }
 
 /* ===== BOTONES (Behance style) ===== */
-:root{--bs-primary:#1769FF;--bs-primary-rgb:23,105,255;--bs-link-color:#1769FF;--bs-link-hover-color:#0D5BDB;}
+:root{--bs-primary:#8B5CF6;--bs-primary-rgb:139,92,246;--bs-link-color:#8B5CF6;--bs-link-hover-color:#7C3AED;}
 
 .btn, a.btn, button.btn {
   display: inline-flex;
@@ -316,7 +325,7 @@ a:hover{color:var(--blue-hover);}
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--blue);
+  background: var(--cosmic-purple);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -426,7 +435,7 @@ a:hover{color:var(--blue-hover);}
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  background: var(--blue);
+  background: var(--cosmic-purple);
   margin: 0 auto 16px;
   display: flex;
   align-items: center;
@@ -471,8 +480,8 @@ a:hover{color:var(--blue-hover);}
   transition: var(--transition) !important;
 }
 .form-control:focus, .form-select:focus {
-  border-color: var(--blue) !important;
-  box-shadow: 0 0 0 3px rgba(23,105,255,0.1) !important;
+  border-color: var(--cosmic-purple) !important;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.15) !important;
   outline: none !important;
 }
 .form-control::placeholder { color: var(--gray-400) !important; }
@@ -648,4 +657,10 @@ a:hover{color:var(--blue-hover);}
 ::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:4px;}
 ::-webkit-scrollbar-thumb:hover{background:var(--gray-400);}
 
-::selection{background:var(--blue);color:white;}
+::selection{background:var(--cosmic-purple);color:white;}
+
+/* Avatares con iniciales */
+.agora-avatar-initial {
+  background: var(--cosmic-purple) !important;
+  color: #fff !important;
+}

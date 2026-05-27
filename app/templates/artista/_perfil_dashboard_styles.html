@@ -1,13 +1,13 @@
 <style>
     /* === ÁGORA ART x BEHANCE PROFESSIONAL === */
     :root {
-        --agora-accent: var(--turq, var(--primary, #1769FF));
+        --agora-accent: #8B5CF6;
         --agora-secondary: var(--malva, #8B5CF6);
         --agora-gray: var(--gray-100, #F5F5F5);
-        --bg-gray: #f9f9f9;
-        --border-color: #e8e8e8;
-        --piedra: var(--gray-600, #6E6E6E);
-        --carbon: var(--gray-900, #191919);
+        --bg-gray: var(--theme-bg-secondary, #f9f9f9);
+        --border-color: var(--theme-border, #e8e8e8);
+        --piedra: var(--theme-text-muted, #6E6E6E);
+        --carbon: var(--theme-text, #191919);
         --noche: #0D0B21;
         --noche-mid: #12102B;
     }
@@ -193,7 +193,11 @@
     }
 
     .btn-follow-pro { background-color: var(--agora-accent); color: white !important; }
-    .btn-message-pro { background-color: white; border: 1px solid var(--border-color); color: var(--carbon); }
+    .btn-message-pro {
+        background-color: var(--theme-surface, white);
+        border: 1px solid var(--border-color);
+        color: var(--carbon);
+    }
 
     .artist-stats-grid {
         display: grid;
@@ -222,11 +226,11 @@
 
     a.stat-row-link:hover {
         background: var(--bg-gray, #f5f5f5);
-        color: var(--agora-accent, #1769FF);
+        color: var(--agora-accent, #8B5CF6);
     }
 
     a.stat-row-link:hover .stat-value-pro {
-        color: var(--agora-accent, #1769FF);
+        color: var(--agora-accent, #8B5CF6);
     }
 
     .stat-row-static {
@@ -258,6 +262,22 @@
         font-weight: 600;
         transition: var(--transition, all 0.2s ease);
         text-decoration: none;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .social-link-pro i {
+        flex-shrink: 0;
+        width: 16px;
+        text-align: center;
+    }
+
+    .social-link-label {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .social-link-pro:hover {
@@ -305,7 +325,7 @@
 
     .tab-item-pro.active {
         color: var(--carbon);
-        border-bottom-color: var(--carbon);
+        border-bottom-color: var(--agora-accent);
     }
 
     .shop-card-pro {

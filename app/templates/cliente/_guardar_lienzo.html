@@ -1,10 +1,11 @@
 {# Dropdown para guardar obra en un lienzo (cliente). #}
 {% if current_user.is_authenticated and current_user.is_cliente() %}
 <div class="dropdown d-inline-block" onclick="event.stopPropagation();">
-    <button class="btn btn-sm {{ btn_class|default('btn-light') }} dropdown-toggle" type="button"
-            data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Guardar en lienzo"
+    <button class="btn btn-sm obra-action-btn obra-btn-lienzo" type="button"
+            data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"
+            aria-label="Guardar en lienzo" title="Guardar en lienzo"
             onclick="event.stopPropagation();">
-        <i class="fas fa-th-large"></i>{% if label %} <span>{{ label }}</span>{% endif %}
+        <i class="fas fa-th-large" aria-hidden="true"></i>{% if label %} <span>{{ label }}</span>{% endif %}
     </button>
     <ul class="dropdown-menu dropdown-menu-end shadow-sm" onclick="event.stopPropagation();">
         {% if lienzos %}

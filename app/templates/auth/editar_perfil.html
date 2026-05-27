@@ -54,30 +54,40 @@
                         </div>
 
                         {% if current_user.is_artista() %}
+                        <div class="mb-4">
+                            <label for="ubicacion" class="form-label">Ubicación</label>
+                            <input type="text" class="form-control" id="ubicacion" name="ubicacion"
+                                   value="{{ current_user.ubicacion or '' }}"
+                                   placeholder="Ciudad, país">
+                            <div class="form-text">Se muestra en tu perfil público de artista.</div>
+                        </div>
+                        {% endif %}
+
+                        {% if current_user.is_artista() %}
                         <div class="mb-4 pt-3 border-top">
                             <h5 class="mb-3">Enlaces en tu perfil público</h5>
-                            <p class="form-text mb-3">Opcional. Se muestran en la sección «En la web» de tu perfil.</p>
+                            <p class="form-text mb-3">Opcional. Puedes pegar enlaces completos en cualquier campo; se detecta la red automáticamente. Los dos últimos campos admiten <strong>otro enlace más</strong>: nombre corto (ej. «Mi tienda») + URL, o bien una URL en cada uno.</p>
                             <div class="mb-3">
-                                <label for="enlace_instagram" class="form-label">Instagram</label>
+                                <label for="enlace_instagram" class="form-label">Red social principal</label>
                                 <input type="text" class="form-control" id="enlace_instagram" name="enlace_instagram"
                                        value="{{ current_user.enlace_instagram or '' }}"
                                        placeholder="@tu_usuario o https://instagram.com/tu_usuario">
                             </div>
                             <div class="mb-3">
-                                <label for="enlace_web" class="form-label">Sitio web / portafolio</label>
-                                <input type="url" class="form-control" id="enlace_web" name="enlace_web"
+                                <label for="enlace_web" class="form-label">Sitio web o segunda red</label>
+                                <input type="text" class="form-control" id="enlace_web" name="enlace_web"
                                        value="{{ current_user.enlace_web or '' }}"
-                                       placeholder="https://tusitio.com">
+                                       placeholder="https://tusitio.com o enlace de Pinterest, Behance…">
                             </div>
                             <div class="row g-3">
                                 <div class="col-md-5">
-                                    <label for="enlace_extra_etiqueta" class="form-label">Otro enlace (nombre)</label>
+                                    <label for="enlace_extra_etiqueta" class="form-label">Tercer enlace (nombre o URL)</label>
                                     <input type="text" class="form-control" id="enlace_extra_etiqueta" name="enlace_extra_etiqueta"
                                            value="{{ current_user.enlace_extra_etiqueta or '' }}"
-                                           placeholder="Behance, TikTok…">
+                                           placeholder="LinkedIn, Behance… o https://…">
                                 </div>
                                 <div class="col-md-7">
-                                    <label for="enlace_extra_url" class="form-label">URL</label>
+                                    <label for="enlace_extra_url" class="form-label">Cuarto enlace (URL)</label>
                                     <input type="url" class="form-control" id="enlace_extra_url" name="enlace_extra_url"
                                            value="{{ current_user.enlace_extra_url or '' }}"
                                            placeholder="https://…">

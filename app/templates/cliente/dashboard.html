@@ -6,13 +6,13 @@
 <style>
     :root {
         --pin-radius: 16px;
-        --agora-teal: #1B8FA0;
+        --agora-purple: #8B5CF6;
+        --agora-purple-dark: #7C3AED;
         --agora-malva: #8A6EA8;
         --agora-gray: #efefef;
-        --agora-teal-dark: #136E7C;
     }
 
-    body { background: #fff !important; }
+    body { background: var(--theme-bg) !important; }
 
     .dash-profile {
         text-align: center;
@@ -23,13 +23,13 @@
         width: 108px;
         height: 108px;
         border-radius: 50%;
-        background: linear-gradient(135deg, var(--agora-teal), var(--agora-malva));
+        background: #8B5CF6;
         margin: 0 auto 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-family: 'Josefin Sans', sans-serif;
+        font-family: 'Outfit', sans-serif;
         font-size: 42px;
         font-weight: 700;
         object-fit: cover;
@@ -58,7 +58,7 @@
     }
 
     .dash-name {
-        font-family: 'Josefin Sans', sans-serif;
+        font-family: 'Outfit', sans-serif;
         font-size: 28px;
         font-weight: 700;
         margin: 0 0 4px;
@@ -80,14 +80,15 @@
         border-radius: 24px;
         font-weight: 600;
         border: none;
-        font-family: 'Josefin Sans', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         text-decoration: none;
         display: inline-block;
         font-size: 14px;
     }
 
     .btn-dash-gray { background: var(--agora-gray); color: #111; }
-    .btn-dash-teal { background: var(--agora-teal); color: #fff; }
+    .btn-dash-teal { background: var(--agora-purple); color: #fff; }
+    .btn-dash-teal:hover { background: var(--agora-purple-dark); color: #fff; }
 
     /* Tabs estilo Pinterest */
     .dash-tabs-wrap {
@@ -124,7 +125,7 @@
     .dash-tab:hover { color: #111; }
     .dash-tab.active {
         color: #111;
-        border-bottom-color: #111;
+        border-bottom-color: var(--agora-purple);
     }
 
     .dash-tab-count {
@@ -174,7 +175,7 @@
 
     .dash-pin-meta { padding: 8px 4px; }
     .dash-pin-title {
-        font-family: 'Josefin Sans', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 14px;
         font-weight: 700;
         color: #111;
@@ -270,7 +271,7 @@
     }
 
     a.compra-card-link:hover .compra-card {
-        border-color: #1769FF;
+        border-color: #8B5CF6;
         box-shadow: 0 4px 16px rgba(23, 105, 255, 0.08);
     }
 
@@ -280,7 +281,7 @@
         border-top: 1px solid #f0f0f0;
         font-size: 0.85rem;
         font-weight: 600;
-        color: #1769FF;
+        color: #8B5CF6;
     }
 
     a.compra-card-link:hover .compra-card-footer {
@@ -315,9 +316,9 @@
         width: 56px;
         height: 56px;
         border-radius: 50%;
-        background: var(--agora-teal);
+        background: var(--agora-purple);
         color: #fff;
-        box-shadow: 0 4px 16px rgba(27,143,160,0.35);
+        box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -326,7 +327,7 @@
         text-decoration: none;
     }
 
-    .fab-add:hover { color: #fff; background: var(--agora-teal-dark); }
+    .fab-add:hover { color: #fff; background: var(--agora-purple-dark); }
 </style>
 {% endblock %}
 

@@ -1,46 +1,180 @@
 {% extends "base.html" %}
 {% block title %}Categorías — Ágora Art{% endblock %}
 
+{% block head %}
+<style>
+    .cat-page-hero {
+        padding: 24px 0 0;
+        background: var(--theme-surface);
+        border-bottom: 1px solid var(--theme-border);
+    }
+
+    .cat-page-hero h1 {
+        font-size: 1.75rem;
+        margin-bottom: 4px;
+        color: var(--theme-text) !important;
+    }
+
+    .cat-page-hero p {
+        color: var(--theme-text-subtle);
+        font-size: 14px;
+        margin: 0;
+        padding-bottom: 16px;
+    }
+
+    .cat-page-body {
+        padding: 24px 0 48px;
+        background: var(--theme-bg-secondary);
+        min-height: 60vh;
+    }
+
+    .cat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+    }
+
+    .cat-card {
+        background: var(--theme-surface);
+        border: 1px solid var(--theme-border);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+    }
+
+    .cat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .cat-card-thumb {
+        height: 140px;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), var(--theme-bg-secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cat-card-icon {
+        width: 56px;
+        height: 56px;
+        background: var(--theme-surface-elevated);
+        border: 1px solid var(--theme-border);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .cat-card-icon i {
+        font-size: 1.3rem;
+        color: #8B5CF6;
+    }
+
+    .cat-card-body {
+        padding: 20px;
+    }
+
+    .cat-card-body h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: var(--theme-text) !important;
+    }
+
+    .cat-card-body p {
+        color: var(--theme-text-muted);
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 12px;
+    }
+
+    .cat-card-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .cat-card-count {
+        font-size: 13px;
+        color: var(--theme-text-subtle);
+    }
+
+    .cat-card-count i {
+        color: #8B5CF6;
+        margin-right: 4px;
+    }
+
+    .cat-card-link {
+        color: #8B5CF6;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .cat-empty {
+        text-align: center;
+        padding: 64px 0;
+    }
+
+    .cat-empty i {
+        font-size: 3rem;
+        color: var(--theme-text-subtle);
+        opacity: 0.45;
+        margin-bottom: 16px;
+        display: block;
+    }
+
+    .cat-empty h3 {
+        margin-bottom: 8px;
+        color: var(--theme-text) !important;
+    }
+
+    .cat-empty p {
+        color: var(--theme-text-muted);
+        margin-bottom: 24px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div style="padding:24px 0 0;background:white;border-bottom:1px solid #ECECEC;">
+<div class="cat-page-hero">
     <div class="container">
-        <h1 style="font-size:1.75rem;margin-bottom:4px;">Categorías</h1>
-        <p style="color:#8C8C8C;font-size:14px;margin:0;padding-bottom:16px;">Explora colecciones temáticas de arte</p>
+        <h1>Categorías</h1>
+        <p>Explora colecciones temáticas de arte</p>
     </div>
 </div>
 
-<section style="padding:24px 0 48px;background:#FAFAFA;min-height:60vh;">
+<section class="cat-page-body">
     <div class="container">
         {% if categorias %}
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+        <div class="cat-grid">
             {% for categoria, obras_count in categorias %}
-            <div style="background:white;border:1px solid #ECECEC;border-radius:12px;overflow:hidden;transition:all 0.2s;cursor:pointer;"
-                 onclick="window.location.href='{{ url_for('public.explorar', categoria=categoria.id_categoria) }}'"
-                 onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,0.08)';this.style.transform='translateY(-2px)'"
-                 onmouseout="this.style.boxShadow='none';this.style.transform=''">
-                <div style="height:140px;background:linear-gradient(135deg,#E8F0FE,#F0F0F0);display:flex;align-items:center;justify-content:center;">
-                    <div style="width:56px;height:56px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                        <i class="fas fa-{{ categoria.icono or 'folder' }}" style="font-size:1.3rem;color:#1769FF;"></i>
+            <div class="cat-card" onclick="window.location.href='{{ url_for('public.explorar', categoria=categoria.id_categoria) }}'">
+                <div class="cat-card-thumb">
+                    <div class="cat-card-icon">
+                        <i class="fas fa-{{ categoria.icono or 'folder' }}"></i>
                     </div>
                 </div>
-                <div style="padding:20px;">
-                    <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:6px;">{{ categoria.nombre }}</h3>
+                <div class="cat-card-body">
+                    <h3>{{ categoria.nombre }}</h3>
                     {% if categoria.descripcion %}
-                    <p style="color:#8C8C8C;font-size:13px;line-height:1.5;margin-bottom:12px;">{{ categoria.descripcion[:100] }}{% if categoria.descripcion|length > 100 %}...{% endif %}</p>
+                    <p>{{ categoria.descripcion[:100] }}{% if categoria.descripcion|length > 100 %}...{% endif %}</p>
                     {% endif %}
-                    <div style="display:flex;align-items:center;justify-content:space-between;">
-                        <span style="font-size:13px;color:#8C8C8C;"><i class="fas fa-palette" style="color:#1769FF;margin-right:4px;"></i> {{ obras_count }} obras</span>
-                        <span style="color:#1769FF;font-size:13px;font-weight:500;">Explorar →</span>
+                    <div class="cat-card-meta">
+                        <span class="cat-card-count"><i class="fas fa-palette"></i> {{ obras_count }} obras</span>
+                        <span class="cat-card-link">Explorar →</span>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <div style="text-align:center;padding:64px 0;">
-            <i class="fas fa-folder-open" style="font-size:3rem;color:#DEDEDE;margin-bottom:16px;display:block;"></i>
-            <h3 style="margin-bottom:8px;">No hay categorías</h3>
-            <p style="color:#8C8C8C;margin-bottom:24px;">Las categorías estarán disponibles pronto.</p>
+        <div class="cat-empty">
+            <i class="fas fa-folder-open"></i>
+            <h3>No hay categorías</h3>
+            <p>Las categorías estarán disponibles pronto.</p>
             <a href="{{ url_for('public.explorar') }}" class="btn btn-primary">Explorar obras</a>
         </div>
         {% endif %}

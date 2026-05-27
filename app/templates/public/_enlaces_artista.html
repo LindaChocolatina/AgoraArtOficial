@@ -3,8 +3,9 @@
 <div class="social-section">
     <h6>En la web</h6>
     {% for enlace in enlaces %}
-    <a href="{{ enlace.url }}" class="social-link-pro" target="_blank" rel="noopener noreferrer">
-        <i class="{{ enlace.icon }}"></i> {{ enlace.label }}
+    <a href="{{ enlace.url }}" class="social-link-pro" target="_blank" rel="noopener noreferrer" title="{{ enlace.url }}">
+        <i class="{{ enlace.icon }}"></i>
+        <span class="social-link-label">{{ enlace.label }}</span>
     </a>
     {% endfor %}
 </div>
