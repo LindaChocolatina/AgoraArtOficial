@@ -36,6 +36,7 @@ class Usuario(UserMixin, db.Model):
     password = db.Column(db.String(255), nullable=False)  # hash seguro (bcrypt)
     rol = db.Column(db.String(20), nullable=False, default='cliente')  # admin, artista, cliente
     biografia = db.Column(db.Text)
+    ubicacion = db.Column(db.String(150))
     foto_perfil = db.Column(db.String(255))
     banner_perfil = db.Column(db.String(255))
     banner_offset = db.Column(db.Integer, default=50)
@@ -102,6 +103,7 @@ class Usuario(UserMixin, db.Model):
             'email': self.email,
             'rol': self.rol,
             'biografia': self.biografia,
+            'ubicacion': self.ubicacion,
             'foto_perfil': self.foto_perfil,
             'banner_perfil': self.banner_perfil,
             'banner_offset': self.banner_offset,
