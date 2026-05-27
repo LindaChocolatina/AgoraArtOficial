@@ -226,7 +226,7 @@
                     </div>
                     {% if current_user.is_authenticated and current_user.is_cliente() %}
                     <div class="obra-detalle-lienzo-row mb-3">
-                        {% with obra_id=obra.id_obra, lienzos=lienzos, btn_class='btn-outline-secondary btn-sm', label='Guardar en lienzo' %}
+                        {% with obra_id=obra.id_obra, lienzos=lienzos, label='Guardar en lienzo' %}
                         {% include 'cliente/_guardar_lienzo.html' %}
                         {% endwith %}
                         <a href="{{ url_for('cliente.nuevo_lienzo') }}" class="small ms-2">+ Nuevo lienzo</a>
