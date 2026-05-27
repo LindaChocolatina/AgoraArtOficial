@@ -2,14 +2,11 @@
 """
 Copia los datos de SQLite local (app/art_platform.db) a PostgreSQL (Coolify).
 
-Uso:
-  1. Abre tu túnel SSH a Postgres (DBeaver) o usa la URL interna de Coolify.
-  2. En .env descomenta y pega DATABASE_URL apuntando al Postgres destino.
-  3. Ejecuta:
-       python migrar_sqlite_a_postgres.py --confirmar
-
-Opcional:
-  python migrar_sqlite_a_postgres.py --solo-esquema   # solo migraciones + parches
+Uso (desde la raíz del proyecto, túnel SSH abierto):
+  1. En .env define DATABASE_URL apuntando al Postgres destino.
+  2. Ejecuta:
+       python scripts/migrar_sqlite_a_postgres.py --solo-esquema
+       python scripts/migrar_sqlite_a_postgres.py --confirmar
 """
 from __future__ import annotations
 
@@ -20,12 +17,13 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-ROOT = Path(__file__).resolve().parent
-load_dotenv(ROOT / '.env')
+_ROOT = Path(__file__).resolve().parent.parent
+os.chdir(_ROOT)
+sys.path.insert(0, str(_ROOT))
+load_dotenv(_ROOT / '.env')
 
-SOURCE_SQLITE = ROOT / 'app' / 'art_platform.db'
+SOURCE_SQLITE = _ROOT / 'app' / 'art_platform.db'
 
-# Orden respetando claves foráneas
 TABLES_ORDER = [
     'categorias',
     'usuarios',
@@ -188,7 +186,7 @@ def main():
 
     if not args.confirmar:
         print('\nPara copiar datos (REEMPLAZA todo en Postgres), ejecuta:')
-        print('  python migrar_sqlite_a_postgres.py --confirmar')
+        print('  python scripts/migrar_sqlite_a_postgres.py --confirmar')
         sys.exit(0)
 
     print('\nCopiando datos (esto borra y reemplaza tablas en Postgres)...')

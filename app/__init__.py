@@ -1,3 +1,1 @@
-"""
-WindMills Art - Plataforma de artistas tipo Behance
-"""
+"""Ágora Art — plataforma de exhibición y marketplace para artistas independientes."""

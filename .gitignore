@@ -7,9 +7,13 @@ venv/
 *.db
 *.sqlite3
 .DS_Store
-crear_admins.py
 .env
 scratch/
+logs/
+*.log
+
+# Scripts locales de prueba (no forman parte de la app)
+crear_admins.py
 test_conn.py
 test_query.py
 check_db.py
