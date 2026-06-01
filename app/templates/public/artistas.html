@@ -1,6 +1,43 @@
 {% extends "base.html" %}
 {% block title %}Artistas — Ágora Art{% endblock %}
 
+{% block head %}
+<style>
+.be-artistas-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.be-filter-input {
+    padding: 8px 14px 8px 34px;
+    border: 1px solid var(--theme-border, #DEDEDE);
+    border-radius: 100px;
+    font-size: 13px;
+    width: 240px;
+    outline: none;
+    background: var(--theme-surface, #fff);
+    color: var(--theme-text, #191919);
+}
+.be-filter-input:focus { border-color: #8B5CF6; }
+.be-filter-select {
+    padding: 8px 32px 8px 14px;
+    border: 1px solid var(--theme-border, #DEDEDE);
+    border-radius: 100px;
+    font-size: 13px;
+    background: var(--theme-surface, #fff);
+    color: var(--theme-text, #191919);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234A4A4A' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    outline: none;
+}
+.be-filter-select:focus { border-color: #8B5CF6; }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Header -->
 <div class="page-section-header" style="padding:24px 0 0;">
@@ -8,19 +45,27 @@
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;padding-bottom:16px;">
             <div>
                 <h1 style="font-size:1.75rem;margin-bottom:4px;">Artistas</h1>
-                <p style="color:#8C8C8C;font-size:14px;margin:0;">{{ artistas|length if artistas else 0 }} artistas en la comunidad</p>
+                <p style="color:#8C8C8C;font-size:14px;margin:0;">
+                    {{ artistas|length if artistas else 0 }} artista{% if artistas|length != 1 %}s{% endif %}
+                    {% if categoria_nombre %} en {{ categoria_nombre }}{% else %} en la comunidad{% endif %}
+                </p>
             </div>
-            <div style="display:flex;gap:8px;align-items:center;">
+            <form method="GET" class="be-artistas-filters">
                 <div style="position:relative;">
                     <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#B0B0B0;font-size:12px;"></i>
-                    <input type="text" value="{{ termino_busqueda }}" placeholder="Buscar artistas…"
-                           style="padding:8px 14px 8px 34px;border:1px solid #DEDEDE;border-radius:100px;font-size:13px;width:240px;outline:none;"
-                           onkeypress="if(event.key==='Enter'){window.location.href='?q='+encodeURIComponent(this.value);}">
+                    <input type="text" name="q" value="{{ termino_busqueda }}" placeholder="Buscar artistas…" class="be-filter-input">
                 </div>
-                {% if termino_busqueda %}
-                <a href="{{ url_for('public.artistas') }}" class="btn btn-secondary btn-sm"><i class="fas fa-times"></i></a>
+                <select name="categoria" class="be-filter-select">
+                    <option value="">Todas las categorías</option>
+                    {% for categoria in categorias %}
+                    <option value="{{ categoria.id_categoria }}" {% if categoria_actual == categoria.id_categoria %}selected{% endif %}>{{ categoria.nombre }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+                {% if termino_busqueda or categoria_actual %}
+                <a href="{{ url_for('public.artistas') }}" class="btn btn-secondary btn-sm" title="Limpiar filtros"><i class="fas fa-times"></i></a>
                 {% endif %}
-            </div>
+            </form>
         </div>
     </div>
 </div>
@@ -60,7 +105,17 @@
     <div>
         <i class="fas fa-users" style="font-size:3rem;color:#DEDEDE;margin-bottom:16px;display:block;"></i>
         <h3 style="margin-bottom:8px;">No se encontraron artistas</h3>
-        <p style="color:#8C8C8C;margin-bottom:24px;">{% if termino_busqueda %}Sin resultados para "{{ termino_busqueda }}".{% else %}Aún no hay artistas.{% endif %}</p>
+        <p style="color:#8C8C8C;margin-bottom:24px;">
+            {% if termino_busqueda and categoria_nombre %}
+            Sin resultados para "{{ termino_busqueda }}" en {{ categoria_nombre }}.
+            {% elif termino_busqueda %}
+            Sin resultados para "{{ termino_busqueda }}".
+            {% elif categoria_nombre %}
+            Ningún artista con obras en {{ categoria_nombre }}.
+            {% else %}
+            Aún no hay artistas.
+            {% endif %}
+        </p>
         <a href="{{ url_for('public.artistas') }}" class="btn btn-primary">Ver todos</a>
     </div>
 </section>
