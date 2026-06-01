@@ -306,7 +306,7 @@ class ObraService:
         Returns:
             list: Lista de obras de la categoría
         """
-        return self.obra_repo.get_obras_por_categoria(categoria_id, limit=limit, offset=offset)
+        return self.obra_repo.get_by_categoria(categoria_id, limit=limit, offset=offset)
     
     def get_estadisticas_artista(self, artista_id):
         """
