@@ -9,31 +9,31 @@
         <p class="text-muted mb-0">Newsletters que te han enviado los artistas a los que estás suscrito</p>
     </div>
 
-    {% if newsletters %}
-        {% for news in newsletters %}
-        <div class="card mb-4 shadow-sm border-0 rounded-4 overflow-hidden">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-bottom-0">
-                <div class="d-flex align-items-center">
-                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div>
-                        <span class="fw-bold text-dark d-block">{{ news.artista.nombre }}</span>
-                        <small class="text-muted">@{{ news.artista.username }}</small>
-                    </div>
-                </div>
-                <small class="text-muted">{{ news.fecha_envio|date }}</small>
-            </div>
+    {% if inbox %}
+        {% for news, leido in inbox %}
+        <a href="{{ url_for('cliente.newsletter_detalle', newsletter_id=news.id_newsletter) }}"
+           class="card mb-3 shadow-sm border-0 rounded-4 overflow-hidden text-decoration-none text-body d-block">
             <div class="card-body px-4 py-3">
-                <h4 class="h5 mb-3">{{ news.asunto }}</h4>
-                <div class="text-secondary" style="line-height: 1.7;">{{ news.contenido|safe }}</div>
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="d-flex align-items-start min-w-0">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 42px; height: 42px;">
+                            <i class="fas fa-envelope{% if leido %}-open{% endif %}"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="fw-bold">{{ news.asunto }}</span>
+                                {% if not leido %}
+                                <span class="badge bg-primary rounded-pill">Nuevo</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-muted small d-block mb-1">{{ news.artista.nombre }} · @{{ news.artista.username }}</span>
+                            <p class="text-secondary small mb-0">{{ news.contenido|striptags|truncate(120) }}</p>
+                        </div>
+                    </div>
+                    <small class="text-muted text-nowrap">{{ news.fecha_envio|date }}</small>
+                </div>
             </div>
-            <div class="card-footer bg-white border-0 text-end pb-4 px-4">
-                <a href="{{ url_for('public.perfil_artista', artista_id=news.id_artista) }}" class="btn btn-sm btn-link text-decoration-none">
-                    Ver perfil del artista <i class="fas fa-chevron-right ms-1"></i>
-                </a>
-            </div>
-        </div>
+        </a>
         {% endfor %}
     {% else %}
         <div class="text-center py-5 bg-white rounded-4 border">

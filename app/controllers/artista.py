@@ -81,6 +81,7 @@ def dashboard():
     usuario_service = service_factory.get_usuario_service()
     categoria_service = service_factory.get_categoria_service()
     blog_service = service_factory.get_blog_service()
+    newsletter_service = service_factory.get_newsletter_service()
     
     # Obtener estadísticas del artista
     stats = {
@@ -89,6 +90,8 @@ def dashboard():
         'seguidores_count': usuario_service.get_seguidores_count(current_user.id_usuario),
         'siguiendo_count': usuario_service.get_siguiendo_count(current_user.id_usuario),
         'blog_count': blog_service.get_count_by_artista(current_user.id_usuario),
+        'newsletters_count': len(newsletter_service.get_by_artista(current_user.id_usuario)),
+        'suscriptores_count': newsletter_service.count_suscriptores(current_user.id_usuario),
         'vistas_proyectos': 1250, # Placeholder para MVP
         'valoraciones': 84
     }
@@ -465,6 +468,67 @@ def seguidores():
     seguidores = usuario_service.get_seguidores(current_user.id_usuario)
     
     return render_template('artista/seguidores.html', seguidores=seguidores)
+
+
+def _contenido_newsletter_valido(contenido):
+    texto = (contenido or '').strip()
+    return bool(texto and texto not in ('<p></p>', '<p><br></p>'))
+
+
+@artista_bp.route('/newsletters')
+@login_required
+@requiere_artista
+def newsletters():
+    """Newsletters enviados por el artista."""
+    service_factory = get_service_factory()
+    newsletter_service = service_factory.get_newsletter_service()
+    envios = newsletter_service.get_by_artista(current_user.id_usuario)
+    suscriptores_count = newsletter_service.count_suscriptores(current_user.id_usuario)
+    return render_template(
+        'artista/newsletters.html',
+        envios=envios,
+        suscriptores_count=suscriptores_count,
+    )
+
+
+@artista_bp.route('/newsletters/nuevo', methods=['GET', 'POST'])
+@login_required
+@requiere_artista
+def nuevo_newsletter():
+    """Redactar y enviar un newsletter a los suscriptores."""
+    service_factory = get_service_factory()
+    newsletter_service = service_factory.get_newsletter_service()
+    suscriptores_count = newsletter_service.count_suscriptores(current_user.id_usuario)
+
+    if request.method == 'POST':
+        asunto = (request.form.get('asunto') or '').strip()
+        contenido = (request.form.get('contenido') or '').strip()
+        if not asunto:
+            flash('El asunto es obligatorio', 'error')
+        elif not _contenido_newsletter_valido(contenido):
+            flash('El contenido es obligatorio', 'error')
+        elif suscriptores_count == 0:
+            flash('Aún no tienes suscriptores al newsletter', 'warning')
+        else:
+            exitoso, newsletter, destinatarios = newsletter_service.crear_y_enviar(
+                current_user.id_usuario,
+                asunto,
+                contenido,
+            )
+            if exitoso:
+                flash(
+                    f'Newsletter enviado a {destinatarios} '
+                    f'{"persona" if destinatarios == 1 else "personas"}',
+                    'success',
+                )
+                return redirect(url_for('artista.newsletters'))
+            flash('Error al enviar el newsletter', 'error')
+
+    return render_template(
+        'artista/nuevo_newsletter.html',
+        suscriptores_count=suscriptores_count,
+    )
+
 
 @artista_bp.route('/blog/subir-imagen', methods=['POST'])
 @login_required

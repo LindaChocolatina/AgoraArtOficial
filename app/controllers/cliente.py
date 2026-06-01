@@ -74,7 +74,6 @@ def _cliente_nav(user_id, active_nav=''):
     orden_service = service_factory.get_orden_service()
     newsletter_service = service_factory.get_newsletter_service()
 
-    newsletters = newsletter_service.get_by_usuario(user_id)
     return {
         'active_nav': active_nav,
         'nav_counts': {
@@ -82,7 +81,7 @@ def _cliente_nav(user_id, active_nav=''):
             'lienzos_count': moodboard_service.get_count_usuario(user_id),
             'siguiendo_count': usuario_service.get_siguiendo_count(user_id),
             'ordenes_count': orden_service.get_count_by_usuario(user_id),
-            'newsletters_count': len(newsletters),
+            'newsletters_count': newsletter_service.count_no_leidos(user_id),
             'suscripciones_count': newsletter_service.count_suscripciones(user_id),
         },
     }
@@ -834,13 +833,33 @@ def newsletters():
     try:
         service_factory = get_service_factory(db.session)
         newsletter_service = service_factory.get_newsletter_service()
-        newsletters_list = newsletter_service.get_by_usuario(current_user.id_usuario)
+        inbox = newsletter_service.get_inbox(current_user.id_usuario)
         ctx = _cliente_nav(current_user.id_usuario, active_nav='inbox')
-        return render_template('cliente/newsletters.html', newsletters=newsletters_list, **ctx)
+        return render_template('cliente/newsletters.html', inbox=inbox, **ctx)
     except Exception as e:
         print(f"Error al cargar newsletters: {e}")
         flash('Error al cargar tus newsletters', 'error')
         return redirect(url_for('cliente.dashboard'))
+
+
+@cliente_bp.route('/newsletters/<int:newsletter_id>')
+@login_required
+@requiere_cliente
+def newsletter_detalle(newsletter_id):
+    """Ver un newsletter y marcarlo como leído."""
+    service_factory = get_service_factory(db.session)
+    newsletter_service = service_factory.get_newsletter_service()
+    row = newsletter_service.get_para_cliente(current_user.id_usuario, newsletter_id)
+    if not row:
+        flash('Newsletter no encontrado', 'error')
+        return redirect(url_for('cliente.newsletters'))
+
+    news, leido = row
+    if not leido:
+        newsletter_service.marcar_leido(current_user.id_usuario, newsletter_id)
+
+    ctx = _cliente_nav(current_user.id_usuario, active_nav='inbox')
+    return render_template('cliente/newsletter_detalle.html', news=news, **ctx)
 
 
 @cliente_bp.route('/suscripciones-newsletter')
