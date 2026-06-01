@@ -163,6 +163,50 @@ class UsuarioRepository(BaseRepository):
         except SQLAlchemyError as e:
             print(f"Error al buscar usuarios: {e}")
             return []
+
+    def get_artistas_por_categoria(self, categoria_id, termino=None, limit=None, offset=None):
+        """
+        Obtener artistas activos con obras visibles en una categoría.
+
+        Args:
+            categoria_id (int): ID de la categoría
+            termino (str): Filtro opcional por nombre o username
+            limit (int): Límite de resultados
+            offset (int): Desplazamiento
+
+        Returns:
+            list: Lista de artistas
+        """
+        try:
+            from app.models.obra import Obra
+
+            artistas_ids = self.session.query(Obra.id_artista).filter(
+                Obra.id_categoria == categoria_id,
+                Obra.visible == True
+            ).distinct()
+
+            query = self.session.query(Usuario).filter(
+                Usuario.estado == 'activo',
+                Usuario.rol == 'artista',
+                Usuario.id_usuario.in_(artistas_ids)
+            )
+
+            if termino:
+                query = query.filter(
+                    Usuario.nombre.contains(termino) | Usuario.username.contains(termino)
+                )
+
+            query = query.order_by(Usuario.nombre)
+
+            if limit:
+                query = query.limit(limit)
+            if offset:
+                query = query.offset(offset)
+
+            return query.all()
+        except SQLAlchemyError as e:
+            print(f"Error al obtener artistas por categoría: {e}")
+            return []
     
     def toggle_estado(self, usuario_id, usuario_admin_id=None):
         """

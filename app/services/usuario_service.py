@@ -130,6 +130,26 @@ class UsuarioService:
             list: Lista de artistas activos
         """
         return self.usuario_repo.get_artistas_activos(limit=limit, offset=offset)
+
+    def get_artistas_por_categoria(self, categoria_id, termino=None, limit=None, offset=None):
+        """
+        Obtener artistas activos con obras en una categoría.
+
+        Args:
+            categoria_id (int): ID de la categoría
+            termino (str): Filtro opcional por nombre o username
+            limit (int): Límite de resultados
+            offset (int): Desplazamiento
+
+        Returns:
+            list: Lista de artistas
+        """
+        return self.usuario_repo.get_artistas_por_categoria(
+            categoria_id,
+            termino=termino,
+            limit=limit,
+            offset=offset
+        )
     
     def seguir_artista(self, usuario_id, artista_id):
         """
