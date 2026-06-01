@@ -17,3 +17,4 @@ python scripts/migrar_sqlite_a_postgres.py --confirmar
 | `migrar_sqlite_a_postgres.py` | Esquema y datos: SQLite local → Postgres (Coolify). Requiere túnel SSH y `DATABASE_URL` en `.env` |
 | `probar_conexion_postgres.py` | Comprueba host/puerto y si el túnel responde antes de migrar |
 | `start_coolify.sh` | Arranque en producción: migraciones + Gunicorn (Start Command en Coolify) |
+| `asegurar_admin_linda.py` | Crea/actualiza admin `lindasioc@gmail.com` en SQLite o Postgres (`--production` + `ADMIN_PASSWORD`) |

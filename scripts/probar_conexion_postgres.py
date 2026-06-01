@@ -18,9 +18,15 @@ from dotenv import load_dotenv
 
 load_dotenv(_ROOT / '.env')
 
-raw = os.environ.get('DATABASE_URL') or os.environ.get('MIGRATE_TARGET_URL')
-if not raw:
-    print('ERROR: No hay DATABASE_URL ni MIGRATE_TARGET_URL en .env')
+from app.config.config import database_uri
+
+raw = (
+    os.environ.get('DATABASE_URL')
+    or os.environ.get('MIGRATE_TARGET_URL')
+    or database_uri('art_platform.db')
+)
+if raw.startswith('sqlite'):
+    print('ERROR: Define POSTGRES_PASSWORD (o DATABASE_URL) en .env para conectar a Coolify.')
     sys.exit(1)
 
 from urllib.parse import urlparse
