@@ -34,7 +34,8 @@ def dashboard():
         'usuarios': {
             'total': usuario_service.count(),
             'artistas': usuario_service.count({'rol': 'artista'}),
-            'clientes': usuario_service.count({'rol': 'cliente'})
+            'clientes': usuario_service.count({'rol': 'cliente'}),
+            'admins': usuario_service.count({'rol': 'admin'}),
         },
         'obras': {
             'total': obra_service.count(),
