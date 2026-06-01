@@ -103,9 +103,7 @@ Aquí tienes la descripción detallada y la justificación conceptual de dos de 
 
 ---
 
-## 🛡️ ¿Qué otros datos debes tener para describir la identidad de marca?
-
-# 📜 Propósito y Misión de Ágora Art
+## 📜 Propósito y Misión de Ágora Art
 * **Propósito:** Facilitar que artistas independientes expongan, vendan y moneticen sus obras sin barreras de intermediarios.
 * **Misión:** Crear una comunidad digital donde el talento artístico sea descubierto, colaborado y premiado, ofreciendo una experiencia premium tanto para creadores como para coleccionistas.
 
@@ -143,14 +141,4 @@ Aquí tienes la descripción detallada y la justificación conceptual de dos de 
 * Innovación, comunidad, descubrimiento, talento, accesibilidad, cosmos, arte independiente.
 
 ---
-*(Fin del documento)*
-
-
-1.  **Propósito y Misión de la Marca**: ¿Por qué creamos Ágora Art? (Ejemplo: *"Queremos democratizar el acceso al arte local y conectar a creadores independientes con amantes del arte en un entorno digital premium"*).
-2.  **Tono de Voz y Personalidad**: Cómo habla la marca en sus textos.
-    *   ¿Hablamos de "tú" de forma amigable o de "usted" de forma corporativa? (En nuestro caso: de "tú", con mucha pasión por el arte, inspirador y accesible).
-3.  **Reglas de Uso del Logotipo (Guías de no-uso)**:
-    *   Por ejemplo: "No estirar el logotipo", "No usar el logotipo morado sobre fondos rosa brillante", o "Utilizar la versión blanca sobre fondos muy oscuros".
-4.  **Iconografía**:
-    *   Usamos iconos delgados de la biblioteca **FontAwesome** (como el cohete `fa-rocket` o la bolsa de compras `fa-bag-shopping`) para complementar la interfaz sin saturar la vista.
 
