@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Detrás del Proyecto — Ágora Art{% endblock %}
+
+{% block meta_description %}Proceso creativo y técnico de Ágora Art: problema, marca, arquitectura y despliegue.
+Proyecto ADSO.{% endblock %}
+
+{% block head %}
+<style>
+    .proyecto-page {
+        max-width: 48rem;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 4rem;
+        color: var(--theme-text);
+    }
+
+    .proyecto-page .lead {
+        font-size: 1.15rem;
+        color: var(--theme-text-muted);
+        line-height: 1.65;
+    }
+
+    .proyecto-badge {
+        display: inline-block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--cosmic-purple, #8B5CF6);
+        margin-bottom: 1rem;
+    }
+
+    .proyecto-page h1 {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: clamp(1.75rem, 4vw, 2.35rem);
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+
+    .proyecto-page h2 {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 1.35rem;
+        margin-top: 2.5rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--theme-border);
+        color: var(--theme-text);
+    }
+
+    .proyecto-page p,
+    .proyecto-page li {
+        color: var(--theme-text-muted);
+        line-height: 1.7;
+    }
+
+    .proyecto-page ul {
+        padding-left: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .proyecto-page li {
+        margin-bottom: 0.5rem;
+    }
+
+    .proyecto-page strong {
+        color: var(--theme-text);
+    }
+
+    .proyecto-callout {
+        background: var(--theme-bg-secondary);
+        border: 1px solid var(--theme-border);
+        border-left: 4px solid var(--cosmic-purple, #8B5CF6);
+        border-radius: 0 12px 12px 0;
+        padding: 1rem 1.25rem;
+        margin: 1.5rem 0;
+    }
+
+    .proyecto-callout p {
+        margin: 0;
+        color: var(--theme-text);
+    }
+
+    .proyecto-table-wrap {
+        overflow-x: auto;
+        margin: 1.25rem 0;
+    }
+
+    .proyecto-page table {
+        width: 100%;
+        font-size: 0.9rem;
+        border-collapse: collapse;
+    }
+
+    .proyecto-page th,
+    .proyecto-page td {
+        padding: 0.65rem 0.75rem;
+        border: 1px solid var(--theme-border);
+        text-align: left;
+    }
+
+    .proyecto-page th {
+        background: var(--theme-bg-secondary);
+        color: var(--theme-text);
+        font-weight: 600;
+    }
+
+    .proyecto-close {
+        margin-top: 2.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--theme-border);
+        font-style: italic;
+        color: var(--theme-text-muted);
+    }
+
+    .proyecto-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        color: var(--cosmic-purple, #8B5CF6);
+        text-decoration: none;
+    }
+
+    .proyecto-back:hover {
+        opacity: 0.85;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<article class="proyecto-page">
+    <a href="{{ url_for('public.home') }}" class="proyecto-back"><i class="fas fa-arrow-left"></i> Volver al inicio</a>
+
+    <p class="proyecto-badge">Proyecto académico · ADSO</p>
+    <h1>Detrás del Proyecto</h1>
+    <p class="lead">
+        Bienvenido al espacio donde el arte hackea al algoritmo.
+        <strong>Ágora Art</strong> no nació solo como un ejercicio de código; nació como respuesta
+        a una necesidad real de la comunidad creativa independiente.
+    </p>
+
+    <h2>1. La chispa: el problema</h2>
+    <p>Las redes sociales tradicionales solían ser un escaparate para el talento, pero hoy están rotas para los
+        creadores. Los artistas independientes se enfrentan a tres barreras críticas:</p>
+    <ul>
+        <li><strong>La tiranía del algoritmo</strong> — se premia el volumen de contenido rápido, no la calidad de la
+            obra.</li>
+        <li><strong>La dispersión de herramientas</strong> — portafolio, comunidad, newsletter y venta en sitios
+            distintos.</li>
+        <li><strong>Métricas de vanidad</strong> — likes que no siempre se convierten en mecenazgo ni ingresos estables.
+        </li>
+    </ul>
+    <div class="proyecto-callout">
+        <p><strong>La propuesta:</strong> un ecosistema creativo que une portafolio (estilo Behance) y marketplace
+            (estilo Etsy), con menos ruido algorítmico.</p>
+    </div>
+
+    <h2>2. Dirección de arte: Arte abducido</h2>
+    <ul>
+        <li><strong>Concepto:</strong> narrativa cósmica y minimalista; la obra es la protagonista.</li>
+        <li><strong>Tema claro/oscuro</strong> con variables en <code>theme.css</code> (<code>--theme-surface</code>,
+            <code>--theme-bg</code>…).</li>
+        <li><strong>Paleta:</strong> <code>#0D0B21</code>, acentos <code>#8B5CF6</code> y <code>#FF2D95</code>.</li>
+        <li><strong>Isotipo:</strong> platillo con haz en forma de «A» — talento «abducido» hacia la visibilidad.</li>
+        <li><strong>Tipografía:</strong> Outfit + Plus Jakarta Sans; Bootstrap 5 y <code>agora_art.css</code>.</li>
+    </ul>
+
+    <h2>3. Arquitectura de software</h2>
+    <p>MVC ampliado con capas separadas:</p>
+    <div class="proyecto-table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Capa</th>
+                    <th>Función</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Controllers</td>
+                    <td>Rutas, permisos, formularios</td>
+                </tr>
+                <tr>
+                    <td>Services</td>
+                    <td>Carrito, órdenes, pagos, favoritos, newsletters</td>
+                </tr>
+                <tr>
+                    <td>Repositories</td>
+                    <td>Consultas a PostgreSQL</td>
+                </tr>
+                <tr>
+                    <td>Models</td>
+                    <td>Esquema ORM</td>
+                </tr>
+                <tr>
+                    <td>Templates</td>
+                    <td>Vista Jinja2 + CSS</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        <strong>Factory pattern</strong> (<code>create_app</code>),
+        <strong>blueprints</strong> (Público, Auth, Artista, Cliente, Admin, API),
+        <strong>repository</strong> y <strong>services</strong> para escalar sin código espagueti.
+    </p>
+    <p>
+        <strong>Roles:</strong> administrador (moderación y sistema), artista (portafolio, blog, tienda, newsletter
+        interno),
+        cliente (seguir, comprar, moodboards).
+    </p>
+
+    <h2>4. Stack e infraestructura</h2>
+    <ul>
+        <li><strong>Backend:</strong> Python 3.14, Flask 2.3, Jinja2.</li>
+        <li><strong>BD:</strong> PostgreSQL (producción), SQLite (local), Alembic.</li>
+        <li><strong>Seguridad:</strong> Flask-Login, bcrypt, CSRF, bloqueo por intentos de login.</li>
+        <li><strong>Extras:</strong> Pillow, Flask-Mail, Stripe + modo demo en presentación.</li>
+        <li><strong>Deploy:</strong> Git, Coolify, Nixpacks, VPS Contabo, Gunicorn.</li>
+    </ul>
+
+    <h2>5. Proceso y alcance</h2>
+    <p>
+        Desarrollo en 18 historias de usuario (5 sprints): de la autenticación al checkout y newsletters.
+        MVP en producción con panel admin, carrito persistente y tema adaptable.
+    </p>
+    <p>
+        <strong>Próximos pasos:</strong> moderación avanzada, verificación de email, 2FA, Stripe en vivo,
+        volumen persistente para imágenes y dominio con HTTPS.
+    </p>
+
+    <p class="proyecto-close">
+        Ágora Art demuestra que el software y el arte comparten el mismo núcleo: crear algo significativo desde un
+        lienzo en blanco.
+    </p>
+</article>
+{% endblock %}

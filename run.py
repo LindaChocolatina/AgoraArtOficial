@@ -4,6 +4,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Desarrollo local: SQLite por defecto (evita colgar si el túnel DBeaver está cerrado).
+if os.environ.get('FLASK_ENV', 'development') == 'development':
+    if not os.environ.get('DATABASE_URL') and not os.environ.get('USE_POSTGRES'):
+        os.environ.setdefault('USE_SQLITE', '1')
+
 from app.factories.app_factory import create_app
 
 # Determinar el entorno de configuración

@@ -16,12 +16,19 @@ def _normalize_database_url(url):
 
 
 def database_uri(sqlite_filename):
-    """PostgreSQL vía DATABASE_URL o POSTGRES_* (túnel DBeaver); si no, SQLite local."""
+    """PostgreSQL vía DATABASE_URL o POSTGRES_* (túnel); SQLite si no hay túnel activo."""
     url = _normalize_database_url(os.environ.get('DATABASE_URL'))
     if url:
         return url
 
-    password = (os.environ.get('POSTGRES_PASSWORD') or '').strip()
+    # Desarrollo local: SQLite salvo que actives USE_POSTGRES=1 (DBeaver conectado).
+    use_sqlite = os.environ.get('USE_SQLITE', '').lower() in ('1', 'true', 'yes', 'on')
+    use_postgres = os.environ.get('USE_POSTGRES', '').lower() in ('1', 'true', 'yes', 'on')
+    if use_sqlite or not use_postgres:
+        password = ''
+    else:
+        password = (os.environ.get('POSTGRES_PASSWORD') or '').strip()
+
     if password:
         from urllib.parse import quote_plus
 

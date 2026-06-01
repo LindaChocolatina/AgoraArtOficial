@@ -19,6 +19,8 @@ sys.path.insert(0, str(_ROOT))
 from dotenv import load_dotenv
 
 load_dotenv(_ROOT / '.env')
+os.environ['USE_POSTGRES'] = '1'
+os.environ.pop('USE_SQLITE', None)
 # Evita sembrar categorías al arrancar (solo necesitamos usuarios)
 os.environ.setdefault('MIGRATE_SCHEMA_ONLY', '1')
 

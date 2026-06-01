@@ -344,12 +344,17 @@ def obras_categoria(categoria_id):
                          categoria=categoria,
                          obras=obras)
 
+@public_bp.route('/detras-del-proyecto')
+def detras_del_proyecto():
+    """Proceso creativo y técnico del proyecto (contexto académico)."""
+    return render_template('public/detras_del_proyecto.html')
+
+
+@public_bp.route('/detras-del-refugio')
 @public_bp.route('/acerca-de')
-def acerca_de():
-    """
-    Página sobre la plataforma
-    """
-    return render_template('public/acerca_de.html')
+def acerca_de_redirect():
+    """Rutas antiguas → página unificada."""
+    return redirect(url_for('public.detras_del_proyecto'))
 
 @public_bp.route('/contacto')
 def contacto():
