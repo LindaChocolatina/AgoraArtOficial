@@ -53,6 +53,17 @@ class Config:
     PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
     SESSION_COOKIE_SECURE = False
     SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    REMEMBER_COOKIE_HTTPONLY = True
+    REMEMBER_COOKIE_SAMESITE = 'Lax'
+    REMEMBER_COOKIE_SECURE = False
+    SESSION_REFRESH_EACH_REQUEST = True
+
+    # Seguridad de login
+    LOGIN_MAX_ATTEMPTS = int(os.environ.get('LOGIN_MAX_ATTEMPTS') or 5)
+    LOGIN_LOCKOUT_MINUTES = int(os.environ.get('LOGIN_LOCKOUT_MINUTES') or 15)
+    PASSWORD_RESET_MAX_PER_IP = int(os.environ.get('PASSWORD_RESET_MAX_PER_IP') or 5)
+    PASSWORD_RESET_IP_WINDOW_MINUTES = int(os.environ.get('PASSWORD_RESET_IP_WINDOW_MINUTES') or 60)
     
     # Configuración de paginación
     ITEMS_PER_PAGE = 12
@@ -97,6 +108,7 @@ class ProductionConfig(Config):
     """Configuración para producción"""
     DEBUG = False
     SESSION_COOKIE_SECURE = True
+    REMEMBER_COOKIE_SECURE = True
     basedir = _BASEDIR
     SQLALCHEMY_DATABASE_URI = database_uri('art_platform_prod.db')
     

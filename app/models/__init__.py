@@ -13,6 +13,7 @@ from app.models.ecommerce import Direccion, Orden, OrdenItem, Pago, CarritoItem
 from app.models.moodboard import Lienzo, LienzoItem
 from app.models.newsletter import Newsletter, Suscripcion
 from app.models.auditoria import Auditoria
+from app.models.login_bloqueo import LoginBloqueo
 
 # Lista de todos los modelos para facilitar importaciones
 __all__ = [
@@ -24,5 +25,6 @@ __all__ = [
     'Direccion', 'Orden', 'OrdenItem', 'Pago', 'CarritoItem',
     'Lienzo', 'LienzoItem',
     'Newsletter', 'Suscripcion',
-    'Auditoria'
+    'Auditoria',
+    'LoginBloqueo',
 ]

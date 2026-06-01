@@ -105,7 +105,7 @@ class AuthService:
         
         if not data.get('rol'):
             errores.append('El rol es obligatorio')
-        elif data['rol'] not in ['admin', 'artista', 'cliente']:
+        elif data['rol'] not in ['artista', 'cliente']:
             errores.append('Rol no válido')
         
         # Validaciones de unicidad
@@ -160,7 +160,7 @@ class AuthService:
             print(f"Error en registro: {e}")
             return (False, None, ['Error interno del servidor'])
     
-    def login_usuario(self, email, password, remember=False):
+    def login_usuario(self, email, password, remember=False, ip_address=None):
         """
         Iniciar sesión de usuario
         
@@ -168,25 +168,46 @@ class AuthService:
             email (str): Email del usuario
             password (str): Contraseña del usuario
             remember (bool): Recordar sesión
+            ip_address (str): IP del cliente (anti fuerza bruta)
             
         Returns:
             tuple: (bool, Usuario/None, str) - (exitoso, usuario, mensaje_error)
         """
+        from flask import current_app
+        from app.utils.login_security import LoginSecurityGuard, normalizar_email
+
         try:
-            # Buscar usuario por email
-            usuario = self.usuario_repo.get_by_email(email.lower())
-            
-            if not usuario:
+            email_norm = normalizar_email(email)
+            if not email_norm or not (password or '').strip():
                 return (False, None, 'Email o contraseña incorrectos')
-            
+
+            guard = LoginSecurityGuard(
+                self.usuario_repo.session,
+                max_attempts=current_app.config.get('LOGIN_MAX_ATTEMPTS', 5),
+                lockout_minutes=current_app.config.get('LOGIN_LOCKOUT_MINUTES', 15),
+            )
+            if ip_address:
+                bloqueado, mensaje = guard.verificar_bloqueo(email_norm, ip_address)
+                if bloqueado:
+                    return (False, None, mensaje)
+
+            usuario = self.usuario_repo.get_by_email(email_norm)
+            hash_a_verificar = (
+                usuario.password if usuario else LoginSecurityGuard.dummy_password_hash()
+            )
+            password_ok = self.verificar_password(password, hash_a_verificar)
+
+            if not usuario or not password_ok:
+                if ip_address:
+                    guard.registrar_fallo(email_norm, ip_address)
+                return (False, None, 'Email o contraseña incorrectos')
+
             if not usuario.is_active():
                 return (False, None, 'La cuenta está bloqueada. Contacta al administrador.')
-            
-            # Verificar contraseña
-            if not self.verificar_password(password, usuario.password):
-                return (False, None, 'Email o contraseña incorrectos')
-            
-            # Iniciar sesión
+
+            if ip_address:
+                guard.limpiar_tras_exito(email_norm, ip_address)
+
             login_user(usuario, remember=remember)
             
             return (True, usuario, '')
@@ -253,13 +274,14 @@ class AuthService:
             print(f"Error al cambiar contraseña: {e}")
             return (False, 'Error interno del servidor')
 
-    def solicitar_restablecimiento(self, email, reset_url_builder):
+    def solicitar_restablecimiento(self, email, reset_url_builder, ip_address=None):
         """
         Generar token y enviar correo (o devolver enlace en modo demo).
 
         Args:
             email (str): Email del usuario
             reset_url_builder (callable): recibe token y devuelve URL absoluta
+            ip_address (str): IP del cliente (límite de solicitudes)
 
         Returns:
             tuple: (mensaje_usuario, reset_url_demo|None)
@@ -267,11 +289,23 @@ class AuthService:
         from flask import current_app
         from app.utils.password_reset import generar_token_reset
         from app.utils.email_envio import enviar_correo_reset, modo_demo_correo
+        from app.utils.login_security import PasswordResetRateLimiter
 
         mensaje_generico = (
             'Si existe una cuenta con ese email, recibirás instrucciones '
             'para restablecer tu contraseña.'
         )
+
+        if ip_address:
+            limiter = PasswordResetRateLimiter(
+                self.usuario_repo.session,
+                max_requests=current_app.config.get('PASSWORD_RESET_MAX_PER_IP', 5),
+                window_minutes=current_app.config.get('PASSWORD_RESET_IP_WINDOW_MINUTES', 60),
+            )
+            if not limiter.permitido(ip_address):
+                return (mensaje_generico, None)
+            limiter.registrar_solicitud(ip_address)
+
         email_norm = (email or '').strip().lower()
         if not email_norm or '@' not in email_norm:
             return (mensaje_generico, None)

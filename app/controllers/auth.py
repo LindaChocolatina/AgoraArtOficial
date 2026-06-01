@@ -15,16 +15,21 @@ def login():
         return redirect(url_for('public.home'))
     
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        remember = request.form.get('remember', False)
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        remember = request.form.get('remember') == 'on'
+
+        from app.utils.login_security import obtener_ip_cliente
+        ip_address = obtener_ip_cliente()
         
         # Obtener servicio de autenticación
         service_factory = get_service_factory()
         auth_service = service_factory.get_auth_service()
         
         # Intentar login
-        exitoso, usuario, mensaje_error = auth_service.login_usuario(email, password, remember)
+        exitoso, usuario, mensaje_error = auth_service.login_usuario(
+            email, password, remember, ip_address=ip_address,
+        )
         
         if exitoso:
             carrito_service = service_factory.get_carrito_service()
@@ -64,6 +69,8 @@ def register():
             'rol': request.form.get('rol', 'cliente'),
             'biografia': request.form.get('biografia', '')
         }
+        if data['rol'] not in ('cliente', 'artista'):
+            data['rol'] = 'cliente'
         
         # Obtener servicio de autenticación
         service_factory = get_service_factory()
@@ -213,13 +220,17 @@ def olvide_contrasena():
     reset_link = None
     if request.method == 'POST':
         email = request.form.get('email', '')
+        from app.utils.login_security import obtener_ip_cliente
+        ip_address = obtener_ip_cliente()
         service_factory = get_service_factory()
         auth_service = service_factory.get_auth_service()
 
         def build_url(token):
             return url_for('auth.restablecer_contrasena', token=token, _external=True)
 
-        mensaje, reset_link = auth_service.solicitar_restablecimiento(email, build_url)
+        mensaje, reset_link = auth_service.solicitar_restablecimiento(
+            email, build_url, ip_address=ip_address,
+        )
         from app.utils.email_envio import modo_demo_correo
         if reset_link and modo_demo_correo():
             flash(
