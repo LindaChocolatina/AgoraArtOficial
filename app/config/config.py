@@ -24,11 +24,11 @@ def database_uri(sqlite_filename):
 
 
 def sqlalchemy_engine_options(uri=None):
-    """Opciones del motor: timeout en SQLite para evitar 'database is locked'."""
+    """Opciones del motor: timeout en SQLite; límite de espera en PostgreSQL."""
     uri = uri or database_uri('art_platform.db')
     if uri.startswith('sqlite'):
         return {'connect_args': {'timeout': 30}}
-    return {}
+    return {'connect_args': {'connect_timeout': 5}}
 
 
 class Config:
