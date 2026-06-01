@@ -3,9 +3,10 @@
 Copia los datos de SQLite local (app/art_platform.db) a PostgreSQL (Coolify).
 
 Uso (desde la raíz del proyecto, túnel SSH abierto):
-  1. En .env define DATABASE_URL apuntando al Postgres destino.
+  1. En .env define DATABASE_URL apuntando al Postgres destino (127.0.0.1:5441 con DBeaver).
   2. Ejecuta:
        python scripts/migrar_sqlite_a_postgres.py --solo-esquema
+       python scripts/migrar_sqlite_a_postgres.py --solo-perfiles
        python scripts/migrar_sqlite_a_postgres.py --confirmar
 """
 from __future__ import annotations
@@ -31,6 +32,7 @@ TABLES_ORDER = [
     'obra_imagenes',
     'productos',
     'producto_imagenes',
+    'carrito_items',
     'historial_stock',
     'entradas_blog',
     'comentarios_blog',
@@ -47,6 +49,18 @@ TABLES_ORDER = [
     'bandeja_newsletter',
     'auditoria',
 ]
+
+PERFIL_COLUMNS = (
+    'ubicacion',
+    'biografia',
+    'foto_perfil',
+    'banner_perfil',
+    'banner_offset',
+    'enlace_instagram',
+    'enlace_web',
+    'enlace_extra_url',
+    'enlace_extra_etiqueta',
+)
 
 SEQUENCE_COLUMNS = {
     'usuarios': 'id_usuario',
@@ -84,6 +98,7 @@ def _ensure_schema(target_url: str):
 
     env_url = target_url.replace('postgresql+psycopg://', 'postgresql://')
     os.environ['DATABASE_URL'] = env_url
+    os.environ['MIGRATE_SCHEMA_ONLY'] = '1'
 
     app = create_app('production')
     with app.app_context():
@@ -98,7 +113,7 @@ def _copy_data(source_url: str, target_url: str):
     from sqlalchemy import create_engine, inspect, text
 
     src = create_engine(source_url)
-    dst = create_engine(target_url)
+    dst = create_engine(target_url, connect_args={'connect_timeout': 15})
 
     src_insp = inspect(src)
     dst_insp = inspect(dst)
@@ -153,6 +168,55 @@ def _copy_data(source_url: str, target_url: str):
     print(f'\nMigración completada: {total_rows} filas copiadas.')
 
 
+def _sync_perfiles(source_url: str, target_url: str):
+    """Actualiza ubicación y enlaces en Postgres desde SQLite (por email). No borra tablas."""
+    from sqlalchemy import create_engine, text
+
+    src = create_engine(source_url)
+    dst = create_engine(target_url, connect_args={'connect_timeout': 15})
+
+    with src.connect() as sconn, dst.connect() as dconn:
+        rows = sconn.execute(text('SELECT * FROM usuarios')).mappings().all()
+        if not rows:
+            print('SQLite: sin usuarios.')
+            return
+
+        actualizados = 0
+        sin_match = []
+        for row in rows:
+            email = (row.get('email') or '').strip().lower()
+            if not email:
+                continue
+            dest = dconn.execute(
+                text('SELECT id_usuario, username FROM usuarios WHERE lower(email) = :email'),
+                {'email': email},
+            ).mappings().first()
+            if not dest:
+                sin_match.append(row.get('username') or email)
+                continue
+
+            valores = {col: row[col] for col in PERFIL_COLUMNS if col in row.keys()}
+            if not any(v is not None and str(v).strip() for v in valores.values()):
+                continue
+
+            sets = ', '.join(f'"{c}" = :{c}' for c in valores)
+            dconn.execute(
+                text(f'UPDATE usuarios SET {sets} WHERE id_usuario = :id_usuario'),
+                {**valores, 'id_usuario': dest['id_usuario']},
+            )
+            actualizados += 1
+            print(
+                f'  {row.get("username")} → Postgres @{dest["username"]} '
+                f'(id={dest["id_usuario"]})'
+            )
+
+        dconn.commit()
+
+    if sin_match:
+        print('\nSin coincidencia por email en Postgres:', ', '.join(sin_match))
+    print(f'\nPerfiles sincronizados: {actualizados} usuario(s).')
+
+
 def main():
     parser = argparse.ArgumentParser(description='Migrar SQLite local → PostgreSQL Coolify')
     parser.add_argument('--confirmar', action='store_true', help='Ejecutar copia de datos (borra Postgres destino)')
@@ -184,7 +248,16 @@ def main():
         print('Solo esquema (--solo-esquema). Datos no modificados.')
         return
 
+    if args.solo_perfiles:
+        print('\nSincronizando perfiles (ubicación y enlaces) desde SQLite...')
+        _sync_perfiles(source, target)
+        print('\nListo. Recarga el perfil en el navegador (no hace falta Redeploy).')
+        return
+
     if not args.confirmar:
+        print('\nOpciones de datos:')
+        print('  python scripts/migrar_sqlite_a_postgres.py --solo-perfiles')
+        print('  python scripts/migrar_sqlite_a_postgres.py --confirmar')
         print('\nPara copiar datos (REEMPLAZA todo en Postgres), ejecuta:')
         print('  python scripts/migrar_sqlite_a_postgres.py --confirmar')
         sys.exit(0)

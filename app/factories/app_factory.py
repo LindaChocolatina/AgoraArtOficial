@@ -46,6 +46,8 @@ def _ensure_dev_schema_patches():
                 db.session.execute(text(ddl))
                 db.session.commit()
                 cols.add(col)
+    if 'login_bloqueos' not in insp.get_table_names():
+        db.create_all()
 
 
 def create_app(config_name='default'):
@@ -77,7 +79,7 @@ def create_app(config_name='default'):
             db.create_all()
             _ensure_dev_schema_patches()
 
-    if config_name != 'testing':
+    if config_name != 'testing' and not os.environ.get('MIGRATE_SCHEMA_ONLY'):
         with app.app_context():
             from app.utils.categorias_seed import ensure_categorias_catalogo
             ensure_categorias_catalogo(db.session)
