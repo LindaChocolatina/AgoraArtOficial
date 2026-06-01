@@ -27,6 +27,9 @@ def login():
         exitoso, usuario, mensaje_error = auth_service.login_usuario(email, password, remember)
         
         if exitoso:
+            carrito_service = service_factory.get_carrito_service()
+            carrito_service.fusionar_sesion(usuario.id_usuario)
+
             # Redirigir según rol
             if usuario.is_admin():
                 return redirect(url_for('admin.dashboard'))

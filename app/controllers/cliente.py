@@ -486,7 +486,7 @@ def agregar_al_carrito(producto_id):
     if cantidad < 1:
         cantidad = 1
 
-    carrito_service.agregar_producto(producto_id, cantidad)
+    carrito_service.agregar_producto(current_user.id_usuario, producto_id, cantidad)
     flash(f'"{producto.nombre}" se agregó al carrito', 'success')
 
     destino = request.form.get('next') or request.referrer or url_for('cliente.carrito')
@@ -504,8 +504,8 @@ def carrito():
     carrito_service = service_factory.get_carrito_service()
     payment_service = service_factory.get_payment_service()
 
-    items, total = carrito_service.get_items()
-    count = carrito_service.get_count()
+    items, total = carrito_service.get_items(current_user.id_usuario)
+    count = carrito_service.get_count(current_user.id_usuario)
     ok_moneda, moneda, error_moneda = payment_service.validar_moneda_unica(items)
 
     from app.utils.moneda import formatear_precio
@@ -537,14 +537,14 @@ def actualizar_carrito(producto_id):
         producto_service = service_factory.get_producto_service()
 
         if cantidad <= 0:
-            carrito_service.remover_producto(producto_id)
+            carrito_service.remover_producto(current_user.id_usuario, producto_id)
             flash('Producto eliminado del carrito', 'success')
         else:
             producto = producto_service.get_by_id(producto_id)
             if producto and cantidad > producto.stock:
                 flash(f'Solo hay {producto.stock} unidades disponibles', 'error')
             else:
-                carrito_service.actualizar_cantidad(producto_id, cantidad)
+                carrito_service.actualizar_cantidad(current_user.id_usuario, producto_id, cantidad)
                 flash('Carrito actualizado', 'success')
         
     return redirect(url_for('cliente.carrito'))
@@ -558,7 +558,7 @@ def remover_carrito(producto_id):
     """
     service_factory = get_service_factory()
     carrito_service = service_factory.get_carrito_service()
-    carrito_service.remover_producto(producto_id)
+    carrito_service.remover_producto(current_user.id_usuario, producto_id)
     flash('Producto eliminado del carrito', 'success')
     
     return redirect(url_for('cliente.carrito'))
@@ -574,8 +574,8 @@ def checkout():
     carrito_service = service_factory.get_carrito_service()
     payment_service = service_factory.get_payment_service()
 
-    items, total = carrito_service.get_items()
-    count = carrito_service.get_count()
+    items, total = carrito_service.get_items(current_user.id_usuario)
+    count = carrito_service.get_count(current_user.id_usuario)
 
     if count == 0:
         flash('Tu carrito está vacío', 'error')
@@ -618,7 +618,7 @@ def procesar_checkout():
     direccion_service = service_factory.get_direccion_service()
     payment_service = service_factory.get_payment_service()
 
-    items, total = carrito_service.get_items()
+    items, total = carrito_service.get_items(current_user.id_usuario)
     if not items:
         flash('Tu carrito está vacío', 'error')
         return redirect(url_for('cliente.carrito'))
@@ -688,7 +688,7 @@ def checkout_pago_demo(orden_id):
             monto=orden.total,
         )
         if ok:
-            carrito_service.vaciar_carrito()
+            carrito_service.vaciar_carrito(current_user.id_usuario)
             flash('¡Pago simulado correctamente! Tu compra quedó registrada.', 'success')
             return redirect(url_for('cliente.checkout_exito', orden_id=orden.id_orden))
         flash(result if isinstance(result, str) else 'No se pudo confirmar el pago.', 'error')
@@ -752,7 +752,7 @@ def checkout_exito():
             if not ok_pago:
                 flash(result if isinstance(result, str) else 'Error al confirmar el pago.', 'error')
                 return redirect(url_for('cliente.dashboard', tab='compras'))
-        carrito_service.vaciar_carrito()
+        carrito_service.vaciar_carrito(current_user.id_usuario)
         flash('¡Pago recibido! Gracias por tu compra.', 'success')
         return render_template(
             'cliente/checkout_exito.html',
@@ -917,7 +917,7 @@ def agregar_carrito():
     
     service_factory = get_service_factory()
     carrito_service = service_factory.get_carrito_service()
-    exitoso = carrito_service.agregar_producto(producto_id, cantidad)
+    exitoso = carrito_service.agregar_producto(current_user.id_usuario, producto_id, cantidad)
     
     return jsonify({
         'exitoso': exitoso,
@@ -935,7 +935,7 @@ def quitar_carrito():
     
     service_factory = get_service_factory()
     carrito_service = service_factory.get_carrito_service()
-    exitoso = carrito_service.remover_producto(producto_id)
+    exitoso = carrito_service.remover_producto(current_user.id_usuario, producto_id)
     
     return jsonify({
         'exitoso': exitoso,
