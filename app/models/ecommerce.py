@@ -163,3 +163,31 @@ class Pago(db.Model):
     def is_aprobado(self):
         """Verificar si el pago está aprobado"""
         return self.estado == 'aprobado'
+
+
+class CarritoItem(db.Model):
+    """
+    Item del carrito persistente por usuario.
+    Tabla: carrito_items
+    """
+    __tablename__ = 'carrito_items'
+
+    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), primary_key=True)
+    id_producto = db.Column(db.Integer, db.ForeignKey('productos.id_producto'), primary_key=True)
+    cantidad = db.Column(db.Integer, nullable=False, default=1)
+    fecha_actualizacion = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    producto = db.relationship('Producto', backref=db.backref('carrito_items', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'<CarritoItem Usuario:{self.id_usuario} Producto:{self.id_producto} x{self.cantidad}>'
+
+    def to_dict(self):
+        return {
+            'id_usuario': self.id_usuario,
+            'id_producto': self.id_producto,
+            'cantidad': self.cantidad,
+            'fecha_actualizacion': (
+                self.fecha_actualizacion.isoformat() if self.fecha_actualizacion else None
+            ),
+        }
