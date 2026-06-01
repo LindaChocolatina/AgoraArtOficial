@@ -81,7 +81,8 @@ class ServiceFactory:
             from app.factories.db_factory import RepositoryFactory
             
             producto_repo = RepositoryFactory.create_producto_repository(self.session)
-            self._services['carrito'] = CarritoService(producto_repo)
+            carrito_repo = RepositoryFactory.create_carrito_repository(self.session)
+            self._services['carrito'] = CarritoService(carrito_repo, producto_repo)
         
         return self._services['carrito']
     

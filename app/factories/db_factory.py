@@ -184,3 +184,13 @@ class RepositoryFactory:
             session = DatabaseFactory.get_session()
             
         return DireccionRepository(session)
+
+    @staticmethod
+    def create_carrito_repository(session=None):
+        """Crear repositorio de carrito"""
+        from app.repositories.carrito_repository import CarritoRepository
+
+        if session is None:
+            session = DatabaseFactory.get_session()
+
+        return CarritoRepository(session)

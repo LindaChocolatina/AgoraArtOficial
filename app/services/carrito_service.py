@@ -1,90 +1,94 @@
 """
-Servicio de carrito de compras
-Maneja operaciones del carrito guardado en la sesión
+Servicio de carrito de compras persistente en base de datos.
 """
 from flask import session
 
+
 class CarritoService:
-    """Servicio de carrito de compras basado en sesión"""
-    
-    def __init__(self, producto_repo=None):
+    """Carrito de compras por usuario (PostgreSQL)."""
+
+    def __init__(self, carrito_repo=None, producto_repo=None):
+        self.carrito_repo = carrito_repo
         self.producto_repo = producto_repo
-        
-    def _get_cart(self):
-        """Obtener carrito de la sesión"""
+
+    def _session_cart(self):
+        """Carrito legacy en sesión (solo para fusionar al iniciar sesión)."""
         if 'carrito' not in session:
             session['carrito'] = {}
         return session['carrito']
-        
-    def _save_cart(self):
-        """Guardar carrito en la sesión (marcar como modificada)"""
+
+    def fusionar_sesion(self, usuario_id):
+        """Fusionar carrito de sesión (legacy) con el persistente del usuario."""
+        carrito_sesion = self._session_cart()
+        if not carrito_sesion or not self.carrito_repo:
+            return True
+
+        for producto_id_str, cantidad in carrito_sesion.items():
+            try:
+                cantidad = int(cantidad)
+                if cantidad <= 0:
+                    continue
+                self.carrito_repo.add_or_increment(usuario_id, int(producto_id_str), cantidad)
+            except (TypeError, ValueError):
+                continue
+
+        session.pop('carrito', None)
         session.modified = True
-        
-    def agregar_producto(self, producto_id, cantidad=1):
-        """Agregar producto al carrito"""
-        carrito = self._get_cart()
-        producto_id_str = str(producto_id)
-        
-        if producto_id_str in carrito:
-            carrito[producto_id_str] += cantidad
-        else:
-            carrito[producto_id_str] = cantidad
-            
-        self._save_cart()
-        return True
-        
-    def remover_producto(self, producto_id):
-        """Remover producto del carrito"""
-        carrito = self._get_cart()
-        producto_id_str = str(producto_id)
-        
-        if producto_id_str in carrito:
-            del carrito[producto_id_str]
-            self._save_cart()
-            return True
-        return False
-        
-    def actualizar_cantidad(self, producto_id, cantidad):
-        """Actualizar cantidad de un producto"""
-        carrito = self._get_cart()
-        producto_id_str = str(producto_id)
-        
+        return self.carrito_repo.save()
+
+    def agregar_producto(self, usuario_id, producto_id, cantidad=1):
+        if not self.carrito_repo or cantidad < 1:
+            return False
+        item = self.carrito_repo.add_or_increment(usuario_id, producto_id, cantidad)
+        if not item:
+            return False
+        return self.carrito_repo.save()
+
+    def remover_producto(self, usuario_id, producto_id):
+        if not self.carrito_repo:
+            return False
+        if not self.carrito_repo.remove_item(usuario_id, producto_id):
+            return False
+        return self.carrito_repo.save()
+
+    def actualizar_cantidad(self, usuario_id, producto_id, cantidad):
         if cantidad <= 0:
-            return self.remover_producto(producto_id)
-            
-        if producto_id_str in carrito:
-            carrito[producto_id_str] = cantidad
-            self._save_cart()
-            return True
-        return False
-        
-    def vaciar_carrito(self):
-        """Vaciar todo el carrito"""
-        session['carrito'] = {}
-        self._save_cart()
-        
-    def get_items(self):
-        """Obtener todos los items del carrito con su información completa"""
-        carrito = self._get_cart()
+            return self.remover_producto(usuario_id, producto_id)
+        if not self.carrito_repo:
+            return False
+        item = self.carrito_repo.set_cantidad(usuario_id, producto_id, cantidad)
+        if not item:
+            return False
+        return self.carrito_repo.save()
+
+    def vaciar_carrito(self, usuario_id):
+        if not self.carrito_repo:
+            return False
+        if not self.carrito_repo.clear_usuario(usuario_id):
+            return False
+        return self.carrito_repo.save()
+
+    def get_items(self, usuario_id):
         items = []
         total = 0
-        
-        if not self.producto_repo:
+
+        if not self.carrito_repo or not self.producto_repo:
             return items, total
-            
-        for producto_id_str, cantidad in carrito.items():
-            producto = self.producto_repo.get_by_id(int(producto_id_str))
+
+        for row in self.carrito_repo.get_items_by_usuario(usuario_id):
+            producto = self.producto_repo.get_by_id(row.id_producto)
             if producto:
-                subtotal = float(producto.precio) * cantidad
+                subtotal = float(producto.precio) * row.cantidad
                 total += subtotal
                 items.append({
                     'producto': producto,
-                    'cantidad': cantidad,
-                    'subtotal': subtotal
+                    'cantidad': row.cantidad,
+                    'subtotal': subtotal,
                 })
-                
+
         return items, total
-        
-    def get_count(self):
-        """Obtener cantidad total de items"""
-        return sum(self._get_cart().values())
+
+    def get_count(self, usuario_id):
+        if not self.carrito_repo:
+            return 0
+        return self.carrito_repo.get_total_count(usuario_id)
