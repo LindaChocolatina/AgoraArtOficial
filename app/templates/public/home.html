@@ -250,6 +250,11 @@
 
     .category-btn-pro:hover .cat-img-bg { filter: brightness(0.7); transform: scale(1.05); }
 
+    .category-btn-pro.is-active-cat {
+        border: 2px solid #8B5CF6;
+        box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+    }
+
     .cat-name-pro {
         position: relative;
         z-index: 2;
@@ -694,8 +699,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.search-type-item').forEach(i => i.classList.remove('active'));
             this.classList.add('active');
             inputTipo.value = this.getAttribute('data-type');
-            
-            // Auto-enviar siempre que se cambie el tipo de búsqueda
             form.submit();
         });
     });
@@ -785,17 +788,16 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- 2. DISCOVERY BAR REPLICA -->
 <nav class="discovery-bar-pro">
     <div class="container-fluid px-4">
-        <form class="discovery-inner" action="{{ url_for('public.explorar') }}" method="GET" id="main-search-form">
-            <input type="hidden" name="tipo" id="search-tipo" value="proyectos">
-            <input type="hidden" name="filtro" id="search-filtro" value="">
+        <form class="discovery-inner" action="{{ url_for('public.home') }}" method="GET" id="main-search-form">
+            <input type="hidden" name="tipo" id="search-tipo" value="{{ tipo_busqueda or 'proyectos' }}">
+            <input type="hidden" name="filtro" id="search-filtro" value="{{ filtro_actual or '' }}">
+            <input type="hidden" name="categoria" id="search-categoria" value="{{ categoria_actual or '' }}">
             
             <div class="dropdown">
-                <button type="button" class="filter-btn-pro" data-bs-toggle="dropdown" id="filter-btn-text" aria-label="Filtros" title="Filtros">
+                <button type="button" class="filter-btn-pro{% if filtro_actual %} is-active{% endif %}" data-bs-toggle="dropdown" id="filter-btn-text" aria-label="Filtros" title="{% if filtro_actual %}Filtro activo{% else %}Filtros{% endif %}">
                     <i class="fas fa-sliders-h"></i>
                 </button>
                 <ul class="dropdown-menu shadow border-0" style="background: var(--bg-secondary); color: var(--text-color); margin-top: 10px; min-width: 150px; font-size: 0.85rem;">
-                    <li><a class="dropdown-item filter-opt" href="#" data-val="paleta" style="color: var(--text-color); padding: 4px 12px;">Paleta de color</a></li>
-                    <li><a class="dropdown-item filter-opt" href="#" data-val="ubicacion" style="color: var(--text-color); padding: 4px 12px;">Ubicación (artista)</a></li>
                     <li><a class="dropdown-item filter-opt" href="#" data-val="mas_recientes" style="color: var(--text-color); padding: 4px 12px;">Más recientes</a></li>
                     <li><a class="dropdown-item filter-opt" href="#" data-val="mas_antiguos" style="color: var(--text-color); padding: 4px 12px;">Más antiguos</a></li>
                     <li><a class="dropdown-item filter-opt" href="#" data-val="mas_populares" style="color: var(--text-color); padding: 4px 12px;">Más populares</a></li>
@@ -804,14 +806,19 @@ document.addEventListener('DOMContentLoaded', function() {
             
             <div class="search-group-pro">
                 <i class="fas fa-search"></i>
-                <input type="text" name="q" placeholder="Buscar…" aria-label="Buscar en Ágora Art">
+                <input type="text" name="q" value="{{ termino_busqueda }}" placeholder="Buscar…" aria-label="Buscar en Ágora Art">
                 <div class="search-types-pro d-none d-md-flex">
-                    <span class="search-type-item active" data-type="proyectos">Proyectos</span>
-                    <span class="search-type-item" data-type="personas">Personas</span>
-                    <span class="search-type-item" data-type="productos">Productos</span>
-                    <span class="search-type-item" data-type="imagenes">Imágenes</span>
+                    <span class="search-type-item{% if (tipo_busqueda or 'proyectos') in ['proyectos', 'imagenes'] %} active{% endif %}" data-type="proyectos">Proyectos</span>
+                    <span class="search-type-item{% if tipo_busqueda == 'personas' %} active{% endif %}" data-type="personas">Personas</span>
+                    <span class="search-type-item{% if tipo_busqueda == 'productos' %} active{% endif %}" data-type="productos">Productos</span>
+                    <span class="search-type-item{% if tipo_busqueda == 'imagenes' %} active{% endif %}" data-type="imagenes">Imágenes</span>
                 </div>
             </div>
+            {% if hay_busqueda %}
+            <a href="{{ url_for('public.home') }}" class="filter-btn-pro" title="Limpiar filtros" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">
+                <i class="fas fa-times"></i>
+            </a>
+            {% endif %}
         </form>
     </div>
 </nav>
@@ -832,13 +839,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 } %}
                 
                 <!-- For You Item -->
-                <a href="#" class="category-btn-pro">
+                <a href="{{ url_for('public.home') }}" class="category-btn-pro{% if not categoria_actual %} is-active-cat{% endif %}">
                     <div class="cat-img-bg" style="background-image: url('{{ url_for('static', filename='img/categorias/cat_arte_digital.png') }}')"></div>
                     <span class="cat-name-pro">Para ti</span>
                 </a>
 
                 {% for cat in categorias_destacadas %}
-                <a href="{{ url_for('public.obras_categoria', categoria_id=cat.id_categoria) }}" class="category-btn-pro">
+                <a href="{{ url_for('public.home', categoria=cat.id_categoria) }}" class="category-btn-pro{% if categoria_actual == cat.id_categoria %} is-active-cat{% endif %}">
                     <div class="cat-img-bg" style="background-image: url('{{ cat_images.get(cat.nombre) }}')"></div>
                     <span class="cat-name-pro">{{ cat.nombre }}</span>
                 </a>
@@ -857,9 +864,9 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- 4. PROJECT GRID REPLICA -->
 <section class="py-4">
     <div class="container-fluid px-4">
+        {% if obras %}
         <div class="project-grid-replica">
-            {% if obras_recientes %}
-                {% for obra in obras_recientes %}
+            {% for obra in obras %}
                 <div class="project-card-replica" onclick="window.location.href='{{ url_for('public.detalle_obra', obra_id=obra.id_obra) }}'">
                     <div class="project-thumb">
                         {% if obra.imagen %}
@@ -883,14 +890,22 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
                         <div class="project-actions-pro">
-                            <span><i class="fas fa-thumbs-up me-1"></i> {{ (range(10, 500)|random) }}</span>
-                            <span><i class="fas fa-eye me-1"></i> {{ (range(100, 5000)|random) }}</span>
+                            <span><i class="fas fa-heart me-1"></i> {{ obra.get_favoritos_count() }}</span>
                         </div>
                     </div>
                 </div>
-                {% endfor %}
-            {% endif %}
+            {% endfor %}
         </div>
+        {% else %}
+        <div style="text-align:center;padding:48px 0 24px;">
+            <i class="fas fa-search" style="font-size:2.5rem;color:var(--theme-text-subtle,#DEDEDE);margin-bottom:12px;display:block;opacity:0.5;"></i>
+            <h3 style="font-size:1.25rem;margin-bottom:8px;">No se encontraron obras</h3>
+            <p style="color:#8C8C8C;max-width:400px;margin:0 auto 20px;">
+                {% if termino_busqueda %}Sin resultados para "{{ termino_busqueda }}".{% else %}No hay obras en esta selección.{% endif %}
+            </p>
+            <a href="{{ url_for('public.home') }}" class="btn btn-primary">Ver todo</a>
+        </div>
+        {% endif %}
     </div>
 </section>
 
@@ -948,15 +963,6 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </section>
 
-
-<script>
-document.querySelectorAll('.search-type-item').forEach(item => {
-    item.addEventListener('click', function() {
-        document.querySelectorAll('.search-type-item').forEach(i => i.classList.remove('active'));
-        this.classList.add('active');
-    });
-});
-</script>
 
 {% endblock %}
 

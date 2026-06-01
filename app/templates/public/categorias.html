@@ -148,10 +148,10 @@
 
 <section class="cat-page-body">
     <div class="container">
-        {% if categorias %}
+        {% if categorias_data %}
         <div class="cat-grid">
-            {% for categoria, obras_count in categorias %}
-            <div class="cat-card" onclick="window.location.href='{{ url_for('public.explorar', categoria=categoria.id_categoria) }}'">
+            {% for categoria, obras_count in categorias_data %}
+            <div class="cat-card" onclick="window.location.href='{{ url_for('public.home', categoria=categoria.id_categoria) }}'">
                 <div class="cat-card-thumb">
                     <div class="cat-card-icon">
                         <i class="fas fa-{{ categoria.icono or 'folder' }}"></i>
@@ -175,7 +175,7 @@
             <i class="fas fa-folder-open"></i>
             <h3>No hay categorías</h3>
             <p>Las categorías estarán disponibles pronto.</p>
-            <a href="{{ url_for('public.explorar') }}" class="btn btn-primary">Explorar obras</a>
+            <a href="{{ url_for('public.home') }}" class="btn btn-primary">Explorar obras</a>
         </div>
         {% endif %}
     </div>

@@ -176,7 +176,7 @@
 <div class="obra-detalle-page">
     <div class="container">
         <div class="obra-detalle-breadcrumb">
-            <a href="{{ url_for('public.explorar') }}">Explorar</a>
+            <a href="{{ url_for('public.home') }}">Inicio</a>
             {% if obra.categoria %} › <a href="{{ url_for('public.obras_categoria', categoria_id=obra.categoria.id_categoria) }}">{{ obra.categoria.nombre }}</a>{% endif %}
             › <span>{{ obra.titulo }}</span>
         </div>

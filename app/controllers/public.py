@@ -6,89 +6,35 @@ from datetime import datetime
 # Crear blueprint
 public_bp = Blueprint('public', __name__)
 
-@public_bp.route('/')
-def home():
-    """
-    Página de inicio pública
-    """
-    service_factory = get_service_factory()
-    obra_service = service_factory.get_obra_service()
-    categoria_service = service_factory.get_categoria_service()
-    usuario_service = service_factory.get_usuario_service()
-    
-    # Obtener datos para la página de inicio
-    obras_recientes = obra_service.get_all(limit=24)
-    categorias = categoria_service.get_all()
-    
-    # Filtrar solo 4 categorías destacadas (Artes plásticas/físicas) para el menú visual
-    nombres_destacados = ['Pintura', 'Escultura', 'Fotografía', 'Arte Urbano']
-    categorias_destacadas = [c for c in categorias if c.nombre in nombres_destacados]
-    
-    artistas_destacados = usuario_service.get_artistas_activos(limit=10)
 
-    lienzos = []
-    obras_favoritas_ids = set()
-    if current_user.is_authenticated and current_user.is_cliente():
-        lienzos = service_factory.get_moodboard_service().get_by_usuario(
-            current_user.id_usuario
-        )
-        favoritas = obra_service.get_favoritos_usuario(current_user.id_usuario)
-        obras_favoritas_ids = {o.id_obra for o in favoritas}
-
-    return render_template('public/home.html', 
-                         obras_recientes=obras_recientes,
-                         categorias=categorias,
-                         categorias_destacadas=categorias_destacadas,
-                         artistas_destacados=artistas_destacados,
-                         lienzos=lienzos,
-                         obras_favoritas_ids=obras_favoritas_ids)
-
-@public_bp.route('/explorar')
-def explorar():
-    """
-    Página de exploración de obras y artistas
-    """
-    service_factory = get_service_factory()
-    obra_service = service_factory.get_obra_service()
-    categoria_service = service_factory.get_categoria_service()
-    
-    # Obtener filtros de búsqueda
-    categoria_id = request.args.get('categoria', type=int)
-    termino = request.args.get('q', '')
-    tipo = request.args.get('tipo', 'proyectos')
-    filtro = request.args.get('filtro', '')
-    page = request.args.get('page', 1, type=int)
-    
-    # Enrutamiento según el tipo de búsqueda
-    if tipo == 'personas':
-        return redirect(url_for('public.artistas', q=termino))
-    elif tipo == 'productos':
-        # Redirigir a la futura vista de marketplace
-        return redirect(url_for('public.productos', q=termino, filtro=filtro))
-    
-    # Búsqueda por defecto (Proyectos/Imágenes -> Obras)
+def _obras_para_inicio(obra_service, termino='', categoria_id=None, filtro=''):
+    """Feed de obras para la home (búsqueda, categoría, orden)."""
     if termino:
-        obras = obra_service.buscar_obras(termino, limit=12)
+        obras = obra_service.buscar_obras(termino, limit=24)
     elif categoria_id:
-        obras = obra_service.get_obras_por_categoria(categoria_id, limit=12)
+        obras = obra_service.get_obras_por_categoria(categoria_id, limit=24)
+    elif filtro:
+        obras = obra_service.get_publicas(limit=24)
     else:
-        obras = obra_service.get_publicas(limit=12)
-    
-    # Filtrar por categoría cuando hay término de búsqueda
+        return obra_service.get_all(limit=24)
+
     if categoria_id and termino:
         obras = [o for o in obras if o.id_categoria == categoria_id]
-    
-    # Aplicar ordenamiento según el filtro
+
+    obras = list(obras)
     if filtro == 'mas_antiguos':
         obras.sort(key=lambda x: x.fecha_publicacion or datetime.min)
     elif filtro == 'mas_recientes':
         obras.sort(key=lambda x: x.fecha_publicacion or datetime.min, reverse=True)
     elif filtro == 'mas_populares':
-        # Ordenar por cantidad de favoritos (ya que vistas_count no existe en el modelo actual)
-        obras.sort(key=lambda x: len(x.favoritos_usuarios) if hasattr(x, 'favoritos_usuarios') else 0, reverse=True)
-        
-    categorias = categoria_service.get_all()
+        obras.sort(
+            key=lambda x: len(x.favoritos_usuarios) if hasattr(x, 'favoritos_usuarios') else 0,
+            reverse=True,
+        )
+    return obras
 
+
+def _contexto_favoritos_cliente(service_factory, obra_service):
     lienzos = []
     obras_favoritas_ids = set()
     if current_user.is_authenticated and current_user.is_cliente():
@@ -97,16 +43,59 @@ def explorar():
         )
         favoritas = obra_service.get_favoritos_usuario(current_user.id_usuario)
         obras_favoritas_ids = {o.id_obra for o in favoritas}
+    return lienzos, obras_favoritas_ids
 
-    return render_template('public/explorar.html',
-                         obras=obras,
-                         categorias=categorias,
-                         categoria_actual=categoria_id,
-                         termino_busqueda=termino,
-                         tipo_busqueda=tipo,
-                         filtro_actual=filtro,
-                         lienzos=lienzos,
-                         obras_favoritas_ids=obras_favoritas_ids)
+
+@public_bp.route('/')
+def home():
+    """
+    Página de inicio: feed de obras con búsqueda y filtros inline (estilo Behance).
+    """
+    service_factory = get_service_factory()
+    obra_service = service_factory.get_obra_service()
+    categoria_service = service_factory.get_categoria_service()
+    usuario_service = service_factory.get_usuario_service()
+
+    categoria_id = request.args.get('categoria', type=int)
+    termino = request.args.get('q', '').strip()
+    tipo = request.args.get('tipo', 'proyectos')
+    filtro = request.args.get('filtro', '')
+
+    if tipo == 'personas':
+        return redirect(url_for('public.artistas', q=termino, categoria=categoria_id or None))
+    if tipo == 'productos':
+        return redirect(url_for('public.productos', q=termino, filtro=filtro))
+
+    hay_busqueda = bool(termino or categoria_id or filtro)
+    obras = _obras_para_inicio(obra_service, termino, categoria_id, filtro)
+    categorias = categoria_service.get_all()
+
+    nombres_destacados = ['Pintura', 'Escultura', 'Fotografía', 'Arte Urbano']
+    categorias_destacadas = [c for c in categorias if c.nombre in nombres_destacados]
+
+    artistas_destacados = usuario_service.get_artistas_activos(limit=10)
+    lienzos, obras_favoritas_ids = _contexto_favoritos_cliente(service_factory, obra_service)
+
+    return render_template(
+        'public/home.html',
+        obras=obras,
+        hay_busqueda=hay_busqueda,
+        termino_busqueda=termino,
+        categoria_actual=categoria_id,
+        tipo_busqueda=tipo,
+        filtro_actual=filtro,
+        categorias=categorias,
+        categorias_destacadas=categorias_destacadas,
+        artistas_destacados=artistas_destacados,
+        lienzos=lienzos,
+        obras_favoritas_ids=obras_favoritas_ids,
+    )
+
+
+@public_bp.route('/explorar')
+def explorar():
+    """Compatibilidad: la exploración de obras vive en la home."""
+    return redirect(url_for('public.home', **request.args))
 
 @public_bp.route('/artistas')
 def artistas():
@@ -115,22 +104,34 @@ def artistas():
     """
     service_factory = get_service_factory()
     usuario_service = service_factory.get_usuario_service()
+    categoria_service = service_factory.get_categoria_service()
     
     # Obtener filtros
-    termino = request.args.get('q', '')
+    termino = request.args.get('q', '').strip()
+    categoria_id = request.args.get('categoria', type=int)
     page = request.args.get('page', 1, type=int)
     
     # Obtener artistas
-    if termino:
+    if categoria_id:
+        artistas = usuario_service.get_artistas_por_categoria(
+            categoria_id, termino=termino or None, limit=12
+        )
+    elif termino:
         artistas = usuario_service.buscar_usuarios(termino, rol='artista', limit=12)
     else:
         artistas = usuario_service.get_artistas_activos(limit=12)
+
+    categorias = categoria_service.get_all()
+    categoria_actual = categoria_service.get_by_id(categoria_id) if categoria_id else None
         
     total_obras = sum(a.get_obras_count() for a in artistas)
     total_seguidores = sum(a.get_seguidores_count() for a in artistas)
     
     return render_template('public/artistas.html',
                          artistas=artistas,
+                         categorias=categorias,
+                         categoria_actual=categoria_id,
+                         categoria_nombre=categoria_actual.nombre if categoria_actual else None,
                          termino_busqueda=termino,
                          total_obras=total_obras,
                          total_seguidores=total_seguidores)
@@ -205,7 +206,7 @@ def detalle_entrada_blog(entrada_id):
     entrada = blog_service.get_by_id(entrada_id)
     if not entrada or not entrada.is_visible():
         flash('Entrada no encontrada', 'error')
-        return redirect(url_for('public.explorar'))
+        return redirect(url_for('public.home'))
 
     artista = usuario_service.get_by_id(entrada.id_artista)
     if not artista or not artista.is_artista() or not artista.is_active():
@@ -249,7 +250,7 @@ def eliminar_comentario_blog(entrada_id, comentario_id):
     entrada = blog_service.get_by_id(entrada_id)
     if not entrada or not entrada.is_visible():
         flash('Entrada no encontrada', 'error')
-        return redirect(url_for('public.explorar'))
+        return redirect(url_for('public.home'))
 
     es_artista = current_user.id_usuario == entrada.id_artista
     exitoso, mensaje = blog_service.eliminar_comentario(
@@ -277,7 +278,7 @@ def detalle_obra(obra_id):
     
     if not obra or not obra.is_visible():
         flash('Obra no encontrada', 'error')
-        return redirect(url_for('public.explorar'))
+        return redirect(url_for('public.home'))
     
     # Verificar si es favorito del usuario actual
     es_favorito = False
@@ -357,7 +358,7 @@ def contacto():
     """
     return render_template('public/contacto.html')
 
-def _redirect_back(fallback='public.explorar'):
+def _redirect_back(fallback='public.home'):
     return redirect(request.referrer or url_for(fallback))
 
 
@@ -420,12 +421,12 @@ def favorito_obra():
         next_url = request.form.get('next') or request.referrer
         if next_url:
             return redirect(next_url)
-        return redirect(url_for('public.explorar'))
+        return redirect(url_for('public.home'))
 
     obra_id, accion = _parse_favorito_request()
     if not obra_id:
         flash('Obra no válida', 'error')
-        return _redirect_back('public.explorar')
+        return _redirect_back('public.home')
 
     service_factory = get_service_factory()
     obra_service = service_factory.get_obra_service()
