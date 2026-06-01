@@ -16,10 +16,24 @@ def _normalize_database_url(url):
 
 
 def database_uri(sqlite_filename):
-    """PostgreSQL vía DATABASE_URL (producción) o SQLite local como fallback."""
+    """PostgreSQL vía DATABASE_URL o POSTGRES_* (túnel DBeaver); si no, SQLite local."""
     url = _normalize_database_url(os.environ.get('DATABASE_URL'))
     if url:
         return url
+
+    password = (os.environ.get('POSTGRES_PASSWORD') or '').strip()
+    if password:
+        from urllib.parse import quote_plus
+
+        user = os.environ.get('POSTGRES_USER') or 'linda'
+        host = os.environ.get('POSTGRES_HOST') or '127.0.0.1'
+        port = os.environ.get('POSTGRES_PORT') or '5441'
+        db = os.environ.get('POSTGRES_DB') or 'master_db'
+        return (
+            f'postgresql+psycopg://{quote_plus(user)}:{quote_plus(password)}'
+            f'@{host}:{port}/{db}'
+        )
+
     return 'sqlite:///' + os.path.join(_BASEDIR, sqlite_filename)
 
 
@@ -28,7 +42,7 @@ def sqlalchemy_engine_options(uri=None):
     uri = uri or database_uri('art_platform.db')
     if uri.startswith('sqlite'):
         return {'connect_args': {'timeout': 30}}
-    return {'connect_args': {'connect_timeout': 5}}
+    return {'connect_args': {'connect_timeout': 15}}
 
 
 class Config:

@@ -65,9 +65,14 @@ def create_app(config_name='default'):
     app = Flask(__name__, template_folder=os.path.join(basedir, 'templates'), static_folder=os.path.join(basedir, 'static'))
     
     # Cargar configuración
-    from app.config.config import config
+    from app.config.config import config, database_uri, sqlalchemy_engine_options
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
+    # Releer URI tras load_dotenv() en run.py/scripts (POSTGRES_* en .env)
+    sqlite_file = 'art_platform_prod.db' if config_name == 'production' else 'art_platform.db'
+    db_uri = database_uri(sqlite_file)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = sqlalchemy_engine_options(db_uri)
     
     # Inicializar extensiones
     db.init_app(app)
